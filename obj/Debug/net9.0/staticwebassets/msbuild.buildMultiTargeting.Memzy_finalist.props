@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Memzy_finalist.props" />
+</Project>
