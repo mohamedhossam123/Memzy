@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-
+using static System.Console;
 namespace Memzy_finalist.Models
 {
     public partial class MemzyContext : DbContext
