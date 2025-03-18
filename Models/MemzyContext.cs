@@ -188,6 +188,8 @@ namespace Memzy_finalist.Models
                 entity.Property(e => e.ProfilePictureUrl)
                     .HasMaxLength(255)
                     .HasColumnName("ProfilePictureURL");
+                entity.Property(e => e.status)
+                .HasDefaultValue("normal");
             });
 
             modelBuilder.Entity<UserHumor>(entity =>
@@ -236,7 +238,6 @@ namespace Memzy_finalist.Models
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Videos__UserID__5224328E");
             });
-
             OnModelCreatingPartial(modelBuilder);
         }
 
