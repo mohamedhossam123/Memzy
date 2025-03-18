@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Memzy_finalist.csproj": {}
+    "c:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Memzy_finalist.csproj": {}
   },
   "projects": {
-    "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Memzy_finalist.csproj": {
+    "c:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Memzy_finalist.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Memzy_finalist.csproj",
+        "projectUniqueName": "c:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Memzy_finalist.csproj",
         "projectName": "Memzy_finalist",
-        "projectPath": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Memzy_finalist.csproj",
+        "projectPath": "c:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Memzy_finalist.csproj",
         "packagesPath": "C:\\Users\\dell\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\obj\\",
+        "outputPath": "c:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
