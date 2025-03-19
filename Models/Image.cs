@@ -12,5 +12,6 @@ namespace Memzy_finalist.Models
         public DateTime? CreatedAt { get; set; }
 
         public virtual User User { get; set; }
+        public  int image_like_counter {get; set;}
     }
 }
