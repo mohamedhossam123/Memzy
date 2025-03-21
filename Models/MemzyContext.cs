@@ -194,7 +194,7 @@ namespace Memzy_finalist.Models
                 entity.Property(e => e.ProfilePictureUrl)
                     .HasMaxLength(255)
                     .HasColumnName("ProfilePictureURL");
-                entity.Property(e => e.status)
+                entity.Property(e => e.status_)
                 .HasDefaultValue("normal");
             });
 

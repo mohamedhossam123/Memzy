@@ -17,10 +17,10 @@ namespace Memzy_finalist.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.0")
+                .HasAnnotation("ProductVersion", "9.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Memzy_finalist.Models.Friend", b =>
                 {
@@ -29,7 +29,7 @@ namespace Memzy_finalist.Migrations
                         .HasColumnType("int")
                         .HasColumnName("FriendshipID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FriendshipId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FriendshipId"));
 
                     b.Property<bool?>("CanMessage")
                         .ValueGeneratedOnAdd()
@@ -66,7 +66,7 @@ namespace Memzy_finalist.Migrations
                         .HasColumnType("int")
                         .HasColumnName("RequestID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RequestId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RequestId"));
 
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -104,7 +104,7 @@ namespace Memzy_finalist.Migrations
                         .HasColumnType("int")
                         .HasColumnName("HumorTypeID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HumorTypeId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HumorTypeId"));
 
                     b.Property<string>("HumorTypeName")
                         .IsRequired()
@@ -126,7 +126,7 @@ namespace Memzy_finalist.Migrations
                         .HasColumnType("int")
                         .HasColumnName("ImageID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageId"));
 
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -167,7 +167,7 @@ namespace Memzy_finalist.Migrations
                         .HasColumnType("int")
                         .HasColumnName("MessageID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
 
                     b.Property<string>("MessageText")
                         .IsRequired()
@@ -203,7 +203,7 @@ namespace Memzy_finalist.Migrations
                         .HasColumnType("int")
                         .HasColumnName("UserID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
 
                     b.Property<string>("Bio")
                         .HasMaxLength(500)
@@ -220,6 +220,9 @@ namespace Memzy_finalist.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -230,7 +233,7 @@ namespace Memzy_finalist.Migrations
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("ProfilePictureURL");
 
-                    b.Property<string>("status")
+                    b.Property<string>("status_")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("normal");
@@ -250,7 +253,7 @@ namespace Memzy_finalist.Migrations
                         .HasColumnType("int")
                         .HasColumnName("UserHumorID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserHumorId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserHumorId"));
 
                     b.Property<int>("HumorTypeId")
                         .HasColumnType("int")
@@ -276,7 +279,7 @@ namespace Memzy_finalist.Migrations
                         .HasColumnType("int")
                         .HasColumnName("VideoID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VideoId"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VideoId"));
 
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
