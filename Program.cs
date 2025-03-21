@@ -1,14 +1,31 @@
-using System;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using static System.Console;
-namespace MyProject
+using Memzy_finalist.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<MemzyContext>(options =>
+    options.UseSqlServer(connectionString));
+
+builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(); 
+
+var app = builder.Build();
+if (app.Environment.IsDevelopment())
 {
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            
-        }
-    }
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();

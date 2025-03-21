@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Memzy_finalist")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+31376f079e1794f98d508fef03f7ae783861e5ba")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+540710bac4320b3cde08c9ca87dcbeecfc7f93c8")]
 [assembly: System.Reflection.AssemblyProductAttribute("Memzy_finalist")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Memzy_finalist")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
