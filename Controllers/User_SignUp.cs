@@ -1,6 +1,8 @@
 using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MyApiProject.Controllers
@@ -21,14 +23,18 @@ namespace MyApiProject.Controllers
             {
                 return BadRequest(new { message = "Name, email, and password are required" });
             }
-
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+                if (existingUser != null)
+                {
+                return Conflict(new { message = "Email already exists" }); 
+                }
             
                 var user = new User
                 {
                     Name = name,
                     Email = email,
                     PasswordHash = password,
-                    CreatedAt = DateTime.UtcNow, 
+                   CreatedAt = DateTime.UtcNow, 
                     status_ = "normal" 
                 };
                 _context.Users.Add(user);
