@@ -9,10 +9,10 @@ namespace MyApiProject.Controllers
 {
     [ApiController]
     [Route("api/[controller]")] 
-    public class User_SignUp : ControllerBase
+    public class Log_Sign : ControllerBase
     {
         private readonly MemzyContext _context;
-        public User_SignUp(MemzyContext context)
+        public Log_Sign(MemzyContext context)
         {
             _context = context;
         }
@@ -43,7 +43,21 @@ namespace MyApiProject.Controllers
                 return Ok(new { message = "User registered successfully", user });
             
 }
-
+        [HttpPost("log_in")]
+        public IActionResult Log_in( [FromForm] string email, [FromForm] string password)
+    {
+        if (email == null  || password == null)
+        {
+            return BadRequest("User data is required.");
+        }
+        var correction = _context.Users.Where(e => e.Email == email && e.PasswordHash==password).FirstOrDefault();
+        if (correction != null)
+        {
+            return Ok("Login successful");
+        }
+        return Ok("Login Failed");
+        
+    }
 
 }
 
