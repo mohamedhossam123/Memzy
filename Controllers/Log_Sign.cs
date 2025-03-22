@@ -16,8 +16,8 @@ namespace MyApiProject.Controllers
         {
             _context = context;
         }
-        [HttpPost("create")]
-        public async Task<IActionResult> Create([FromForm] string name, [FromForm] string email, [FromForm] string password)
+        [HttpPost("Sign_up")]
+        public async Task<IActionResult> Sign_Up([FromForm] string name, [FromForm] string email, [FromForm] string password)
         {
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
@@ -28,7 +28,6 @@ namespace MyApiProject.Controllers
                 {
                 return Conflict(new { message = "Email already exists" }); 
                 }
-            
                 var user = new User
                 {
                     Name = name,
@@ -42,7 +41,7 @@ namespace MyApiProject.Controllers
 
                 return Ok(new { message = "User registered successfully", user });
             
-}
+        }
         [HttpPost("log_in")]
         public IActionResult Log_in( [FromForm] string email, [FromForm] string password)
     {
