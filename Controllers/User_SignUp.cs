@@ -34,7 +34,7 @@ namespace MyApiProject.Controllers
                     Name = name,
                     Email = email,
                     PasswordHash = password,
-                   CreatedAt = DateTime.UtcNow, 
+                    CreatedAt = DateTime.UtcNow, 
                     status_ = "normal" 
                 };
                 _context.Users.Add(user);
