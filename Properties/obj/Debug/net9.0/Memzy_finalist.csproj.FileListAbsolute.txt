@@ -1,8 +1,0 @@
-C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Properties\obj\Debug\net9.0\Memzy_finalist.csproj.AssemblyReference.cache
-C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Properties\obj\Debug\net9.0\Memzy_finalist.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Properties\obj\Debug\net9.0\Memzy_finalist.AssemblyInfoInputs.cache
-C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Properties\obj\Debug\net9.0\Memzy_finalist.AssemblyInfo.cs
-C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Properties\obj\Debug\net9.0\Memzy_finalist.csproj.CoreCompileInputs.cache
-C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Properties\obj\Debug\net9.0\Memzy_finalist.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Properties\obj\Debug\net9.0\Memzy_finalist.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Properties\obj\Debug\net9.0\Memzy_finalist.sourcelink.json
