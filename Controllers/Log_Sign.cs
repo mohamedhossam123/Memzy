@@ -19,28 +19,16 @@ namespace MyApiProject.Controllers
         [HttpPost("Sign_up")]
         public async Task<IActionResult> Sign_Up([FromForm] string name, [FromForm] string email, [FromForm] string password)
         {
-            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
-            {
-                return BadRequest(new { message = "Name, email, and password are required" });
-            }
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-                if (existingUser != null)
-                {
-                return Conflict(new { message = "Email already exists" }); 
-                }
-                var user = new User
-                {
-                    Name = name,
-                    Email = email,
-                    PasswordHash = password,
-                    CreatedAt = DateTime.UtcNow, 
-                    status_ = "normal" 
-                };
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-
-                return Ok(new { message = "User registered successfully", user });
-            
+            var user = new User
+        {
+            Name = name,
+            Email = email,
+            PasswordHash = password,
+            CreatedAt = DateTime.UtcNow,
+            Status_ = "normal" 
+        };
+        await _UserService.CreateUserAsync(user);
+        return Ok(new { Message = "User created successfully.", User = user });
         }
         [HttpPost("log_in")]
         public IActionResult Log_in( [FromForm] string email, [FromForm] string password)
