@@ -12,15 +12,14 @@ namespace MyApiProject.Controllers
     public class Log_Sign : ControllerBase
     {
         private readonly MemzyContext _context;
-        public Log_Sign(MemzyContext context)
+        private readonly IUserService _userService;
+        public Log_Sign(MemzyContext context, IUserService userService)
         {
             _context = context;
+            _userService = userService;
         }
-        public Log_Sign(UserService _userService)
-        {
-            _userService = _userService;
-        }
-        [HttpPost("Sign_up")]
+
+                [HttpPost("Sign_up")]
         public async Task<IActionResult> Sign_Up([FromForm] string name, [FromForm] string email, [FromForm] string password)
         {
             var user = new User
@@ -31,7 +30,7 @@ namespace MyApiProject.Controllers
             CreatedAt = DateTime.UtcNow,
             status_ = "normal" 
         };
-        await _UserService.CreateUserAsync(user);
+        await _userService.CreateUserAsync(user);
         return Ok(new { Message = "User created successfully.", User = user });
         }
         [HttpPost("log_in")]
