@@ -16,6 +16,10 @@ namespace MyApiProject.Controllers
         {
             _context = context;
         }
+        public Log_Sign(UserService _userService)
+        {
+            _userService = _userService;
+        }
         [HttpPost("Sign_up")]
         public async Task<IActionResult> Sign_Up([FromForm] string name, [FromForm] string email, [FromForm] string password)
         {
@@ -25,7 +29,7 @@ namespace MyApiProject.Controllers
             Email = email,
             PasswordHash = password,
             CreatedAt = DateTime.UtcNow,
-            Status_ = "normal" 
+            status_ = "normal" 
         };
         await _UserService.CreateUserAsync(user);
         return Ok(new { Message = "User created successfully.", User = user });
