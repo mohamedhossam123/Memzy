@@ -62,11 +62,4 @@ namespace MyApiProject.Controllers
 
 
 
-
-
-
-
-
-
-
 }

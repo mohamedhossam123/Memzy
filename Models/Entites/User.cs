@@ -24,6 +24,7 @@ namespace Memzy_finalist.Models
         public string ProfilePictureUrl { get; set; }
         public string Bio { get; set; }
         public string PasswordHash { get; set; }
+
         public string status_ {get;set;} ="normal";
         public DateTime? CreatedAt { get; set; }
 
