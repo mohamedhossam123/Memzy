@@ -7,34 +7,34 @@ namespace Memzy_finalist.Models
     {
         public User()
         {
-            FriendRequestReceivers = new HashSet<FriendRequest>();
-            FriendRequestSenders = new HashSet<FriendRequest>();
-            FriendUser1s = new HashSet<Friend>();
-            FriendUser2s = new HashSet<Friend>();
+            FriendRequestsSent = new HashSet<FriendRequest>();
+            FriendRequestsReceived = new HashSet<FriendRequest>();
+            FriendsAsUser1 = new HashSet<Friend>();
+            FriendsAsUser2 = new HashSet<Friend>();
             Images = new HashSet<Image>();
-            MessageReceivers = new HashSet<Message>();
-            MessageSenders = new HashSet<Message>();
-            UserHumors = new HashSet<UserHumor>();
+            MessagesSent = new HashSet<Message>();
+            MessagesReceived = new HashSet<Message>();
+            UserHumorPreferences = new HashSet<UserHumorPreference>();
             Videos = new HashSet<Video>();
         }
 
         public int UserId { get; set; }
-        public string Name {get; set;}
+        public string Name { get; set; }
         public string Email { get; set; }
         public string ProfilePictureUrl { get; set; }
         public string Bio { get; set; }
         public string PasswordHash { get; set; }
-        public string status_ {get;set;} ="normal";
+        public string Status { get; set; } = "normal";
         public DateTime? CreatedAt { get; set; }
-        public virtual ICollection<Friend> Friends { get; set; } = new List<Friend>();
-        public virtual ICollection<FriendRequest> FriendRequestReceivers { get; set; }
-        public virtual ICollection<FriendRequest> FriendRequestSenders { get; set; }
-        public virtual ICollection<Friend> FriendUser1s { get; set; }
-        public virtual ICollection<Friend> FriendUser2s { get; set; }
+
+        public virtual ICollection<FriendRequest> FriendRequestsSent { get; set; }
+        public virtual ICollection<FriendRequest> FriendRequestsReceived { get; set; }
+        public virtual ICollection<Friend> FriendsAsUser1 { get; set; }
+        public virtual ICollection<Friend> FriendsAsUser2 { get; set; }
         public virtual ICollection<Image> Images { get; set; }
-        public virtual ICollection<Message> MessageReceivers { get; set; }
-        public virtual ICollection<Message> MessageSenders { get; set; }
-        public virtual ICollection<UserHumor> UserHumors { get; set; }
+        public virtual ICollection<Message> MessagesSent { get; set; }
+        public virtual ICollection<Message> MessagesReceived { get; set; }
+        public virtual ICollection<UserHumorPreference> UserHumorPreferences { get; set; }
         public virtual ICollection<Video> Videos { get; set; }
     }
 }

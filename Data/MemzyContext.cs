@@ -22,11 +22,13 @@ namespace Memzy_finalist.Models
         public virtual DbSet<Image> Images { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<UserHumor> UserHumors { get; set; }
+        public virtual DbSet<UserHumorPreference> UserHumors { get; set; }
         public virtual DbSet<Video> Videos { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder
+            .UseLazyLoadingProxies() ;
             if (!optionsBuilder.IsConfigured)
             {
                 optionsBuilder.UseSqlServer("data source=DESKTOP-FM1OTR0;initial catalog=Memzy;trusted_connection=true;");
@@ -53,13 +55,13 @@ namespace Memzy_finalist.Models
                 entity.Property(e => e.User2Id).HasColumnName("User2ID");
 
                 entity.HasOne(d => d.User1)
-                    .WithMany(p => p.FriendUser1s)
-                    .HasForeignKey(d => d.User1Id)
+                    .WithMany(p => p.FriendsAsUser1)
+                    .HasForeignKey(d => d.FriendshipId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Friends__User1ID__5AB9788F");
 
                 entity.HasOne(d => d.User2)
-                    .WithMany(p => p.FriendUser2s)
+                    .WithMany(p => p.FriendsAsUser2)
                     .HasForeignKey(d => d.User2Id)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Friends__User2ID__5BAD9CC8");
@@ -85,13 +87,13 @@ namespace Memzy_finalist.Models
                     .HasDefaultValueSql("('Pending')");
 
                 entity.HasOne(d => d.Receiver)
-                    .WithMany(p => p.FriendRequestReceivers)
+                    .WithMany(p => p.FriendRequestsReceived)
                     .HasForeignKey(d => d.ReceiverId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__FriendReq__Recei__625A9A57");
 
                 entity.HasOne(d => d.Sender)
-                    .WithMany(p => p.FriendRequestSenders)
+                    .WithMany(p => p.FriendRequestsSent)
                     .HasForeignKey(d => d.SenderId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__FriendReq__Sende__6166761E");
@@ -156,13 +158,13 @@ namespace Memzy_finalist.Models
                     .HasDefaultValueSql("(getdate())");
 
                 entity.HasOne(d => d.Receiver)
-                    .WithMany(p => p.MessageReceivers)
+                    .WithMany(p => p.MessagesReceived)
                     .HasForeignKey(d => d.ReceiverId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Messages__Receiv__671F4F74");
 
                 entity.HasOne(d => d.Sender)
-                    .WithMany(p => p.MessageSenders)
+                    .WithMany(p => p.MessagesSent)
                     .HasForeignKey(d => d.SenderId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Messages__Sender__662B2B3B");
@@ -194,28 +196,28 @@ namespace Memzy_finalist.Models
                 entity.Property(e => e.ProfilePictureUrl)
                     .HasMaxLength(255)
                     .HasColumnName("ProfilePictureURL");
-                entity.Property(e => e.status_)
+                entity.Property(e => e.Status)
                 .HasDefaultValue("normal");
             });
 
-            modelBuilder.Entity<UserHumor>(entity =>
+            modelBuilder.Entity<UserHumorPreference>(entity =>
             {
                 entity.ToTable("UserHumor");
 
-                entity.Property(e => e.UserHumorId).HasColumnName("UserHumorID");
+                entity.Property(e => e.UserId).HasColumnName("UserHumorID");
 
                 entity.Property(e => e.HumorTypeId).HasColumnName("HumorTypeID");
 
                 entity.Property(e => e.UserId).HasColumnName("UserID");
 
                 entity.HasOne(d => d.HumorType)
-                    .WithMany(p => p.UserHumors)
+                    .WithMany(p => p.UserHumorPreferences)
                     .HasForeignKey(d => d.HumorTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__UserHumor__Humor__4E53A1AA");
 
                 entity.HasOne(d => d.User)
-                    .WithMany(p => p.UserHumors)
+                    .WithMany(p => p.UserHumorPreferences)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__UserHumor__UserI__4D5F7D71");

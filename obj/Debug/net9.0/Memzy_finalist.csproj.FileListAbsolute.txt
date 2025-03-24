@@ -198,3 +198,5 @@ c:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\obj\Debug\net9.0\refint\Memzy_
 c:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\obj\Debug\net9.0\Memzy_finalist.pdb
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\obj\Debug\net9.0\Memzy_finalist.genruntimeconfig.cache
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\obj\Debug\net9.0\ref\Memzy_finalist.dll
+c:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\bin\Debug\net9.0\Castle.Core.dll
+c:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.Proxies.dll

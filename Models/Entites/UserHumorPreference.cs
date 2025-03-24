@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace Memzy_finalist.Models
 {
-    public partial class UserHumor
+    public partial class UserHumorPreference
     {
-        public int UserHumorId { get; set; }
+        public int UserHumorPreferenceId { get; set; }
         public int UserId { get; set; }
         public int HumorTypeId { get; set; }
 

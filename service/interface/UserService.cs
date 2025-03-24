@@ -41,7 +41,7 @@ public interface IUserService
 
     Task<User> RejectFriendRequestAsync(User user, int friendId);
 
-    Task<User> GetHumorFisrtTimeAsync(int userId,List<string> humor);
+    Task<User> ChangeHumorAsync(int userId,List<string> humor);
 
 }
 
@@ -102,7 +102,7 @@ public class UserService : IUserService
     }
     public async Task<User> ChangeStatusAsync(User user, string newStatus)
     {
-        user.status_ = newStatus;
+        user.Status = newStatus;
         await UpdateUserAsync(user);
         return user;
     }
@@ -171,9 +171,9 @@ public class UserService : IUserService
     public async Task<User> GetFriendsAsync(int userId)
 {
     var user = await _context.Users
-        .Include(u => u.FriendUser1s)
+        .Include(u => u.FriendsAsUser1)
             .ThenInclude(f => f.User2) 
-        .Include(u => u.FriendUser2s)
+        .Include(u => u.FriendsAsUser2)
             .ThenInclude(f => f.User1) 
         .FirstOrDefaultAsync(u => u.UserId == userId);
 
@@ -234,48 +234,29 @@ public class UserService : IUserService
         return user;
     }
 private static readonly List<string> types_of_humors = new List<string> { "Dark Humor", "Cringe in a funny way", "Dad Jokes" };
-public async Task<User> GetHumorFisrtTimeAsync(int userId, List<string> humor)
+public async Task<User> ChangeHumorAsync(int userId, List<string> humor)
 {
     var user = await _context.Users
-        .Include(u => u.UserHumors)
+        .Include(u => u.UserHumorPreferences )
         .ThenInclude(uh => uh.HumorType) 
         .FirstOrDefaultAsync(u => u.UserId == userId);
-
     if (user == null)
     {
         throw new ArgumentException("User not found.");
     }
-    if (humor == null || !humor.Any())
+    user.UserHumorPreferences.Clear();
+    foreach (var humorType in humor)
     {
-        throw new ArgumentException("Humor list cannot be null or empty.");
-    }
-
-    var validHumorTypes = await _context.HumorTypes.ToListAsync();
-
-    foreach (var type in humor)
-    {
-        if (!validHumorTypes.Any(ht => ht.HumorTypeName == type))
+        if (!types_of_humors.Contains(humorType))
         {
-            throw new ArgumentException($"Invalid humor type: {type}");
+            throw new ArgumentException("Invalid humor type.");
         }
-    }
-
-    user.UserHumors.Clear();
-
-    foreach (var type in humor)
-    {
-        var humorType = validHumorTypes.FirstOrDefault(ht => ht.HumorTypeName == type);
-        if (humorType != null)
+        user.UserHumorPreferences.Add(new UserHumorPreference
         {
-            user.UserHumors.Add(new UserHumor
-            {
-                UserId = userId,
-                HumorTypeId = humorType.HumorTypeId,
-                HumorType = humorType
-            });
-        }
+            UserId = userId,
+            HumorTypeId = _context.HumorTypes.First(ht => ht.HumorTypeName == humorType).HumorTypeId
+        });
     }
-    _context.Users.Update(user);
     await _context.SaveChangesAsync();
     return user;
 }

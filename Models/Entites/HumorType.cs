@@ -7,12 +7,12 @@ namespace Memzy_finalist.Models
     {
         public HumorType()
         {
-            UserHumors = new HashSet<UserHumor>();
+            UserHumorPreferences = new HashSet<UserHumorPreference>();
         }
 
         public int HumorTypeId { get; set; }
         public string HumorTypeName { get; set; }
 
-        public virtual ICollection<UserHumor> UserHumors { get; set; }
+        public virtual ICollection<UserHumorPreference> UserHumorPreferences { get; set; }
     }
 }
