@@ -7,13 +7,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-public interface IpostingService
+public interface IPostingService
 {
     Task<Image> PostImageAsync(string imageUrl,List<string> humor,string descreption);
     Task<Video> PostvideoAsync(string VideoUrl,List<string> humor,string descreption);
     }
 
-public class PostingService : IpostingService
+public class PostingService : IPostingService
 {
     private readonly MemzyContext _context;
     public PostingService(MemzyContext context)
