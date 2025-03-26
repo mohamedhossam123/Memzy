@@ -126,7 +126,7 @@ namespace Memzy_finalist.Models
                     .HasMaxLength(255)
                     .HasColumnName("ImageURL");
 
-                entity.Property(e =>e.image_like_counter)
+                entity.Property(e =>e.ImageLikeCounter)
                 .HasDefaultValue(0)
                 .HasColumnName("Likes");
 
