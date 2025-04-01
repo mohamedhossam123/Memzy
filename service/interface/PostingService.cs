@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 public interface IPostingService
 {
     Task<Image> PostImageAsync(string imageUrl,List<string> humor,string descreption);
-    Task<Video> PostvideoAsync(string VideoUrl,List<string> humor,string descreption);
+    Task<Video> PostVideoAsync(string VideoUrl,List<string> humor,string descreption);
     }
 
 public class PostingService : IPostingService
@@ -27,7 +27,7 @@ public class PostingService : IPostingService
         await _context.SaveChangesAsync();
         return image;
     }
-    public async Task<Video> PostvideoAsync(string VideoUrl, List<string> humor, string descreption)
+    public async Task<Video> PostVideoAsync(string VideoUrl, List<string> humor, string descreption)
     {
         Video video = new Video { VideoUrl = VideoUrl, Description = descreption, Humor = humor, CreatedAt = DateTime.Now };
         await _context.Videos.AddAsync(video);

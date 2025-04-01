@@ -20,13 +20,23 @@ namespace MyApiProject.Controllers
             _PostingService = postingService;
         }
         [HttpPost]
-        public async Task<IActionResult> CreatePosting([FromForm] string imageurl, [FromForm] string description, [FromForm] List<string> humor)
+        public async Task<IActionResult> CreatePostingImage([FromForm] string imageurl, [FromForm] List<string> humor , [FromForm] string description)
         {
             if (imageurl == null || description == null || humor == null)
             {
                 return BadRequest("All fields are required");
             }
-            return await _PostingService.PostImageAsync(imageurl,humor,description);
+            await _PostingService.PostImageAsync(imageurl,humor,description);
+            return Ok("Post created successfully");
+    }
+    public async Task<IActionResult> CreatePostVideo([FromForm]string VideoUrl, [FromForm] List<string> humor ,[FromForm]string descreption)
+    {
+        if (VideoUrl == null || descreption == null || humor == null)
+        {
+            return BadRequest("All fields are required");
+        }
+        await _PostingService.PostVideoAsync(VideoUrl,humor,descreption);
+        return Ok("Post created successfully");
     }
 }
 }
