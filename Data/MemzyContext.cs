@@ -112,34 +112,27 @@ namespace Memzy_finalist.Models
             });
 
             modelBuilder.Entity<Image>(entity =>
-            {
-                entity.Property(e => e.ImageId).HasColumnName("ImageID");
-
-                entity.Property(e => e.CreatedAt)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.Description).HasMaxLength(500);
-
-                entity.Property(e => e.ImageUrl)
-                    .IsRequired()
-                    .HasMaxLength(255)
-                    .HasColumnName("ImageURL");
-
-                entity.Property(e =>e.ImageLikeCounter)
-                .HasDefaultValue(0)
-                .HasColumnName("Likes");
-
-
-
-                entity.Property(e => e.UserId).HasColumnName("UserID");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.Images)
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Images__UserID__55F4C372");
-            });
+    {
+        entity.Property(e => e.ImageId).HasColumnName("ImageID");
+        entity.Property(e => e.CreatedAt)
+            .HasColumnType("datetime")
+            .HasDefaultValueSql("(getdate())");
+        entity.Property(e => e.Description).HasMaxLength(500);
+        entity.Property(e => e.FileName).IsRequired().HasMaxLength(255);
+        entity.Property(e => e.FilePath).IsRequired().HasMaxLength(500);
+        entity.Property(e => e.ContentType).IsRequired().HasMaxLength(100);
+        entity.Property(e => e.FileSize).IsRequired();
+        entity.Property(e => e.ImageLikeCounter)
+            .HasDefaultValue(0)
+            .HasColumnName("Likes");
+        entity.Property(e => e.UserId).HasColumnName("UserID");
+        
+        entity.HasOne(d => d.User)
+            .WithMany(p => p.Images)
+            .HasForeignKey(d => d.UserId)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK__Images__UserID__55F4C372");
+    });
 
             modelBuilder.Entity<Message>(entity =>
             {
@@ -224,28 +217,27 @@ namespace Memzy_finalist.Models
             });
 
             modelBuilder.Entity<Video>(entity =>
-            {
-                entity.Property(e => e.VideoId).HasColumnName("VideoID");
-
-                entity.Property(e => e.CreatedAt)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.Description).HasMaxLength(500);
-
-                entity.Property(e => e.UserId).HasColumnName("UserID");
-
-                entity.Property(e => e.VideoUrl)
-                    .IsRequired()
-                    .HasMaxLength(255)
-                    .HasColumnName("VideoURL");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.Videos)
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Videos__UserID__5224328E");
-            });
+    {
+        entity.Property(e => e.VideoId).HasColumnName("VideoID");
+        entity.Property(e => e.CreatedAt)
+            .HasColumnType("datetime")
+            .HasDefaultValueSql("(getdate())");
+        entity.Property(e => e.Description).HasMaxLength(500);
+        entity.Property(e => e.FileName).IsRequired().HasMaxLength(255);
+        entity.Property(e => e.FilePath).IsRequired().HasMaxLength(500);
+        entity.Property(e => e.ContentType).IsRequired().HasMaxLength(100);
+        entity.Property(e => e.FileSize).IsRequired();
+        entity.Property(e => e.VideoLikeCounter)
+            .HasDefaultValue(0)
+            .HasColumnName("Likes");
+        entity.Property(e => e.UserId).HasColumnName("UserID");
+        
+        entity.HasOne(d => d.User)
+            .WithMany(p => p.Videos)
+            .HasForeignKey(d => d.UserId)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK__Videos__UserID__5224328E");
+    });
             OnModelCreatingPartial(modelBuilder);
         }
 
