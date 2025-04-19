@@ -3,10 +3,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MoreLinq.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
+
 
 namespace MyApiProject.Controllers
 {
@@ -16,13 +19,11 @@ public class PostingController : ControllerBase
 {
     private readonly MemzyContext _context;
     private readonly IPostingService _postingService;
-    private readonly IWebHostEnvironment _environment;
 
-    public PostingController(MemzyContext context, IPostingService postingService, IWebHostEnvironment environment)
+    public PostingController(MemzyContext context, IPostingService postingService)
     {
         _context = context;
         _postingService = postingService;
-        _environment = environment;
     }
 
     [HttpPost("image")]
