@@ -1,70 +1,60 @@
 using Memzy_finalist.Models;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MoreLinq.Extensions;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-
-
 
 namespace MyApiProject.Controllers
 {
     [ApiController]
-[Route("api/[controller]")]
-public class PostingController : ControllerBase
-{
-    private readonly MemzyContext _context;
-    private readonly IPostingService _postingService;
-
-    public PostingController(MemzyContext context, IPostingService postingService)
+    [Route("api/[controller]")]
+    public class PostingController : ControllerBase
     {
-        _context = context;
-        _postingService = postingService;
-    }
+        private readonly IPostingService _postingService;
 
-    [HttpPost("image")]
-    public async Task<IActionResult> CreatePostingImage([FromForm] Image image)
-    {
-        if (image.ImageFile == null || image.ImageFile.Length == 0)
-            return BadRequest("Image file is required");
-        var uploadResult = await _postingService.SaveFileAsync(image.ImageFile, "images");
-        image.FileName = image.ImageFile.FileName;
-        image.FilePath = uploadResult.FilePath;
-        image.ContentType = image.ImageFile.ContentType;
-        image.FileSize = image.ImageFile.Length;
-        image.CreatedAt = DateTime.UtcNow;
-        _context.Images.Add(image);
-        await _context.SaveChangesAsync();
-        return Ok(new { 
-            ImageId = image.ImageId,
-            FilePath = image.FilePath,
-            Message = "Image posted successfully" 
-        });
-    }
-    [HttpPost("video")]
-    public async Task<IActionResult> CreatePostVideo([FromForm] Video video)
-    {
-        if (video.VideoFile == null || video.VideoFile.Length == 0)
-            return BadRequest("Video file is required");
-        var uploadResult = await _postingService.SaveFileAsync(video.VideoFile, "videos");
-        video.FileName = video.VideoFile.FileName;
-        video.FilePath = uploadResult.FilePath;
-        video.ContentType = video.VideoFile.ContentType;
-        video.FileSize = video.VideoFile.Length;
-        video.CreatedAt = DateTime.UtcNow;
+        public PostingController(IPostingService postingService)
+        {
+            _postingService = postingService;
+        }
 
-        _context.Videos.Add(video);
-        await _context.SaveChangesAsync();
+        [HttpPost("image")]
+        public async Task<IActionResult> CreatePostingImage([FromForm] Image image)
+        {
+            if (image.ImageFile == null || image.ImageFile.Length == 0)
+                return BadRequest("Image file is required");
 
-        return Ok(new { 
-            VideoId = video.VideoId,
-            FilePath = video.FilePath,
-            Message = "Video posted successfully" 
-        });
+            var result = await _postingService.PostImageAsync(
+                image.ImageFile, 
+                image.Humor, 
+                image.Description, 
+                image.UserId);
+
+            return Ok(new
+            {
+                ImageId = result.ImageId,
+                FilePath = result.FilePath,
+                Message = "Image posted successfully"
+            });
+        }
+
+        [HttpPost("video")]
+        public async Task<IActionResult> CreatePostVideo([FromForm] Video video)
+        {
+            if (video.VideoFile == null || video.VideoFile.Length == 0)
+                return BadRequest("Video file is required");
+
+            var result = await _postingService.PostVideoAsync(
+                video.VideoFile, 
+                video.Humor, 
+                video.Description, 
+                video.UserId);
+
+            return Ok(new
+            {
+                VideoId = result.VideoId,
+                FilePath = result.FilePath,
+                Message = "Video posted successfully"
+            });
+        }
     }
-}
 }

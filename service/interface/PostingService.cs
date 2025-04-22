@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 public interface IPostingService
@@ -64,11 +63,14 @@ public class PostingService : IPostingService
             ImageLikeCounter = 0
         };
 
-        await _context.Images.AddAsync(image);
+        _context.Images.Add(image);
         await _context.SaveChangesAsync();
 
         return image;
     }
+
+
+
 
     public async Task<Video> PostVideoAsync(IFormFile videoFile, List<string> humor, string description, int userId)
     {
@@ -86,10 +88,8 @@ public class PostingService : IPostingService
             CreatedAt = DateTime.UtcNow,
             VideoLikeCounter = 0
         };
-
-        await _context.Videos.AddAsync(video);
+        _context.Videos.Add(video);
         await _context.SaveChangesAsync();
-
         return video;
     }
 }
