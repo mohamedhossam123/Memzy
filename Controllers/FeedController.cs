@@ -24,7 +24,7 @@ namespace MyApiProject.Controllers
         [HttpPost("GetFirst3postsOfImagesAndVideosEverythingGoes")]
         public async Task<IActionResult> GetvideoAsyncEverythingGoes()
         {
-            var result = await _feedService.GetvideoAsyncEverythingGoes();
+            var result = await _feedService.FeedGeneratorEverythingGoes();
             return Ok(result);
         }
     }

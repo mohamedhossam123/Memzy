@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Memzy_finalist.Models
+﻿namespace Memzy_finalist.Models
 {
     public partial class UserHumorPreference
     {

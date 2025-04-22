@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Memzy_finalist.Models
 {
@@ -9,7 +8,7 @@ namespace Memzy_finalist.Models
         public int SenderId { get; set; }
         public int ReceiverId { get; set; }
         public string MessageText { get; set; }
-        public DateTime? SentAt { get; set; }
+        public DateTime SentAt { get; set; } = DateTime.UtcNow;
 
         public virtual User Receiver { get; set; }
         public virtual User Sender { get; set; }

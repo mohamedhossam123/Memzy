@@ -25,7 +25,7 @@ namespace Memzy_finalist.Models
         public string Bio { get; set; }
         public string PasswordHash { get; set; }
         public string Status { get; set; } = "normal";
-        public DateTime? CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public virtual ICollection<FriendRequest> FriendRequestsSent { get; set; }
         public virtual ICollection<FriendRequest> FriendRequestsReceived { get; set; }

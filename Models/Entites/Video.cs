@@ -16,10 +16,10 @@ namespace Memzy_finalist.Models
         public long FileSize { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int VideoLikeCounter { get; set; } = 0;
-        public List<string> Humor { get; set; }
         public virtual User User { get; set; }
         
         [NotMapped]
         public IFormFile VideoFile { get; set; }
+        public virtual ICollection<VideoHumor> VideoHumors { get; set; } = new HashSet<VideoHumor>();
     }
 }

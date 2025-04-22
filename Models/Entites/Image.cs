@@ -11,15 +11,15 @@ namespace Memzy_finalist.Models
         public int UserId { get; set; }
         public string Description { get; set; }
         public string FileName { get; set; }
-        public string FilePath { get; set; } 
+        public string FilePath { get; set; }
         public string ContentType { get; set; }
         public long FileSize { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public List<string> Humor { get; set; }
         public int ImageLikeCounter { get; set; } = 0;
         public virtual User User { get; set; }
         
-        [NotMapped] 
+        [NotMapped]
         public IFormFile ImageFile { get; set; }
+        public virtual ICollection<ImageHumor> ImageHumors { get; set; } = new HashSet<ImageHumor>();
     }
 }

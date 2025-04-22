@@ -1,3 +1,4 @@
+
 using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -5,21 +6,22 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
-public interface IPostingService
+public interface ICreatingPostsService
 {
     Task<FileUploadResult> SaveFileAsync(IFormFile file, string containerName);
-    Task<Image> PostImageAsync(IFormFile imageFile, List<string> humor, string description, int userId);
-    Task<Video> PostVideoAsync(IFormFile videoFile, List<string> humor, string description, int userId);
+    Task<Image> PostImageAsync(IFormFile imageFile, List<int> humorTypeIds, string description, int userId);
+    Task<Video> PostVideoAsync(IFormFile videoFile, List<int> humorTypeIds, string description, int userId);
 }
 
-public class PostingService : IPostingService
+public class CreatingPostsService : ICreatingPostsService
 {
     private readonly MemzyContext _context;
     private readonly IWebHostEnvironment _environment;
 
-    public PostingService(MemzyContext context, IWebHostEnvironment environment)
+    public CreatingPostsService(MemzyContext context, IWebHostEnvironment environment)
     {
         _context = context;
         _environment = environment;
@@ -42,11 +44,11 @@ public class PostingService : IPostingService
         return new FileUploadResult
         {
             FilePath = Path.Combine("uploads", containerName, uniqueFileName),
-            FileName = file.FileName
+            FileName = uniqueFileName
         };
     }
 
-    public async Task<Image> PostImageAsync(IFormFile imageFile, List<string> humor, string description, int userId)
+    public async Task<Image> PostImageAsync(IFormFile imageFile, List<int> humorTypeIds, string description, int userId)
     {
         var uploadResult = await SaveFileAsync(imageFile, "images");
         
@@ -54,14 +56,24 @@ public class PostingService : IPostingService
         {
             UserId = userId,
             Description = description,
-            Humor = humor,
-            FileName = imageFile.FileName,
+            FileName = uploadResult.FileName,
             FilePath = uploadResult.FilePath,
             ContentType = imageFile.ContentType,
             FileSize = imageFile.Length,
             CreatedAt = DateTime.UtcNow,
-            ImageLikeCounter = 0
+            ImageLikeCounter = 0,
+            ImageHumors = new List<ImageHumor>()
         };
+
+        // Add humor relationships
+        foreach (var humorTypeId in humorTypeIds.Distinct())
+        {
+            var humorType = await _context.HumorTypes.FindAsync(humorTypeId);
+            if (humorType != null)
+            {
+                image.ImageHumors.Add(new ImageHumor { HumorTypeId = humorTypeId });
+            }
+        }
 
         _context.Images.Add(image);
         await _context.SaveChangesAsync();
@@ -69,10 +81,7 @@ public class PostingService : IPostingService
         return image;
     }
 
-
-
-
-    public async Task<Video> PostVideoAsync(IFormFile videoFile, List<string> humor, string description, int userId)
+    public async Task<Video> PostVideoAsync(IFormFile videoFile, List<int> humorTypeIds, string description, int userId)
     {
         var uploadResult = await SaveFileAsync(videoFile, "videos");
         
@@ -80,19 +89,29 @@ public class PostingService : IPostingService
         {
             UserId = userId,
             Description = description,
-            Humor = humor,
-            FileName = videoFile.FileName,
+            FileName = uploadResult.FileName,
             FilePath = uploadResult.FilePath,
             ContentType = videoFile.ContentType,
             FileSize = videoFile.Length,
             CreatedAt = DateTime.UtcNow,
-            VideoLikeCounter = 0
+            VideoLikeCounter = 0,
+            VideoHumors = new List<VideoHumor>()
         };
+        foreach (var humorTypeId in humorTypeIds.Distinct())
+        {
+            var humorType = await _context.HumorTypes.FindAsync(humorTypeId);
+            if (humorType != null)
+            {
+                video.VideoHumors.Add(new VideoHumor { HumorTypeId = humorTypeId });
+            }
+        }
+
         _context.Videos.Add(video);
         await _context.SaveChangesAsync();
         return video;
     }
 }
+
 public class FileUploadResult
 {
     public string FilePath { get; set; }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Memzy_finalist.Models
 {
@@ -8,8 +7,8 @@ namespace Memzy_finalist.Models
         public int RequestId { get; set; }
         public int SenderId { get; set; }
         public int ReceiverId { get; set; }
-        public string Status { get; set; }
-        public DateTime? CreatedAt { get; set; }
+        public string Status { get; set; } = "Pending";
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public virtual User Receiver { get; set; }
         public virtual User Sender { get; set; }

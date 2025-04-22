@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Memzy_finalist.Models
 {
@@ -8,11 +7,15 @@ namespace Memzy_finalist.Models
         public HumorType()
         {
             UserHumorPreferences = new HashSet<UserHumorPreference>();
+            ImageHumors = new HashSet<ImageHumor>();
+            VideoHumors = new HashSet<VideoHumor>();
         }
 
         public int HumorTypeId { get; set; }
         public string HumorTypeName { get; set; }
 
         public virtual ICollection<UserHumorPreference> UserHumorPreferences { get; set; }
+        public virtual ICollection<ImageHumor> ImageHumors { get; set; }
+        public virtual ICollection<VideoHumor> VideoHumors { get; set; }
     }
 }
