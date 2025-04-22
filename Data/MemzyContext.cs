@@ -31,49 +31,58 @@ namespace Memzy_finalist.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Friend Configuration
             modelBuilder.Entity<Friend>(entity =>
-            {
-                entity.HasKey(e => e.FriendshipId);
-                entity.HasOne(d => d.User1)
-                    .WithMany(p => p.FriendsAsUser1)
-                    .HasForeignKey(d => d.User1Id)
-                    .OnDelete(DeleteBehavior.ClientSetNull);
-                entity.HasOne(d => d.User2)
-                    .WithMany(p => p.FriendsAsUser2)
-                    .HasForeignKey(d => d.User2Id)
-                    .OnDelete(DeleteBehavior.ClientSetNull);
-            });
+    {
+        entity.HasKey(e => e.FriendshipId);
 
-            // FriendRequest Configuration
+        entity.HasOne(d => d.User1)
+            .WithMany(p => p.FriendsAsUser1)
+            .HasForeignKey(d => d.User1Id)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        entity.HasOne(d => d.User2)
+            .WithMany(p => p.FriendsAsUser2)
+            .HasForeignKey(d => d.User2Id)
+            .OnDelete(DeleteBehavior.NoAction);
+    });
+            modelBuilder.Entity<Message>(entity =>
+    {
+        entity.HasKey(e => e.MessageId);
+        entity.HasOne(m => m.Sender)
+            .WithMany(u => u.MessagesSent)
+            .HasForeignKey(m => m.SenderId)
+            .OnDelete(DeleteBehavior.Restrict);
+        entity.HasOne(m => m.Receiver)
+            .WithMany(u => u.MessagesReceived)
+            .HasForeignKey(m => m.ReceiverId)
+            .OnDelete(DeleteBehavior.Restrict);
+    });
             modelBuilder.Entity<FriendRequest>(entity =>
-            {
-                entity.HasKey(e => e.RequestId);
-                entity.HasOne(d => d.Sender)
-                    .WithMany(p => p.FriendRequestsSent)
-                    .HasForeignKey(d => d.SenderId);
-                entity.HasOne(d => d.Receiver)
-                    .WithMany(p => p.FriendRequestsReceived)
-                    .HasForeignKey(d => d.ReceiverId);
-            });
+    {
+        entity.HasKey(e => e.RequestId);
 
-            // Image Configuration
+        entity.HasOne(d => d.Sender)
+            .WithMany(p => p.FriendRequestsSent)
+            .HasForeignKey(d => d.SenderId)
+            .OnDelete(DeleteBehavior.NoAction); 
+
+        entity.HasOne(d => d.Receiver)
+            .WithMany(p => p.FriendRequestsReceived)
+            .HasForeignKey(d => d.ReceiverId)
+            .OnDelete(DeleteBehavior.NoAction);
+    });
             modelBuilder.Entity<Image>(entity =>
             {
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.Images)
                     .HasForeignKey(d => d.UserId);
             });
-
-            // Video Configuration
             modelBuilder.Entity<Video>(entity =>
             {
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.Videos)
                     .HasForeignKey(d => d.UserId);
             });
-
-            // Humor Relationships
             modelBuilder.Entity<ImageHumor>(entity =>
             {
                 entity.HasOne(ih => ih.Image)
@@ -94,7 +103,6 @@ namespace Memzy_finalist.Models
                     .HasForeignKey(vh => vh.HumorTypeId);
             });
 
-            // Unique Constraints
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();

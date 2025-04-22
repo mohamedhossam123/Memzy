@@ -4,7 +4,6 @@ using Memzy_finalist.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -12,11 +11,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Memzy_finalist.Migrations
 {
     [DbContext(typeof(MemzyContext))]
-    [Migration("20250326185923_Humor_Link_Image_Video")]
-    partial class Humor_Link_Image_Video
+    partial class MemzyContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,29 +28,26 @@ namespace Memzy_finalist.Migrations
             modelBuilder.Entity("Memzy_finalist.Models.Friend", b =>
                 {
                     b.Property<int>("FriendshipId")
-                        .HasColumnType("int")
-                        .HasColumnName("FriendshipID");
-
-                    b.Property<bool?>("CanMessage")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValueSql("((1))");
+                        .HasColumnType("int");
 
-                    b.Property<DateTime?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FriendshipId"));
+
+                    b.Property<bool>("CanMessage")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("User1Id")
-                        .HasColumnType("int")
-                        .HasColumnName("User1ID");
+                        .HasColumnType("int");
 
                     b.Property<int>("User2Id")
-                        .HasColumnType("int")
-                        .HasColumnName("User2ID");
+                        .HasColumnType("int");
 
-                    b.HasKey("FriendshipId")
-                        .HasName("PK__Friends__4D531A741AE81307");
+                    b.HasKey("FriendshipId");
+
+                    b.HasIndex("User1Id");
 
                     b.HasIndex("User2Id");
 
@@ -64,32 +58,23 @@ namespace Memzy_finalist.Migrations
                 {
                     b.Property<int>("RequestId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("RequestID");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RequestId"));
 
-                    b.Property<DateTime?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("ReceiverId")
-                        .HasColumnType("int")
-                        .HasColumnName("ReceiverID");
+                        .HasColumnType("int");
 
                     b.Property<int>("SenderId")
-                        .HasColumnType("int")
-                        .HasColumnName("SenderID");
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValueSql("('Pending')");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("RequestId")
-                        .HasName("PK__FriendRe__33A8519A14A7B6E0");
+                    b.HasKey("RequestId");
 
                     b.HasIndex("ReceiverId");
 
@@ -102,20 +87,18 @@ namespace Memzy_finalist.Migrations
                 {
                     b.Property<int>("HumorTypeId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("HumorTypeID");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HumorTypeId"));
 
                     b.Property<string>("HumorTypeName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("HumorTypeId");
 
-                    b.HasIndex(new[] { "HumorTypeName" }, "UQ__HumorTyp__1C1846CC09601AAA")
-                        .IsUnique();
+                    b.HasIndex("HumorTypeName")
+                        .IsUnique()
+                        .HasFilter("[HumorTypeName] IS NOT NULL");
 
                     b.ToTable("HumorTypes");
                 });
@@ -124,38 +107,33 @@ namespace Memzy_finalist.Migrations
                 {
                     b.Property<int>("ImageId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("ImageID");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageId"));
 
-                    b.Property<DateTime?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.PrimitiveCollection<string>("Humor")
+                    b.Property<string>("ContentType")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ImageLikeCounter")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0)
-                        .HasColumnName("Likes");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("ImageURL");
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("ImageLikeCounter")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("UserID");
+                        .HasColumnType("int");
 
                     b.HasKey("ImageId");
 
@@ -164,32 +142,48 @@ namespace Memzy_finalist.Migrations
                     b.ToTable("Images");
                 });
 
+            modelBuilder.Entity("Memzy_finalist.Models.ImageHumor", b =>
+                {
+                    b.Property<int>("ImageHumorId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageHumorId"));
+
+                    b.Property<int>("HumorTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ImageId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ImageHumorId");
+
+                    b.HasIndex("HumorTypeId");
+
+                    b.HasIndex("ImageId");
+
+                    b.ToTable("ImageHumors");
+                });
+
             modelBuilder.Entity("Memzy_finalist.Models.Message", b =>
                 {
                     b.Property<int>("MessageId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("MessageID");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
 
                     b.Property<string>("MessageText")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ReceiverId")
-                        .HasColumnType("int")
-                        .HasColumnName("ReceiverID");
+                        .HasColumnType("int");
 
                     b.Property<int>("SenderId")
-                        .HasColumnType("int")
-                        .HasColumnName("SenderID");
+                        .HasColumnType("int");
 
-                    b.Property<DateTime?>("SentAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("MessageId");
 
@@ -204,48 +198,36 @@ namespace Memzy_finalist.Migrations
                 {
                     b.Property<int>("UserId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("UserID");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
 
                     b.Property<string>("Bio")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("BIO");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProfilePictureUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("ProfilePictureURL");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("normal");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId");
 
-                    b.HasIndex(new[] { "Email" }, "UQ__Users__A9D10534C32BF4C8")
-                        .IsUnique();
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
 
                     b.ToTable("Users");
                 });
@@ -259,12 +241,10 @@ namespace Memzy_finalist.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserHumorPreferenceId"));
 
                     b.Property<int>("HumorTypeId")
-                        .HasColumnType("int")
-                        .HasColumnName("HumorTypeID");
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("UserID");
+                        .HasColumnType("int");
 
                     b.HasKey("UserHumorPreferenceId");
 
@@ -272,42 +252,40 @@ namespace Memzy_finalist.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserHumor", (string)null);
+                    b.ToTable("UserHumorPreferences");
                 });
 
             modelBuilder.Entity("Memzy_finalist.Models.Video", b =>
                 {
                     b.Property<int>("VideoId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("VideoID");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VideoId"));
 
-                    b.Property<DateTime?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.PrimitiveCollection<string>("Humor")
+                    b.Property<string>("ContentType")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("UserID");
+                        .HasColumnType("int");
 
                     b.Property<int>("VideoLikeCounter")
                         .HasColumnType("int");
-
-                    b.Property<string>("VideoUrl")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("VideoURL");
 
                     b.HasKey("VideoId");
 
@@ -316,19 +294,42 @@ namespace Memzy_finalist.Migrations
                     b.ToTable("Videos");
                 });
 
+            modelBuilder.Entity("Memzy_finalist.Models.VideoHumor", b =>
+                {
+                    b.Property<int>("VideoHumorId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VideoHumorId"));
+
+                    b.Property<int>("HumorTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VideoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("VideoHumorId");
+
+                    b.HasIndex("HumorTypeId");
+
+                    b.HasIndex("VideoId");
+
+                    b.ToTable("VideoHumors");
+                });
+
             modelBuilder.Entity("Memzy_finalist.Models.Friend", b =>
                 {
                     b.HasOne("Memzy_finalist.Models.User", "User1")
                         .WithMany("FriendsAsUser1")
-                        .HasForeignKey("FriendshipId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Friends__User1ID__5AB9788F");
+                        .HasForeignKey("User1Id")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.HasOne("Memzy_finalist.Models.User", "User2")
                         .WithMany("FriendsAsUser2")
                         .HasForeignKey("User2Id")
-                        .IsRequired()
-                        .HasConstraintName("FK__Friends__User2ID__5BAD9CC8");
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("User1");
 
@@ -340,14 +341,14 @@ namespace Memzy_finalist.Migrations
                     b.HasOne("Memzy_finalist.Models.User", "Receiver")
                         .WithMany("FriendRequestsReceived")
                         .HasForeignKey("ReceiverId")
-                        .IsRequired()
-                        .HasConstraintName("FK__FriendReq__Recei__625A9A57");
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.HasOne("Memzy_finalist.Models.User", "Sender")
                         .WithMany("FriendRequestsSent")
                         .HasForeignKey("SenderId")
-                        .IsRequired()
-                        .HasConstraintName("FK__FriendReq__Sende__6166761E");
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("Receiver");
 
@@ -359,10 +360,29 @@ namespace Memzy_finalist.Migrations
                     b.HasOne("Memzy_finalist.Models.User", "User")
                         .WithMany("Images")
                         .HasForeignKey("UserId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Images__UserID__55F4C372");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Memzy_finalist.Models.ImageHumor", b =>
+                {
+                    b.HasOne("Memzy_finalist.Models.HumorType", "HumorType")
+                        .WithMany("ImageHumors")
+                        .HasForeignKey("HumorTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Memzy_finalist.Models.Image", "Image")
+                        .WithMany("ImageHumors")
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HumorType");
+
+                    b.Navigation("Image");
                 });
 
             modelBuilder.Entity("Memzy_finalist.Models.Message", b =>
@@ -370,14 +390,14 @@ namespace Memzy_finalist.Migrations
                     b.HasOne("Memzy_finalist.Models.User", "Receiver")
                         .WithMany("MessagesReceived")
                         .HasForeignKey("ReceiverId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Messages__Receiv__671F4F74");
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Memzy_finalist.Models.User", "Sender")
                         .WithMany("MessagesSent")
                         .HasForeignKey("SenderId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Messages__Sender__662B2B3B");
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Receiver");
 
@@ -389,14 +409,14 @@ namespace Memzy_finalist.Migrations
                     b.HasOne("Memzy_finalist.Models.HumorType", "HumorType")
                         .WithMany("UserHumorPreferences")
                         .HasForeignKey("HumorTypeId")
-                        .IsRequired()
-                        .HasConstraintName("FK__UserHumor__Humor__4E53A1AA");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Memzy_finalist.Models.User", "User")
                         .WithMany("UserHumorPreferences")
                         .HasForeignKey("UserId")
-                        .IsRequired()
-                        .HasConstraintName("FK__UserHumor__UserI__4D5F7D71");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("HumorType");
 
@@ -408,15 +428,43 @@ namespace Memzy_finalist.Migrations
                     b.HasOne("Memzy_finalist.Models.User", "User")
                         .WithMany("Videos")
                         .HasForeignKey("UserId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Videos__UserID__5224328E");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Memzy_finalist.Models.VideoHumor", b =>
+                {
+                    b.HasOne("Memzy_finalist.Models.HumorType", "HumorType")
+                        .WithMany("VideoHumors")
+                        .HasForeignKey("HumorTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Memzy_finalist.Models.Video", "Video")
+                        .WithMany("VideoHumors")
+                        .HasForeignKey("VideoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HumorType");
+
+                    b.Navigation("Video");
+                });
+
             modelBuilder.Entity("Memzy_finalist.Models.HumorType", b =>
                 {
+                    b.Navigation("ImageHumors");
+
                     b.Navigation("UserHumorPreferences");
+
+                    b.Navigation("VideoHumors");
+                });
+
+            modelBuilder.Entity("Memzy_finalist.Models.Image", b =>
+                {
+                    b.Navigation("ImageHumors");
                 });
 
             modelBuilder.Entity("Memzy_finalist.Models.User", b =>
@@ -438,6 +486,11 @@ namespace Memzy_finalist.Migrations
                     b.Navigation("UserHumorPreferences");
 
                     b.Navigation("Videos");
+                });
+
+            modelBuilder.Entity("Memzy_finalist.Models.Video", b =>
+                {
+                    b.Navigation("VideoHumors");
                 });
 #pragma warning restore 612, 618
         }
