@@ -8,6 +8,7 @@ namespace Memzy_finalist.Models
     public partial class Image
     {
         public int ImageId { get; set; }
+        [ForeignKey(nameof(User))]
         public int UserId { get; set; }
         public string Description { get; set; }
         public string FileName { get; set; }
@@ -17,7 +18,6 @@ namespace Memzy_finalist.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int ImageLikeCounter { get; set; } = 0;
         public virtual User User { get; set; }
-        
         [NotMapped]
         public IFormFile ImageFile { get; set; }
         public virtual ICollection<ImageHumor> ImageHumors { get; set; } = new HashSet<ImageHumor>();

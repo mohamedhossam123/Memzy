@@ -1,51 +1,124 @@
 using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MyApiProject.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")] 
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly MemzyContext _context;
         private readonly IUserService _userService;
-        public AuthController(MemzyContext context, IUserService userService)
+
+        public AuthController(IUserService userService)
         {
-            _context = context;
             _userService = userService;
         }
 
-        [HttpPost("Sign_up")]
-        public async Task<IActionResult> Sign_Up([FromForm] string name, [FromForm] string email, [FromForm] string password)
+        [HttpPost("signup")]
+        public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
         {
-            if (email == null || password == null)
-                return BadRequest("Email and Password are required");
-            if (_context.Users.Any(u => u.Email == email))
-                return Conflict("Email already exists");
-            var user = new User
+            try
             {
-                Name = name,
-                Email = email,
-                PasswordHash = password,
-                CreatedAt = DateTime.Now
-            };
-            await _userService.CreateUserAsync(user);
-            return Ok(new { Message = "User created successfully.", User = user });
+                if (string.IsNullOrWhiteSpace(dto.Email)) 
+                    return BadRequest("Email is required");
+                if (string.IsNullOrWhiteSpace(dto.Password))
+                    return BadRequest("Password is required");
+
+                var user = new User
+                {
+                    Name = dto.Name,
+                    Email = dto.Email,
+                    PasswordHash = dto.Password,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var createdUser = await _userService.CreateUserAsync(user);
+                return CreatedAtAction(nameof(GetUser), new { id = createdUser.UserId }, createdUser);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
-        [HttpPost("log_in")]
-        public async Task<IActionResult> Log_in( [FromForm] string email, [FromForm] string password)
-    {
-        if (email == null  || password == null)
-            return BadRequest("Email and Password are required");
-        var user = await _userService.VerifyUserAsync(email, password);
-        if (user!= null)
-            return Ok("Login successful");
-        return Ok("Login Failed");
-        
+
+        [HttpGet("user/{id}")]
+        public async Task<IActionResult> GetUser(int id)
+        {
+            var user = await _userService.GetUserByIdAsync(id);
+            return user != null ? Ok(user) : NotFound();
+        }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        {
+            try
+            {
+                var user = await _userService.VerifyUserAsync(dto.Email, dto.Password);
+                return user != null 
+                    ? Ok(new { Message = "Login successful", UserId = user.UserId })
+                    : Unauthorized("Invalid credentials");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
-}
+    [ApiController]
+    [Route("api/humor")]
+    public class HumorController : ControllerBase
+    {
+        private readonly IUserService _userService;
+
+        public HumorController(IUserService userService)
+        {
+            _userService = userService;
+        }
+        [HttpPut("preferences/{userId}")]
+        public async Task<IActionResult> SetHumorPreferences(int userId, [FromBody] HumorPreferencesDto dto)
+        {
+            try
+            {
+                var user = await _userService.ChangeHumorAsync(userId, dto.HumorTypes);
+                return Ok(new 
+                { 
+                    Message = "Humor preferences updated",
+                    UserId = userId,
+                    Preferences = dto.HumorTypes
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+        [HttpGet("types")]
+        public IActionResult GetHumorTypes()
+        {
+            return Ok(new List<string> { "DarkHumor", "FriendlyHumor" });
+        }
+    }
+    public class UserCreateDto
+    {
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class LoginDto
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class HumorPreferencesDto
+    {
+        public List<string> HumorTypes { get; set; }
+    }
 }
