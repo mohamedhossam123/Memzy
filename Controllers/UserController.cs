@@ -43,7 +43,7 @@ namespace MyApiProject.Controllers
             }
         }
 
-        [HttpGet("user/{id}")]
+        [HttpGet("GetUserID")]
         public async Task<IActionResult> GetUser(int id)
         {
             var user = await _userService.GetUserByIdAsync(id);
@@ -73,7 +73,7 @@ namespace MyApiProject.Controllers
         {
             _userService = userService;
         }
-        [HttpPut("preferences/{userId}")]
+        [HttpPut("preferencesByUserID")]
         public async Task<IActionResult> SetHumorPreferences(int userId, [FromBody] HumorPreferencesDto dto)
         {
             try
