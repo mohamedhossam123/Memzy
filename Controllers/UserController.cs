@@ -26,7 +26,6 @@ namespace MyApiProject.Controllers
                     return BadRequest("Email is required");
                 if (string.IsNullOrWhiteSpace(dto.Password))
                     return BadRequest("Password is required");
-
                 var user = new User
                 {
                     Name = dto.Name,
@@ -66,8 +65,6 @@ namespace MyApiProject.Controllers
             }
         }
     }
-    [ApiController]
-    [Route("api/humor")]
     public class HumorController : ControllerBase
     {
         private readonly IUserService _userService;
