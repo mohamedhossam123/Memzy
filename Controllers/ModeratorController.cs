@@ -17,38 +17,38 @@ namespace MyApiProject.Controllers
             _moderatorService = moderatorService;
         }
 
-        [HttpPost("approveImage/{imageId}")]
+        [HttpPost("approveImage")]
         public async Task<IActionResult> ApproveImage(int imageId,int moderatorId)
         {
             var result = await _moderatorService.ApproveimageAsync(imageId,moderatorId);
             return Ok(result);
         }
 
-        [HttpPost("approveVideo/{videoId}")]
+        [HttpPost("approveVideo")]
         public async Task<IActionResult> ApproveVideo(int videoId,int moderatorId)
         {
             var result = await _moderatorService.ApproveVideoAsync(videoId,moderatorId);
             return Ok(result);
         }
-        [HttpPost("rejectImage/{imageId}")]
+        [HttpPost("rejectImage")]
         public async Task<IActionResult> RejectImage(int imageId,   int moderatorId)
         {
             var result = await _moderatorService.RejectimageAsync(imageId,moderatorId);
             return Ok(result);
         }
-        [HttpPost("rejectVideo/{videoId}")]
+        [HttpPost("rejectVideo")]
         public async Task<IActionResult> RejectVideo(int videoId,int moderatorId)
         {
             var result = await _moderatorService.RejectvideoAsync(videoId,moderatorId);
             return Ok(result);
         }
-        [HttpGet("pendingImages")]
+        [HttpGet("GetpendingImages")]
         public async Task<IActionResult> GetPendingImages()
         {
             var result = await _moderatorService.GetPendingImagesAsync();
             return Ok(result);
         }
-        [HttpGet("pendingVideos")]
+        [HttpGet("GetpendingVideos")]
         public async Task<IActionResult> GetPendingVideos()
         {
             var result = await _moderatorService.GetPendingVideosAsync();
