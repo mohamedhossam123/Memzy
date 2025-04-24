@@ -16,6 +16,7 @@ namespace Memzy_finalist.Models
         public long FileSize { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int VideoLikeCounter { get; set; } = 0;
+        public bool IsApproved { get; set; } = false;
         public virtual User User { get; set; }
         
         [NotMapped]

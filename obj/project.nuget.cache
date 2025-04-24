@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "VwxmZSsXxR8=",
+  "dgSpecHash": "d1FCuDFy+Ak=",
   "success": true,
-  "projectFilePath": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Memzy_finalist.csproj",
+  "projectFilePath": "c:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Memzy_finalist.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\dell\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\dell\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

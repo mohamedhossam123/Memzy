@@ -64,8 +64,6 @@ public class CreatingPostsService : ICreatingPostsService
             ImageLikeCounter = 0,
             ImageHumors = new List<ImageHumor>()
         };
-
-        // Add humor relationships
         foreach (var humorTypeId in humorTypeIds.Distinct())
         {
             var humorType = await _context.HumorTypes.FindAsync(humorTypeId);

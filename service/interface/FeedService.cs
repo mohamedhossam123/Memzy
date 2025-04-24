@@ -39,6 +39,7 @@ public class FeedService : IFeedService
             .Include(v => v.VideoHumors)
             .ThenInclude(vh => vh.HumorType)
             .Where(v => v.VideoHumors.Any(vh => userHumorTypeIds.Contains(vh.HumorTypeId)))
+            .Where(v => v.IsApproved == true)
             .OrderByDescending(v => v.CreatedAt)
             .Take(3)
             .ToListAsync();
@@ -46,6 +47,7 @@ public class FeedService : IFeedService
             .Include(i => i.ImageHumors)
             .ThenInclude(ih => ih.HumorType)
             .Where(i => i.ImageHumors.Any(ih => userHumorTypeIds.Contains(ih.HumorTypeId)))
+            .Where(v => v.IsApproved == true)
             .OrderByDescending(i => i.CreatedAt)
             .Take(3)
             .ToListAsync();
@@ -61,11 +63,13 @@ public class FeedService : IFeedService
     {
         var videos = await _context.Videos
             .OrderByDescending(v => v.CreatedAt)
+            .Where(v => v.IsApproved == true)
             .Take(3)
             .ToListAsync();
 
         var images = await _context.Images
             .OrderByDescending(i => i.CreatedAt)
+            .Where(v => v.IsApproved == true)
             .Take(3)
             .ToListAsync();
 
