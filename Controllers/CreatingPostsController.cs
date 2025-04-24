@@ -1,4 +1,3 @@
-// PostingController.cs
 using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
