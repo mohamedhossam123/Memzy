@@ -49,7 +49,6 @@ public class ModeratorService : IModeratorService
         await _context.SaveChangesAsync();
         return true;
     }
-    
     public async Task<bool> RejectimageAsync(int postId, int moderatorId)
     {
         var image = await _context.Images.FindAsync(postId);

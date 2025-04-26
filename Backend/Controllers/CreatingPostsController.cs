@@ -22,7 +22,6 @@ namespace MyApiProject.Controllers
         {
             if (dto.ImageFile == null || dto.ImageFile.Length == 0)
                 return BadRequest("Image file is required");
-
             var result = await _postingService.PostImageAsync(
                 dto.ImageFile, 
                 dto.HumorTypeIds,

@@ -112,7 +112,6 @@ public class CreatingPostsService : ICreatingPostsService
                 _logger.LogError($"User with ID {userId} not found");
                 throw new KeyNotFoundException($"User with ID {userId} not found");
             }
-
             _logger.LogInformation($"Starting image upload for user {userId}");
             var uploadResult = await SaveFileAsync(imageFile, "images");
             
