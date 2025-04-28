@@ -16,7 +16,12 @@ namespace MyApiProject.Controllers
         {
             _moderatorService = moderatorService;
         }
-
+        [HttpDelete("deleteUser")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            await _moderatorService.DeleteUserAsync(id);
+            return Ok(new { Message = "User deleted successfully" });
+        }
         [HttpPost("approveImage")]
         public async Task<IActionResult> ApproveImage(int imageId,int moderatorId)
         {

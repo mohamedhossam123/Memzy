@@ -1,6 +1,8 @@
 using Memzy_finalist.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyApiProject.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,23 +10,24 @@ using System.Threading.Tasks;
 
 public interface IUserService
 {
-    Task<User> GetUserByIdAsync(int id);
-    Task<User> CreateUserAsync(User user);
-    Task<User> UpdateUserAsync(User user);
-    Task DeleteUserAsync(int id);
-    Task<User> VerifyUserAsync(string email, string password);
-    Task<User> ChangePasswordAsync(User user, string newPassword);
+    Task<User> GetUserByIdAsync(int id);/*---------------------------*/
+    Task<User> CreateUserAsync(User user);/*---------------------------*/
+    Task<User> UpdateUsernameAsync(int userid,string user);/*---------------------------*/
+    Task<User> UpdateUserPassword(int userid,string user);/*---------------------------*/
+    Task<User> UpdateUserProfilePicture(User user);/*---------------------------*/
+    Task<User> UpdateUserBio(int userid,string newBio);/*---------------------------*/
+    Task DeleteUserAsync(int id);/*---------------------------*/
+    Task<User> VerifyUserAsync(string email, string password);/*---------------------------*/
     Task<User> ForgotPasswordAsync(string email);
     Task<User> ResetPasswordAsync(User user, string newPassword);
-    Task<User> ChangeStatusAsync(User user, string newStatus);
-    Task<User> ChangeProfilePictureAsync(User user, string newProfilePictureUrl);
     Task<User> AddFriendAsync(User user, int friendId);
     Task<User> RemoveFriendAsync(User user, int friendId);
     Task<User> GetFriendsAsync(int userId);
     Task<List<FriendRequest>> GetFriendRequestsAsync(int userId);
     Task<User> AcceptFriendRequestAsync(User user, int friendId);
     Task<User> RejectFriendRequestAsync(User user, int friendId);
-    Task<User> ChangeHumorAsync(int userId, List<string> humor);
+    Task<User> ChangeHumorAsync(int userId, List<string> humor);/*---------------------------*/
+    Task<User> AddHumorAsync(int userId, List<string> humor);/*---------------------------*/
 }
 
 public class UserService : IUserService
@@ -53,11 +56,50 @@ public class UserService : IUserService
         return user;
     }
 
-    public async Task<User> UpdateUserAsync(User user)
+    public async Task<User> UpdateUsernameAsync(int userId, string newName)
+{
+    if (string.IsNullOrWhiteSpace(newName))
+        throw new ArgumentException("Name cannot be empty");
+    if (newName.Length > 100) 
+        throw new ArgumentException("Name is too long");
+
+    var user = await _context.Users.FindAsync(userId);
+    if (user == null)
+        throw new KeyNotFoundException("User not found");
+    user.Name = newName.Trim();
+    
+    await _context.SaveChangesAsync();
+    return user;
+}
+    public async Task<User> UpdateUserPassword(int userid,string user)
     {
-        _context.Users.Update(user);
-        await _context.SaveChangesAsync();
-        return user;
+        var existingUser = await _context.Users.FindAsync(userid);
+        if (existingUser != null)
+        {
+            existingUser.PasswordHash = user;
+            await _context.SaveChangesAsync();
+        }
+        return existingUser;
+    }
+    public async Task<User> UpdateUserProfilePicture(User user)
+    {
+        var existingUser = await _context.Users.FindAsync(user.UserId);
+        if (existingUser != null)
+        {
+            existingUser.ProfilePictureUrl = user.ProfilePictureUrl;
+            await _context.SaveChangesAsync();
+        }
+        return existingUser;
+    }
+    public async Task<User> UpdateUserBio(int userid,string newBio)
+    {
+        var existingUser = await _context.Users.FindAsync(userid);
+        if (existingUser != null)
+        {
+            existingUser.Bio = newBio;
+            await _context.SaveChangesAsync();
+        }
+        return existingUser;
     }
 
     public async Task DeleteUserAsync(int id)
@@ -75,12 +117,6 @@ public class UserService : IUserService
         return await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.PasswordHash == password);
     }
 
-    public async Task<User> ChangePasswordAsync(User user, string newPassword)
-    {
-        user.PasswordHash = newPassword;
-        return await UpdateUserAsync(user);
-    }
-
     public async Task<User> ForgotPasswordAsync(string email)
     {
         return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
@@ -89,19 +125,7 @@ public class UserService : IUserService
     public async Task<User> ResetPasswordAsync(User user, string newPassword)
     {
         user.PasswordHash = newPassword;
-        return await UpdateUserAsync(user);
-    }
-
-    public async Task<User> ChangeStatusAsync(User user, string newStatus)
-    {
-        user.Status = newStatus;
-        return await UpdateUserAsync(user);
-    }
-
-    public async Task<User> ChangeProfilePictureAsync(User user, string newProfilePictureUrl)
-    {
-        user.ProfilePictureUrl = newProfilePictureUrl;
-        return await UpdateUserAsync(user);
+        return await UpdateUserPassword(user.UserId, newPassword);
     }
 
     public async Task<User> AddFriendAsync(User user, int friendId)
@@ -269,4 +293,48 @@ public class UserService : IUserService
         await _context.SaveChangesAsync();
         return user;
     }
+    public async Task<User> AddHumorAsync(int userId, List<string> humor)
+    {
+        if (humor == null || !humor.Any())
+        {
+            throw new ArgumentException("At least one humor type must be specified");
+        }
+
+        var invalidTypes = humor.Except(AllowedHumorTypes).ToList();
+        if (invalidTypes.Any())
+        {
+            throw new ArgumentException(
+                $"Invalid humor types: {string.Join(", ", invalidTypes)}. " +
+                "Allowed types: DarkHumor, FriendlyHumor");
+        }
+
+        var user = await _context.Users
+            .Include(u => u.UserHumorPreferences)
+            .ThenInclude(uh => uh.HumorType)
+            .FirstOrDefaultAsync(u => u.UserId == userId)
+            ?? throw new ArgumentException("User not found");
+
+        var validHumorTypes = await _context.HumorTypes
+            .Where(ht => AllowedHumorTypes.Contains(ht.HumorTypeName))
+            .ToListAsync();
+
+        foreach (var humorTypeName in humor.Distinct())
+        {
+            var humorType = validHumorTypes.FirstOrDefault(ht => 
+                ht.HumorTypeName == humorTypeName);
+
+            if (humorType != null && !user.UserHumorPreferences.Any(uh => 
+                uh.HumorTypeId == humorType.HumorTypeId))
+            {
+                user.UserHumorPreferences.Add(new UserHumorPreference
+                {
+                    HumorTypeId = humorType.HumorTypeId
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return user;
+    }
+
 }

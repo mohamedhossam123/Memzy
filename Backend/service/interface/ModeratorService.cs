@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 public interface IModeratorService
 {
     Task<bool> ApproveimageAsync(int postId, int moderatorId);
+    Task DeleteUserAsync(int id);
     Task<bool> ApproveVideoAsync(int postId, int moderatorId);
     Task<bool> RejectimageAsync(int postId, int moderatorId);
     Task<bool> RejectvideoAsync(int postId, int moderatorId);
@@ -22,6 +23,15 @@ public interface IModeratorService
 }
 public class ModeratorService : IModeratorService
 {
+    public async Task DeleteUserAsync(int id)
+    {
+        var user = await _context.Users.FindAsync(id);
+        if (user != null)
+        {
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+        }
+    }
     private readonly MemzyContext _context;
     private readonly IWebHostEnvironment _environment;
 

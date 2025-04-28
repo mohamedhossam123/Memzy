@@ -402,3 +402,4 @@ C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\obj\Debug\net9.0\refin
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\obj\Debug\net9.0\Memzy_finalist.pdb
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\obj\Debug\net9.0\Memzy_finalist.genruntimeconfig.cache
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\obj\Debug\net9.0\ref\Memzy_finalist.dll
+C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
