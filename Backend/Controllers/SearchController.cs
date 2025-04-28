@@ -20,7 +20,7 @@ namespace MyApiProject.Controllers
         }
 
         [HttpGet("userSearch")] 
-public async Task<IActionResult> SearchUser([FromForm] string searchTerm)
+public async Task<IActionResult> SearchUser(string searchTerm)
 {
     try
     {

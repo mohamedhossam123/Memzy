@@ -52,7 +52,11 @@
           "dependencies": {
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[9.0.0, )"
+            },
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[9.0.0, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
@@ -72,17 +76,13 @@
               "target": "Package",
               "version": "[9.0.3, )"
             },
-            "Microsoft.EntityFrameworkCore.Sqlite": {
-              "target": "Package",
-              "version": "[9.0.3, )"
-            },
             "Microsoft.Extensions.Configuration": {
               "target": "Package",
-              "version": "[9.0.3, )"
+              "version": "[9.0.0, )"
             },
             "Microsoft.Extensions.Configuration.Json": {
               "target": "Package",
-              "version": "[9.0.3, )"
+              "version": "[9.0.0, )"
             },
             "MoreLinq": {
               "target": "Package",
@@ -90,19 +90,11 @@
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.1.1, )"
             },
-            "System.IdentityModel.Tokens.Jwt": {
+            "Swashbuckle.AspNetCore.Filters": {
               "target": "Package",
-              "version": "[7.0.3, )"
-            },
-            "System.Linq": {
-              "target": "Package",
-              "version": "[4.3.0, )"
-            },
-            "System.Linq.Queryable": {
-              "target": "Package",
-              "version": "[4.3.0, )"
+              "version": "[7.0.9, )"
             }
           },
           "imports": [
