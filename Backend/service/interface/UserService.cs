@@ -10,14 +10,12 @@ using System.Threading.Tasks;
 
 public interface IUserService
 {
-    Task<User> GetUserByIdAsync(int id);/*---------------------------*/
-    Task<User> CreateUserAsync(User user);/*---------------------------*/
+
     Task<User> UpdateUsernameAsync(int userid,string user);/*---------------------------*/
     Task<User> UpdateUserPassword(int userid,string user);/*---------------------------*/
     Task<User> UpdateUserProfilePicture(User user);/*---------------------------*/
     Task<User> UpdateUserBio(int userid,string newBio);/*---------------------------*/
     Task DeleteUserAsync(int id);/*---------------------------*/
-    Task<User> VerifyUserAsync(string email, string password);/*---------------------------*/
     Task<User> ForgotPasswordAsync(string email);
     Task<User> ResetPasswordAsync(User user, string newPassword);
     Task<User> AddFriendAsync(User user, int friendId);
@@ -26,8 +24,6 @@ public interface IUserService
     Task<List<FriendRequest>> GetFriendRequestsAsync(int userId);
     Task<User> AcceptFriendRequestAsync(User user, int friendId);
     Task<User> RejectFriendRequestAsync(User user, int friendId);
-    Task<User> ChangeHumorAsync(int userId, List<string> humor);/*---------------------------*/
-    Task<User> AddHumorAsync(int userId, List<string> humor);/*---------------------------*/
 }
 
 public class UserService : IUserService
@@ -44,10 +40,6 @@ public class UserService : IUserService
         _context = context;
     }
 
-    public async Task<User> GetUserByIdAsync(int id)
-    {
-        return await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
-    }
 
     public async Task<User> CreateUserAsync(User user)
     {
@@ -112,10 +104,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<User> VerifyUserAsync(string email, string password)
-    {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.PasswordHash == password);
-    }
+    
 
     public async Task<User> ForgotPasswordAsync(string email)
     {
@@ -249,92 +238,6 @@ public class UserService : IUserService
         return user;
     }
 
-    public async Task<User> ChangeHumorAsync(int userId, List<string> humor)
-    {
-        if (humor == null || !humor.Any())
-        {
-            throw new ArgumentException("At least one humor type must be specified");
-        }
 
-        var invalidTypes = humor.Except(AllowedHumorTypes).ToList();
-        if (invalidTypes.Any())
-        {
-            throw new ArgumentException(
-                $"Invalid humor types: {string.Join(", ", invalidTypes)}. " +
-                "Allowed types: DarkHumor, FriendlyHumor");
-        }
-
-        var user = await _context.Users
-            .Include(u => u.UserHumorPreferences)
-            .ThenInclude(uh => uh.HumorType)
-            .FirstOrDefaultAsync(u => u.UserId == userId)
-            ?? throw new ArgumentException("User not found");
-
-        var validHumorTypes = await _context.HumorTypes
-            .Where(ht => AllowedHumorTypes.Contains(ht.HumorTypeName))
-            .ToListAsync();
-
-        user.UserHumorPreferences.Clear();
-
-        foreach (var humorTypeName in humor.Distinct())
-        {
-            var humorType = validHumorTypes.FirstOrDefault(ht => 
-                ht.HumorTypeName == humorTypeName);
-
-            if (humorType != null)
-            {
-                user.UserHumorPreferences.Add(new UserHumorPreference
-                {
-                    HumorTypeId = humorType.HumorTypeId
-                });
-            }
-        }
-
-        await _context.SaveChangesAsync();
-        return user;
-    }
-    public async Task<User> AddHumorAsync(int userId, List<string> humor)
-    {
-        if (humor == null || !humor.Any())
-        {
-            throw new ArgumentException("At least one humor type must be specified");
-        }
-
-        var invalidTypes = humor.Except(AllowedHumorTypes).ToList();
-        if (invalidTypes.Any())
-        {
-            throw new ArgumentException(
-                $"Invalid humor types: {string.Join(", ", invalidTypes)}. " +
-                "Allowed types: DarkHumor, FriendlyHumor");
-        }
-
-        var user = await _context.Users
-            .Include(u => u.UserHumorPreferences)
-            .ThenInclude(uh => uh.HumorType)
-            .FirstOrDefaultAsync(u => u.UserId == userId)
-            ?? throw new ArgumentException("User not found");
-
-        var validHumorTypes = await _context.HumorTypes
-            .Where(ht => AllowedHumorTypes.Contains(ht.HumorTypeName))
-            .ToListAsync();
-
-        foreach (var humorTypeName in humor.Distinct())
-        {
-            var humorType = validHumorTypes.FirstOrDefault(ht => 
-                ht.HumorTypeName == humorTypeName);
-
-            if (humorType != null && !user.UserHumorPreferences.Any(uh => 
-                uh.HumorTypeId == humorType.HumorTypeId))
-            {
-                user.UserHumorPreferences.Add(new UserHumorPreference
-                {
-                    HumorTypeId = humorType.HumorTypeId
-                });
-            }
-        }
-
-        await _context.SaveChangesAsync();
-        return user;
-    }
 
 }
