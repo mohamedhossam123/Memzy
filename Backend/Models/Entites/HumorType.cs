@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Memzy_finalist.Models
+﻿namespace Memzy_finalist.Models
 {
     public partial class HumorType
     {
@@ -12,7 +10,7 @@ namespace Memzy_finalist.Models
         }
 
         public int HumorTypeId { get; set; }
-        public string HumorTypeName { get; set; }
+        public string HumorTypeName { get; set; } = null!;
 
         public virtual ICollection<UserHumorPreference> UserHumorPreferences { get; set; }
         public virtual ICollection<ImageHumor> ImageHumors { get; set; }

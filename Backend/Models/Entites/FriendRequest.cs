@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Memzy_finalist.Models
+﻿namespace Memzy_finalist.Models
 {
     public partial class FriendRequest
     {
@@ -10,7 +8,7 @@ namespace Memzy_finalist.Models
         public string Status { get; set; } = "Pending";
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public virtual User Receiver { get; set; }
-        public virtual User Sender { get; set; }
+        public virtual User Receiver { get; set; } = null!;
+        public virtual User Sender { get; set; } = null!;
     }
 }

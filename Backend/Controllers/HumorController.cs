@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+
 namespace MyApiProject.Controllers
 {
     [ApiController]
@@ -19,7 +20,6 @@ namespace MyApiProject.Controllers
         {
             _HumorService = humorservice;
             _AuthService = authService;
-            
         }
         
         [HttpPost("AddHumor")]
@@ -30,6 +30,10 @@ namespace MyApiProject.Controllers
             {
                 var userId = await _AuthService.GetAuthenticatedUserId();
                 var user = await _HumorService.AddHumorAsync(userId, humorPreferences.HumorTypes);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
                 return Ok(new { Message = "Humor preferences updated successfully", UserId = user.UserId });
             }
             catch (UnauthorizedAccessException ex)
@@ -40,9 +44,12 @@ namespace MyApiProject.Controllers
             {
                 return BadRequest(ex.Message);
             }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
         
-
         [HttpPut("ChangeHumor")]
         [Authorize]
         public async Task<IActionResult> ChangeHumor([FromBody] HumorPreferencesDto humorPreferences)
@@ -51,6 +58,10 @@ namespace MyApiProject.Controllers
             {
                 var userId = await _AuthService.GetAuthenticatedUserId();
                 var user = await _HumorService.ChangeHumorAsync(userId, humorPreferences.HumorTypes);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
                 return Ok(new { Message = "Humor preferences updated successfully", UserId = user.UserId });
             }
             catch (UnauthorizedAccessException ex)
@@ -61,10 +72,15 @@ namespace MyApiProject.Controllers
             {
                 return BadRequest(ex.Message);
             }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
+    }
+    
     public class HumorPreferencesDto
     {
-        public List<string> HumorTypes { get; set; }
+        public List<string> HumorTypes { get; set; } = new List<string>();
     }
-}
 }

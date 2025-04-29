@@ -2,16 +2,15 @@ using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
-using BCrypt.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 public interface IAuthenticationService
 {
-    Task<User> GetUserByIdAsync(int id);
+    Task<User?> GetUserByIdAsync(int id);
     Task<User> CreateUserAsync(User user);
-    Task<User> VerifyUserAsync(string email, string password);
+    Task<User?> VerifyUserAsync(string email, string password);
     Task<int> GetAuthenticatedUserId();  
 }
 
@@ -29,6 +28,7 @@ public class AuthenticationService : IAuthenticationService
     public async Task<int> GetAuthenticatedUserId()
     {
         var httpContext = _httpContextAccessor.HttpContext;
+        await Task.Delay(0); 
         if (httpContext == null)
             throw new UnauthorizedAccessException("No HTTP context available");
             
@@ -39,7 +39,7 @@ public class AuthenticationService : IAuthenticationService
         return userId; 
     }
 
-    public async Task<User> GetUserByIdAsync(int id)
+    public async Task<User?> GetUserByIdAsync(int id)
     {
         return await _context.Users.FindAsync(id);
     }
@@ -51,13 +51,13 @@ public class AuthenticationService : IAuthenticationService
         return user;
     }
 
-    public async Task<User> VerifyUserAsync(string email, string password)
+    public async Task<User?> VerifyUserAsync(string email, string password)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null)
             return null;
         if(password == user.PasswordHash)
             return user;
-        return  null;
+        return null;
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Memzy_finalist.Models
+﻿namespace Memzy_finalist.Models
 {
     public partial class Friend
     {
@@ -10,7 +8,7 @@ namespace Memzy_finalist.Models
         public bool CanMessage { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public virtual User User1 { get; set; }
-        public virtual User User2 { get; set; }
+        public virtual User User1 { get; set; } = null!;
+        public virtual User User2 { get; set; } = null!;
     }
 }

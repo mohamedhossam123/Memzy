@@ -16,10 +16,8 @@
     <Product>Memzy_finalist</Product>
     <Title>Memzy_finalist</Title>
   </PropertyGroup>
-
   <ItemGroup>
     <!-- Core ASP.NET + EF -->
-    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="9.0.3" />
@@ -39,9 +37,6 @@
 
     <!-- Optional / Other Utilities -->
     <PackageReference Include="MoreLinq" Version="4.4.0" />
-
-    <!-- For JWT (no manual System.IdentityModel.Tokens.Jwt anymore) -->
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
   </ItemGroup>
 
 </Project>

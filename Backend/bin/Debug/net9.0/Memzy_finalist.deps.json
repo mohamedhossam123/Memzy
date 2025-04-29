@@ -19,7 +19,8 @@
           "Microsoft.Extensions.Configuration.Json": "9.0.0",
           "morelinq": "4.4.0",
           "Swashbuckle.AspNetCore": "8.1.1",
-          "Swashbuckle.AspNetCore.Filters": "7.0.9"
+          "Swashbuckle.AspNetCore.Filters": "7.0.9",
+          "System.IdentityModel.Tokens.Jwt": "8.0.1"
         },
         "runtime": {
           "Memzy_finalist.dll": {}

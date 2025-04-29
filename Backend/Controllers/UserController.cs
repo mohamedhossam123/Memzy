@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace MyApiProject.Controllers
 {
-
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
@@ -80,7 +79,11 @@ namespace MyApiProject.Controllers
             try
             {
                 var userId = await _authService.GetAuthenticatedUserId();
-                await _userService.UpdateUserPassword(userId, newPassword);
+                var user = await _userService.UpdateUserPassword(userId, newPassword);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
                 return Ok(new { Message = "User password updated successfully" });
             }
             catch (UnauthorizedAccessException ex)
@@ -108,7 +111,11 @@ namespace MyApiProject.Controllers
             try
             {
                 var userId = await _authService.GetAuthenticatedUserId();
-                await _userService.UpdateUserBio(userId, newBio);
+                var user = await _userService.UpdateUserBio(userId, newBio);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
                 return Ok(new { Message = "User bio updated successfully" });
             }
             catch (UnauthorizedAccessException ex)
@@ -132,19 +139,16 @@ namespace MyApiProject.Controllers
 
     public class UserCreateDto
     {
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 
     public class LoginDto
     {
-        public string Email { get; set; }
-        public string Password { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 
-    public class HumorPreferencesDto
-    {
-        public List<string> HumorTypes { get; set; }
-    }
+
 }
