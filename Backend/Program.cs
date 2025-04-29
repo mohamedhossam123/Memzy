@@ -11,6 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Register services
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IModeratorService, ModeratorService>();
+builder.Services.AddScoped<IHumorService, HumorService>();
+builder.Services.AddScoped<IFeedService, FeedService>();
+builder.Services.AddScoped<ICreatingPostsService, CreatingPostsService>();
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -19,6 +26,13 @@ builder.Services.AddDbContext<MemzyContext>(options =>
 
 // Add controllers
 builder.Services.AddControllers();
+
+// Configure Exception Handling
+builder.Services.AddExceptionHandler(options => 
+{
+    options.ExceptionHandlingPath = "/error";
+});
+builder.Services.AddProblemDetails();
 
 // Configure Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -36,23 +50,24 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
-
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+// Build the application
 var app = builder.Build();
 
 // Use CORS
 app.UseCors("AllowAll");
-
-// Enable Swagger UI
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Memzy API v1");
 });
 
-// No Authentication/Authorization Middleware here
-
-// Map controllers
+// Configure the exception handler middleware
+app.UseExceptionHandler();
+app.UseHttpsRedirection();
+app.UseRouting();
+app.UseAuthorization();
 app.MapControllers();
 
-// Run the app
 app.Run();

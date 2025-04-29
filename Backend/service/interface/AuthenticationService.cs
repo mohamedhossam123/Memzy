@@ -55,9 +55,9 @@ public class AuthenticationService : IAuthenticationService
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null)
-            return null;
+            throw new UnauthorizedAccessException("User not found");
         if(password == user.PasswordHash)
             return user;
-        return null;
+        throw new UnauthorizedAccessException("Invalid password");
     }
 }

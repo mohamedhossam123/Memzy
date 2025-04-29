@@ -22,6 +22,7 @@ namespace MyApiProject.Controllers
         [HttpPost("signup")]
 public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
 {
+    
     if (_authService == null) 
         return StatusCode(500, "Authentication service unavailable");
 
@@ -39,6 +40,9 @@ public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
             PasswordHash = dto.Password, 
             CreatedAt = DateTime.UtcNow
         };
+        var existingUser = await _authService.VerifyUserAsync(dto.Email, "anypassword");
+        if (existingUser != null)
+            return BadRequest("Email already registered");
         var createdUser = await _authService.CreateUserAsync(user);
         if (createdUser.UserId == 0) 
             return StatusCode(500, "Failed to create user");
@@ -81,9 +85,7 @@ public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
                 return BadRequest(ex.Message);
             }
         }
-
-
-
-
 }
+
+
 }
