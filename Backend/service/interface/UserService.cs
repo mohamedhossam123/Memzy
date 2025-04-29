@@ -11,12 +11,12 @@ using System.Threading.Tasks;
 public interface IUserService
 {
     Task<User> UpdateUsernameAsync(int userid, string user);
-    Task<User?> UpdateUserPassword(int userid, string user);
-    Task<User?> UpdateUserProfilePicture(User user);
-    Task<User?> UpdateUserBio(int userid, string newBio);
+    Task<User> UpdateUserPassword(int userid, string user);
+    Task<User> UpdateUserProfilePicture(User user);
+    Task<User> UpdateUserBio(int userid, string newBio);
     Task DeleteUserAsync(int id);
-    Task<User?> ForgotPasswordAsync(string email);
-    Task<User?> ResetPasswordAsync(User user, string newPassword);
+    Task<User> ForgotPasswordAsync(string email);
+    Task<User> ResetPasswordAsync(User user, string newPassword);
     Task<User> AddFriendAsync(User user, int friendId);
     Task<User> RemoveFriendAsync(User user, int friendId);
     Task<User> GetFriendsAsync(int userId);
@@ -62,7 +62,7 @@ public class UserService : IUserService
         return user;
     }
 
-    public async Task<User?> UpdateUserPassword(int userid, string user)
+    public async Task<User> UpdateUserPassword(int userid, string user)
     {
         var existingUser = await _context.Users.FindAsync(userid);
         if (existingUser != null)
@@ -73,7 +73,7 @@ public class UserService : IUserService
         return existingUser;
     }
 
-    public async Task<User?> UpdateUserProfilePicture(User user)
+    public async Task<User> UpdateUserProfilePicture(User user)
     {
         var existingUser = await _context.Users.FindAsync(user.UserId);
         if (existingUser != null)
@@ -84,7 +84,7 @@ public class UserService : IUserService
         return existingUser;
     }
 
-    public async Task<User?> UpdateUserBio(int userid, string newBio)
+    public async Task<User> UpdateUserBio(int userid, string newBio)
     {
         var existingUser = await _context.Users.FindAsync(userid);
         if (existingUser != null)
@@ -105,12 +105,12 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<User?> ForgotPasswordAsync(string email)
+    public async Task<User> ForgotPasswordAsync(string email)
     {
         return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
-    public async Task<User?> ResetPasswordAsync(User user, string newPassword)
+    public async Task<User> ResetPasswordAsync(User user, string newPassword)
     {
         user.PasswordHash = newPassword;
         return await UpdateUserPassword(user.UserId, newPassword);

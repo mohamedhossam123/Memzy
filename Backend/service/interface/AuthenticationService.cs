@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Http.HttpResults;
 
 public interface IAuthenticationService
 {
-    Task<User?> GetUserByIdAsync(int id);
+    Task<User> GetUserByIdAsync(int id);
     Task<User> CreateUserAsync(User user);
-    Task<User?> VerifyUserAsync(string email, string password);
+    Task<User> VerifyUserAsync(string email, string password);
     Task<int> GetAuthenticatedUserId();  
 }
 
@@ -39,7 +39,7 @@ public class AuthenticationService : IAuthenticationService
         return userId; 
     }
 
-    public async Task<User?> GetUserByIdAsync(int id)
+    public async Task<User> GetUserByIdAsync(int id)
     {
         return await _context.Users.FindAsync(id);
     }
@@ -51,7 +51,7 @@ public class AuthenticationService : IAuthenticationService
         return user;
     }
 
-    public async Task<User?> VerifyUserAsync(string email, string password)
+    public async Task<User> VerifyUserAsync(string email, string password)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null)

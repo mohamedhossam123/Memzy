@@ -20,31 +20,37 @@ namespace MyApiProject.Controllers
         }
 
         [HttpPost("signup")]
-        public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(dto.Email)) 
-                    return BadRequest("Email is required");
-                if (string.IsNullOrWhiteSpace(dto.Password))
-                    return BadRequest("Password is required");
-                
-                var user = new User
-                {
-                    Name = dto.Name,
-                    Email = dto.Email,
-                    PasswordHash = dto.Password,
-                    CreatedAt = DateTime.UtcNow
-                };
+public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
+{
+    if (_authService == null) 
+        return StatusCode(500, "Authentication service unavailable");
 
-                var createdUser = await _authService.CreateUserAsync(user);
-                return CreatedAtAction(nameof(GetUser), new { id = createdUser.UserId }, createdUser);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+    try
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email)) 
+            return BadRequest("Email is required");
+        if (string.IsNullOrWhiteSpace(dto.Password))
+            return BadRequest("Password is required");
+        
+        var user = new User
+        {
+            Name = dto.Name,
+            Email = dto.Email,
+            PasswordHash = dto.Password, 
+            CreatedAt = DateTime.UtcNow
+        };
+        var createdUser = await _authService.CreateUserAsync(user);
+        if (createdUser.UserId == 0) 
+            return StatusCode(500, "Failed to create user");
+        
+        return CreatedAtAction(nameof(GetUser), new { id = createdUser.UserId }, createdUser);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"SIGNUP ERROR: {ex}");
+        return StatusCode(500, ex.Message);
+    }
+}
 
         [HttpGet("GetUserByID")]
         public async Task<IActionResult> GetUser(int id)

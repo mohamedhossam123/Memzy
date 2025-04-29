@@ -213,7 +213,6 @@ C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Azure
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Azure.Identity.dll
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Castle.Core.dll
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Humanizer.dll
-C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Microsoft.AspNetCore.OpenApi.dll
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Microsoft.Bcl.AsyncInterfaces.dll
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Microsoft.Build.Locator.dll
@@ -375,4 +374,3 @@ C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\obj\Debug\net9.0\ref\M
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Scrutor.dll
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Swashbuckle.AspNetCore.Filters.dll
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
-C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\BCrypt.Net-Next.dll

@@ -1,13 +1,22 @@
-import './globals.css';
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata: Metadata = {
+  title: 'Memzy - Share Your Moments',
+  description: 'A social media platform for sharing memories',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en">
-      <body>
-        <header>{/* Navbar goes here later */}</header>
-        <main>{children}</main> {/* Pages inject here */}
-        <footer>{/* Footer goes here later */}</footer>
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
-  );
+  )
 }

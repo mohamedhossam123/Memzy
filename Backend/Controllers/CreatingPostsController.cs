@@ -103,14 +103,14 @@ namespace MyApiProject.Controllers
     public class ImageUploadDto
     {
         public IFormFile ImageFile { get; set; } = null!;
-        public string? Description { get; set; }
-        public List<int>? HumorTypeIds { get; set; }
+        public string Description { get; set; }
+        public List<int> HumorTypeIds { get; set; }
     }
 
     public class VideoUploadDto
     {
         public IFormFile VideoFile { get; set; } = null!;
-        public string? Description { get; set; }
-        public List<int>? HumorTypeIds { get; set; }
+        public string Description { get; set; }
+        public List<int> HumorTypeIds { get; set; }
     }
 }

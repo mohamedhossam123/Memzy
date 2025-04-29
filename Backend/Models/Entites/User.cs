@@ -20,8 +20,8 @@ namespace Memzy_finalist.Models
         public int UserId { get; set; }
         public string Name { get; set; } = null!;
         public string Email { get; set; } = null!;
-        public string? ProfilePictureUrl { get; set; }
-        public string? Bio { get; set; }
+        public string ProfilePictureUrl { get; set; }
+        public string Bio { get; set; }
         public string PasswordHash { get; set; } = null!;
         public string Status { get; set; } = "normal";
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

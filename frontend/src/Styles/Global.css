@@ -1,0 +1,25 @@
+/* src/styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --glass: rgba(255, 255, 255, 0.1);
+    --glass-dark: rgba(0, 0, 0, 0.3);
+    --accent-glow: rgba(197, 108, 240, 0.3);
+  }
+
+  body {
+    @apply bg-gradient-to-br from-darker to-primary-dark text-light min-h-screen;
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* Animations */
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(40px, 40px); }
+  }
+}
