@@ -77,7 +77,6 @@ public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
         var user = await _authService.VerifyUserAsync(dto.Email, dto.Password);
         if (user == null)
             return Unauthorized("Invalid credentials");
-
         var token = _authService.GenerateJwtToken(user);
         return Ok(new { Token = token });
     }
