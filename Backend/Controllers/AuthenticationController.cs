@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 namespace MyApiProject.Controllers
 {
@@ -64,24 +67,26 @@ public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(dto.Email)) 
-                    return BadRequest("Email is required");
-                if (string.IsNullOrWhiteSpace(dto.Password))
-                    return BadRequest("Password is required");
+        try
+        {
+        if (string.IsNullOrWhiteSpace(dto.Email))
+            return BadRequest("Email is required");
+        if (string.IsNullOrWhiteSpace(dto.Password))
+            return BadRequest("Password is required");
 
-                var user = await _authService.VerifyUserAsync(dto.Email, dto.Password);
-                if (user == null)
-                    return Unauthorized("Invalid credentials");
+        var user = await _authService.VerifyUserAsync(dto.Email, dto.Password);
+        if (user == null)
+            return Unauthorized("Invalid credentials");
 
-                return Ok("Login successful");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        var token = _authService.GenerateJwtToken(user);
+        return Ok(new { Token = token });
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(ex.Message);
+    }
+}
+
 }
 
 

@@ -25,7 +25,7 @@ namespace MyApiProject.Controllers
         }
         
         [HttpDelete("DeleteUser")]
-        [Authorize(Roles = "Moderator")] 
+        [Authorize] 
         public async Task<IActionResult> DeleteUser(int id)
         {
             try

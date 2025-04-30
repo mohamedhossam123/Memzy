@@ -1,4 +1,5 @@
 using Memzy_finalist.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace MyApiProject.Controllers
         }
 
         [HttpPost("image")]
+        [Authorize]
         public async Task<IActionResult> CreatePostingImage([FromForm] ImageUploadDto dto)
         {
             try
@@ -60,6 +62,7 @@ namespace MyApiProject.Controllers
         }
 
         [HttpPost("video")]
+        [Authorize]
         public async Task<IActionResult> CreatePostVideo([FromForm] VideoUploadDto dto)
         {
             try

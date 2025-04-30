@@ -1,6 +1,7 @@
 using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyApiProject.Controllers
 {
@@ -18,6 +19,7 @@ namespace MyApiProject.Controllers
             }
 
         [HttpPost("GetFirst3postsOfImagesAndVideosBasedOnHumor")]
+        [Authorize]
         public async Task<IActionResult> FeedGeneratorBasedOnHumor()
         {
             var userId =  await _authService.GetAuthenticatedUserId();
@@ -27,7 +29,6 @@ namespace MyApiProject.Controllers
         [HttpPost("GetFirst3postsOfImagesAndVideosEverythingGoes")]
         public async Task<IActionResult> GetvideoAsyncEverythingGoes()
         {
-            var userId =  await _authService.GetAuthenticatedUserId();
             var result = await _feedService.FeedGeneratorEverythingGoes();
             return Ok(result);
         }

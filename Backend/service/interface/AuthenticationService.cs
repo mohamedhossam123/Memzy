@@ -5,6 +5,9 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.HttpResults;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 public interface IAuthenticationService
 {
@@ -12,17 +15,41 @@ public interface IAuthenticationService
     Task<User> CreateUserAsync(User user);
     Task<User> VerifyUserAsync(string email, string password);
     Task<int> GetAuthenticatedUserId();  
+    Task <string> GenerateJwtToken(User user);
 }
 
 public class AuthenticationService : IAuthenticationService
 {
+private readonly IConfiguration _configuration;
     private readonly MemzyContext _context;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public AuthenticationService(MemzyContext context, IHttpContextAccessor httpContextAccessor)
+    public AuthenticationService(MemzyContext context, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
     {
+        _configuration = configuration;
         _context = context;
         _httpContextAccessor = httpContextAccessor;
+    }
+    public async Task<string> GenerateJwtToken(User user)
+    {
+        var securityKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+        await Task.Delay(0); 
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+        };
+
+        var token = new JwtSecurityToken(
+            _configuration["Jwt:Issuer"],
+            _configuration["Jwt:Audience"],
+            claims,
+            expires: DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpiryInMinutes"])),
+            signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     public async Task<int> GetAuthenticatedUserId()
@@ -54,10 +81,8 @@ public class AuthenticationService : IAuthenticationService
     public async Task<User> VerifyUserAsync(string email, string password)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        if (user == null)
-            throw new UnauthorizedAccessException("User not found");
-        if(password == user.PasswordHash)
-            return user;
-        throw new UnauthorizedAccessException("Invalid password");
+        if (user == null || password != user.PasswordHash)
+            return null;
+        return user;
     }
 }
