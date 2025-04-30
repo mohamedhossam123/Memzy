@@ -23,9 +23,6 @@ namespace MyApiProject.Controllers
 public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
 {
     
-    if (_authService == null) 
-        return StatusCode(500, "Authentication service unavailable");
-
     try
     {
         if (string.IsNullOrWhiteSpace(dto.Email)) 

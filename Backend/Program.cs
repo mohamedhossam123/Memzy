@@ -9,7 +9,9 @@ using Swashbuckle.AspNetCore.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register services
+
+
+
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
@@ -24,24 +26,22 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<MemzyContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Add controllers
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddControllers();
 
-// Configure Exception Handling
 builder.Services.AddExceptionHandler(options => 
 {
     options.ExceptionHandlingPath = "/error";
 });
 builder.Services.AddProblemDetails();
 
-// Configure Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Memzy API", Version = "v1" });
 });
 
-// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
