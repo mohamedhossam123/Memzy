@@ -41,41 +41,37 @@ namespace MyApiProject.Controllers
                 return BadRequest(ex.Message);
             }
         }
-//         [HttpPost("UpdateProfilePicture")]
-// [Authorize]
-// public async Task<IActionResult> UploadProfilePicture([FromForm] IFormFile file)
-// {
-//     try
-//     {
-//         var userId = await _authService.GetAuthenticatedUserId();
-//         if (file == null || file.Length == 0)
-//             return BadRequest("File is required");
+[HttpPost("UpdateProfilePicture")]
+[Authorize]
+public async Task<IActionResult> UploadProfilePicture([FromForm] profilePictureDto dto)
+{
+    try
+    {
+        var userId = await _authService.GetAuthenticatedUserId();
+        if (dto.ProfilePicture == null || dto.ProfilePicture.Length == 0)
+            return BadRequest("Profile picture is required");
 
-//         var success = await _userService.UploadProfilePictureAsync(userId, file);
-//         if (!success)
-//         {
-//             return NotFound("User not found");
-//         }
-
-//         return Ok(new { Message = "Profile picture updated successfully" });
-//     }
-//     catch (UnauthorizedAccessException ex)
-//     {
-//         return Unauthorized(ex.Message);
-//     }
-//     catch (ArgumentException ex)
-//     {
-//         return BadRequest(ex.Message);
-//     }
-//     catch (KeyNotFoundException ex)
-//     {
-//         return NotFound(ex.Message);
-//     }
-//     catch (Exception ex)
-//     {
-//         return StatusCode(500, $"An error occurred: {ex.Message}");
-//     }
-// }
+        var filePath = await _userService.UploadProfilePictureAsync(dto.ProfilePicture, userId, _environment.WebRootPath);
+        
+        return Ok(new { FilePath = filePath, Message = "Profile picture uploaded successfully" });
+    }
+    catch (UnauthorizedAccessException ex)
+    {
+        return Unauthorized(ex.Message);
+    }
+    catch (ArgumentException ex)
+    {
+        return BadRequest(ex.Message);
+    }
+    catch (KeyNotFoundException ex)
+    {
+        return NotFound(ex.Message);
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, $"An error occurred: {ex.Message}");
+    }
+}
 
         [HttpPut("UpdateName")]
         [Authorize]
@@ -187,6 +183,9 @@ namespace MyApiProject.Controllers
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
     }
-
+    public class profilePictureDto
+    {
+        public IFormFile ProfilePicture { get; set; } = null!;
+    }
 
 }
