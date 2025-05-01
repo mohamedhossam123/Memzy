@@ -112,7 +112,22 @@ namespace Memzy_finalist.Models
                 .IsUnique();
 
             OnModelCreatingPartial(modelBuilder);
+            modelBuilder.Entity<UserHumorPreference>(entity =>
+{
+    entity.HasKey(uhp => new { uhp.UserId, uhp.HumorTypeId });
+
+    entity.HasOne(uhp => uhp.User)
+        .WithMany(u => u.UserHumorPreferences)
+        .HasForeignKey(uhp => uhp.UserId)
+        .OnDelete(DeleteBehavior.Cascade); // Explicit delete behavior
+
+    entity.HasOne(uhp => uhp.HumorType)
+        .WithMany(ht => ht.UserHumorPreferences)
+        .HasForeignKey(uhp => uhp.HumorTypeId)
+        .OnDelete(DeleteBehavior.Cascade);
+});
         }
+        
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
     }

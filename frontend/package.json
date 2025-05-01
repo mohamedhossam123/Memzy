@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "@types/node": "22.15.3",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "autoprefixer": "^10.4.21",
@@ -29,7 +30,10 @@
     "update-browserslist-db": "^1.1.3"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "repository": "git+https://github.com/mohamedhossam123/Memzy.git",
   "keywords": [],

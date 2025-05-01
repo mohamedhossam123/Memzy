@@ -14,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 
+builder.WebHost.UseWebRoot("wwwroot");
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
@@ -68,13 +69,14 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Memzy API", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
+{
+    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+    Name = "Authorization",
+    In = ParameterLocation.Header,
+    Type = SecuritySchemeType.Http, // ← CHANGE FROM ApiKey TO Http
+    Scheme = "Bearer",
+    BearerFormat = "JWT" // ← ADD THIS
+});
     
     c.AddSecurityRequirement(new OpenApiSecurityRequirement()
     {
@@ -120,8 +122,11 @@ app.UseSwaggerUI(c =>
 
 // Configure the exception handler middleware
 app.UseExceptionHandler();
+
 app.UseHttpsRedirection();
+
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

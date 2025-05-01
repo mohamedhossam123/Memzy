@@ -33,7 +33,7 @@ namespace Memzy_finalist.Models
         public virtual ICollection<Image> Images { get; set; }
         public virtual ICollection<Message> MessagesSent { get; set; }
         public virtual ICollection<Message> MessagesReceived { get; set; }
-        public virtual ICollection<UserHumorPreference> UserHumorPreferences { get; set; }
+        public virtual ICollection<UserHumorPreference> UserHumorPreferences { get; set; } = new List<UserHumorPreference>();
         public virtual ICollection<Video> Videos { get; set; }
     }
 }

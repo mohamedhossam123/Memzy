@@ -1,13 +1,14 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { AuthProvider } from '@/context/AuthContext'
+import {Header} from "@/Components/Header/Header"
+import { Sidebar } from '@/Components/Sidebar/IndexSidebar'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Memzy - Share Your Moments',
-  description: 'A social media platform for sharing memories',
+  title: 'Memzy',
+  description: 'Live ,Laugh, die',
 }
 
 export default function RootLayout({
@@ -18,13 +19,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-        <div className="bg-effects">
-          <div className="bg-circle"></div>
-          <div className="bg-circle"></div>
-          <div className="bg-circle"></div>
+        <div className="grid grid-cols-1 lg:grid-cols-[250px_1fr] min-h-screen bg-glass text-light">
+          <Header />
+          
+          <main className="col-span-full lg:col-span-1 p-4">{children}</main>
+          <Sidebar />
         </div>
       </body>
     </html>

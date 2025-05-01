@@ -1,12 +1,20 @@
 {
   "Version": 1,
-  "Hash": "ymuLeAL2xDzCOtCFqjTerBuuPOWw6C4M8NhU7PJDi8g=",
+  "Hash": "meFKZxVRJOJOtJQjyNHAD2c2uzHT2L9vCdlZrDojW9E=",
   "Source": "Memzy_finalist",
   "BasePath": "_content/Memzy_finalist",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "Memzy_finalist\\wwwroot",
+      "Source": "Memzy_finalist",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\",
+      "BasePath": "_content/Memzy_finalist",
+      "Pattern": "**"
+    }
+  ],
   "Assets": [],
   "Endpoints": []
 }

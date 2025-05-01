@@ -375,3 +375,4 @@ C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Scrut
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Swashbuckle.AspNetCore.Filters.dll
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Memzy_finalist.staticwebassets.runtime.json

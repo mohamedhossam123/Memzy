@@ -2,7 +2,6 @@
 {
     public partial class UserHumorPreference
     {
-        public int UserHumorPreferenceId { get; set; }
         public int UserId { get; set; }
         public int HumorTypeId { get; set; }
 

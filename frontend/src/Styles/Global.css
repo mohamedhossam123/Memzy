@@ -858,3 +858,86 @@ h1, h2, h3 {
     padding: 1.5rem;
   }
 }
+/* Login Page Specific Styles */
+.auth-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  overflow: hidden;
+}
+
+.error-message {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.5rem 0 1rem;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--gray-300);
+  cursor: pointer;
+}
+
+.remember-me input {
+  accent-color: var(--accent);
+}
+
+.forgot-password {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--gray-300);
+  font-size: 0.95rem;
+}
+
+.auth-footer a {
+  color: var(--accent);
+  margin-left: 0.5rem;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-card {
+  animation: slideUp 0.5s ease-out;
+}

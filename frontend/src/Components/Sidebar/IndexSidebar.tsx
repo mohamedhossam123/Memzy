@@ -49,7 +49,7 @@ export function Sidebar() {
         <h2>Account</h2>
         <ul className="nav-links">
           <li className="nav-link">
-            <Link href="/logout">
+            <Link href="Auth/login">
               <span className="nav-link-icon">🚪</span>
               <span>Logout</span>
             </Link>

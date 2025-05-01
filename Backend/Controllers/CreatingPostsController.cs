@@ -40,7 +40,7 @@ namespace MyApiProject.Controllers
                 {
                     ImageId = result.ImageId,
                     FilePath = result.FilePath,
-                    Message = "Image posted successfully"
+                    Message = "Image posted successfully,Waiting for admin approval"
                 });
             }
             catch (UnauthorizedAccessException ex)
@@ -81,7 +81,7 @@ namespace MyApiProject.Controllers
                 {
                     VideoId = result.VideoId,
                     FilePath = result.FilePath,
-                    Message = "Video posted successfully"
+                    Message = "Video posted successfully,Waiting for admin approval"
                 });
             }
             catch (UnauthorizedAccessException ex)
