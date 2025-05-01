@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Memzy_finalist.Models
 {
@@ -15,7 +13,6 @@ namespace Memzy_finalist.Models
         public virtual DbSet<Image> Images { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<UserHumorPreference> UserHumorPreferences { get; set; }
         public virtual DbSet<Video> Videos { get; set; }
         public virtual DbSet<ImageHumor> ImageHumors { get; set; }
         public virtual DbSet<VideoHumor> VideoHumors { get; set; }
@@ -32,57 +29,58 @@ namespace Memzy_finalist.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Friend>(entity =>
-    {
-        entity.HasKey(e => e.FriendshipId);
-
-        entity.HasOne(d => d.User1)
-            .WithMany(p => p.FriendsAsUser1)
-            .HasForeignKey(d => d.User1Id)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        entity.HasOne(d => d.User2)
-            .WithMany(p => p.FriendsAsUser2)
-            .HasForeignKey(d => d.User2Id)
-            .OnDelete(DeleteBehavior.NoAction);
-    });
+            {
+                entity.HasKey(e => e.FriendshipId);
+                entity.HasOne(d => d.User1)
+                    .WithMany(p => p.FriendsAsUser1)
+                    .HasForeignKey(d => d.User1Id)
+                    .OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(d => d.User2)
+                    .WithMany(p => p.FriendsAsUser2)
+                    .HasForeignKey(d => d.User2Id)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+            
             modelBuilder.Entity<Message>(entity =>
-    {
-        entity.HasKey(e => e.MessageId);
-        entity.HasOne(m => m.Sender)
-            .WithMany(u => u.MessagesSent)
-            .HasForeignKey(m => m.SenderId)
-            .OnDelete(DeleteBehavior.Restrict);
-        entity.HasOne(m => m.Receiver)
-            .WithMany(u => u.MessagesReceived)
-            .HasForeignKey(m => m.ReceiverId)
-            .OnDelete(DeleteBehavior.Restrict);
-    });
+            {
+                entity.HasKey(e => e.MessageId);
+                entity.HasOne(m => m.Sender)
+                    .WithMany(u => u.MessagesSent)
+                    .HasForeignKey(m => m.SenderId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(m => m.Receiver)
+                    .WithMany(u => u.MessagesReceived)
+                    .HasForeignKey(m => m.ReceiverId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+            
             modelBuilder.Entity<FriendRequest>(entity =>
-    {
-        entity.HasKey(e => e.RequestId);
-
-        entity.HasOne(d => d.Sender)
-            .WithMany(p => p.FriendRequestsSent)
-            .HasForeignKey(d => d.SenderId)
-            .OnDelete(DeleteBehavior.NoAction); 
-
-        entity.HasOne(d => d.Receiver)
-            .WithMany(p => p.FriendRequestsReceived)
-            .HasForeignKey(d => d.ReceiverId)
-            .OnDelete(DeleteBehavior.NoAction);
-    });
+            {
+                entity.HasKey(e => e.RequestId);
+                entity.HasOne(d => d.Sender)
+                    .WithMany(p => p.FriendRequestsSent)
+                    .HasForeignKey(d => d.SenderId)
+                    .OnDelete(DeleteBehavior.NoAction); 
+                entity.HasOne(d => d.Receiver)
+                    .WithMany(p => p.FriendRequestsReceived)
+                    .HasForeignKey(d => d.ReceiverId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+            
             modelBuilder.Entity<Image>(entity =>
             {
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.Images)
                     .HasForeignKey(d => d.UserId);
             });
+            
             modelBuilder.Entity<Video>(entity =>
             {
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.Videos)
                     .HasForeignKey(d => d.UserId);
             });
+            
             modelBuilder.Entity<ImageHumor>(entity =>
             {
                 entity.HasOne(ih => ih.Image)
@@ -111,24 +109,16 @@ namespace Memzy_finalist.Models
                 .HasIndex(ht => ht.HumorTypeName)
                 .IsUnique();
 
+            // Add the relationship between User and HumorType
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.HumorType)
+                .WithMany()
+                .HasForeignKey(u => u.HumorTypeId)
+                .OnDelete(DeleteBehavior.SetNull); // Set null on delete
+
             OnModelCreatingPartial(modelBuilder);
-            modelBuilder.Entity<UserHumorPreference>(entity =>
-{
-    entity.HasKey(uhp => new { uhp.UserId, uhp.HumorTypeId });
-
-    entity.HasOne(uhp => uhp.User)
-        .WithMany(u => u.UserHumorPreferences)
-        .HasForeignKey(uhp => uhp.UserId)
-        .OnDelete(DeleteBehavior.Cascade); // Explicit delete behavior
-
-    entity.HasOne(uhp => uhp.HumorType)
-        .WithMany(ht => ht.UserHumorPreferences)
-        .HasForeignKey(uhp => uhp.HumorTypeId)
-        .OnDelete(DeleteBehavior.Cascade);
-});
         }
         
-
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
     }
 }

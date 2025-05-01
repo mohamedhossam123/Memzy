@@ -15,6 +15,7 @@ public interface IUserService
     Task<User> UpdateUserProfilePicture(User user);
     Task<User> UpdateUserBio(int userid, string newBio);
     Task DeleteUserAsync(int id);
+
     Task<User> ForgotPasswordAsync(string email);
     Task<User> ResetPasswordAsync(User user, string newPassword);
     Task<User> AddFriendAsync(User user, int friendId);
@@ -23,20 +24,23 @@ public interface IUserService
     Task<List<FriendRequest>> GetFriendRequestsAsync(int userId);
     Task<User> AcceptFriendRequestAsync(User user, int friendId);
     Task<User> RejectFriendRequestAsync(User user, int friendId);
+    Task<bool> UploadProfilePictureAsync(int userId, IFormFile file);
 }
 
 public class UserService : IUserService
 {
     private readonly MemzyContext _context;
+    private readonly IWebHostEnvironment _environment;
     private static readonly List<string> AllowedHumorTypes = new List<string> 
     { 
         "DarkHumor", 
         "FriendlyHumor" 
     };
 
-    public UserService(MemzyContext context)
+    public UserService(MemzyContext context, IWebHostEnvironment environment)
     {
-        _context = context;
+        _environment = environment ?? throw new ArgumentNullException(nameof(environment));
+        _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
     public async Task<User> CreateUserAsync(User user)
@@ -236,4 +240,26 @@ public class UserService : IUserService
         }
         return user;
     }
+    public async Task<bool> UploadProfilePictureAsync(int userId, IFormFile file)
+{
+    var user = await _context.Users.FindAsync(userId);
+    if (user == null || file == null) return false;
+
+    var directoryPath = Path.Combine(_environment.WebRootPath, "uploads", "profile_pictures");
+    if (!Directory.Exists(directoryPath))
+    {
+        Directory.CreateDirectory(directoryPath);
+    }
+    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+    var filePath = Path.Combine(directoryPath, fileName);
+    using (var stream = new FileStream(filePath, FileMode.Create))
+    {
+        await file.CopyToAsync(stream);
+    }
+    user.ProfilePictureUrl = Path.Combine("uploads", "profile_pictures", fileName);
+    await _context.SaveChangesAsync();
+
+    return true;
+}
+
 }

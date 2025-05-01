@@ -4,79 +4,88 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-public interface IFeedService
+namespace Memzy_finalist.Services
 {
-    Task<FeedResult> FeedGeneratorBasedOnHumor(int userId);
-    Task<FeedResult> FeedGeneratorEverythingGoes();
-}
-public class FeedResult
-{
-    public List<Video> Videos { get; set; } = new List<Video>();
-    public List<Image> Images { get; set; } = new List<Image>();
-}
-
-public class FeedService : IFeedService
-{
-    private readonly MemzyContext _context;
-
-    public FeedService(MemzyContext context)
+    public interface IFeedService
     {
-        _context = context;
+        Task<FeedResult> FeedGeneratorBasedOnHumor(int userId);
+        Task<FeedResult> FeedGeneratorEverythingGoes();
     }
 
-    public async Task<FeedResult> FeedGeneratorBasedOnHumor(int userId)
+    public class FeedResult
     {
-        var userHumorTypeIds = await _context.UserHumorPreferences
-            .Where(uh => uh.UserId == userId)
-            .Select(uh => uh.HumorTypeId)
-            .ToListAsync();
+        public List<Video> Videos { get; set; } = new List<Video>();
+        public List<Image> Images { get; set; } = new List<Image>();
+    }
 
-        if (!userHumorTypeIds.Any())
+    public class FeedService : IFeedService
+    {
+        private readonly MemzyContext _context;
+
+        public FeedService(MemzyContext context)
         {
-            return await FeedGeneratorEverythingGoes();
+            _context = context;
         }
-        var videos = await _context.Videos
-            .Include(v => v.VideoHumors)
-            .ThenInclude(vh => vh.HumorType)
-            .Where(v => v.VideoHumors.Any(vh => userHumorTypeIds.Contains(vh.HumorTypeId)))
-            .Where(v => v.IsApproved == true)
-            .OrderByDescending(v => v.CreatedAt)
-            .Take(3)
-            .ToListAsync();
-        var images = await _context.Images
-            .Include(i => i.ImageHumors)
-            .ThenInclude(ih => ih.HumorType)
-            .Where(i => i.ImageHumors.Any(ih => userHumorTypeIds.Contains(ih.HumorTypeId)))
-            .Where(v => v.IsApproved == true)
-            .OrderByDescending(i => i.CreatedAt)
-            .Take(3)
-            .ToListAsync();
 
-        return new FeedResult
+        public async Task<FeedResult> FeedGeneratorBasedOnHumor(int userId)
         {
-            Videos = videos,
-            Images = images
-        };
-    }
+            // Get the user's single humor type
+            var userHumorTypeId = await _context.Users
+                .Where(u => u.UserId == userId)
+                .Select(u => u.HumorTypeId)
+                .FirstOrDefaultAsync();
 
-    public async Task<FeedResult> FeedGeneratorEverythingGoes()
-    {
-        var videos = await _context.Videos
-            .OrderByDescending(v => v.CreatedAt)
-            .Where(v => v.IsApproved == true)
-            .Take(3)
-            .ToListAsync();
+            if (userHumorTypeId == null)
+            {
+                return await FeedGeneratorEverythingGoes();
+            }
 
-        var images = await _context.Images
-            .OrderByDescending(i => i.CreatedAt)
-            .Where(v => v.IsApproved == true)
-            .Take(3)
-            .ToListAsync();
+            // Get videos matching the user's humor preference
+            var videos = await _context.Videos
+                .Include(v => v.VideoHumors)
+                .ThenInclude(vh => vh.HumorType)
+                .Where(v => v.VideoHumors.Any(vh => vh.HumorTypeId == userHumorTypeId))
+                .Where(v => v.IsApproved == true)
+                .OrderByDescending(v => v.CreatedAt)
+                .Take(3)
+                .ToListAsync();
 
-        return new FeedResult
+            // Get images matching the user's humor preference
+            var images = await _context.Images
+                .Include(i => i.ImageHumors)
+                .ThenInclude(ih => ih.HumorType)
+                .Where(i => i.ImageHumors.Any(ih => ih.HumorTypeId == userHumorTypeId))
+                .Where(i => i.IsApproved == true)
+                .OrderByDescending(i => i.CreatedAt)
+                .Take(3)
+                .ToListAsync();
+
+            return new FeedResult
+            {
+                Videos = videos,
+                Images = images
+            };
+        }
+
+        public async Task<FeedResult> FeedGeneratorEverythingGoes()
         {
-            Videos = videos,
-            Images = images
-        };
+            var videos = await _context.Videos
+                .OrderByDescending(v => v.CreatedAt)
+                .Where(v => v.IsApproved == true)
+                .Take(3)
+                .ToListAsync();
+
+            var images = await _context.Images
+                .OrderByDescending(i => i.CreatedAt)
+                .Where(i => i.IsApproved == true)
+                .Take(3)
+                .ToListAsync();
+
+            return new FeedResult
+            {
+                Videos = videos,
+                Images = images
+            };
+        }
     }
 }

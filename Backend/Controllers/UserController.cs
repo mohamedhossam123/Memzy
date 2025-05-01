@@ -16,12 +16,15 @@ namespace MyApiProject.Controllers
         private readonly IUserService _userService;
         private readonly IModeratorService _moderatorService;
         private readonly IAuthenticationService _authService;
+        private readonly IWebHostEnvironment _environment;
+        
 
-        public UserController(IUserService userService, IModeratorService moderatorService, IAuthenticationService authService)
+        public UserController(IUserService userService, IModeratorService moderatorService, IAuthenticationService authService, IWebHostEnvironment environment)
         {
-            _authService = authService;
             _userService = userService;
             _moderatorService = moderatorService;
+            _authService = authService;
+            _environment = environment;
         }
         
         [HttpDelete("DeleteUser")]
@@ -38,6 +41,41 @@ namespace MyApiProject.Controllers
                 return BadRequest(ex.Message);
             }
         }
+//         [HttpPost("UpdateProfilePicture")]
+// [Authorize]
+// public async Task<IActionResult> UploadProfilePicture([FromForm] IFormFile file)
+// {
+//     try
+//     {
+//         var userId = await _authService.GetAuthenticatedUserId();
+//         if (file == null || file.Length == 0)
+//             return BadRequest("File is required");
+
+//         var success = await _userService.UploadProfilePictureAsync(userId, file);
+//         if (!success)
+//         {
+//             return NotFound("User not found");
+//         }
+
+//         return Ok(new { Message = "Profile picture updated successfully" });
+//     }
+//     catch (UnauthorizedAccessException ex)
+//     {
+//         return Unauthorized(ex.Message);
+//     }
+//     catch (ArgumentException ex)
+//     {
+//         return BadRequest(ex.Message);
+//     }
+//     catch (KeyNotFoundException ex)
+//     {
+//         return NotFound(ex.Message);
+//     }
+//     catch (Exception ex)
+//     {
+//         return StatusCode(500, $"An error occurred: {ex.Message}");
+//     }
+// }
 
         [HttpPut("UpdateName")]
         [Authorize]

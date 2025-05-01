@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Memzy_finalist.Models
+﻿namespace Memzy_finalist.Models
 {
     public partial class User
     {
@@ -13,7 +11,6 @@ namespace Memzy_finalist.Models
             Images = new HashSet<Image>();
             MessagesSent = new HashSet<Message>();
             MessagesReceived = new HashSet<Message>();
-            UserHumorPreferences = new HashSet<UserHumorPreference>();
             Videos = new HashSet<Video>();
         }
 
@@ -25,7 +22,9 @@ namespace Memzy_finalist.Models
         public string PasswordHash { get; set; } = null!;
         public string Status { get; set; } = "normal";
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public int? HumorTypeId { get; set; }
 
+        public virtual HumorType HumorType { get; set; } 
         public virtual ICollection<FriendRequest> FriendRequestsSent { get; set; }
         public virtual ICollection<FriendRequest> FriendRequestsReceived { get; set; }
         public virtual ICollection<Friend> FriendsAsUser1 { get; set; }
@@ -33,7 +32,6 @@ namespace Memzy_finalist.Models
         public virtual ICollection<Image> Images { get; set; }
         public virtual ICollection<Message> MessagesSent { get; set; }
         public virtual ICollection<Message> MessagesReceived { get; set; }
-        public virtual ICollection<UserHumorPreference> UserHumorPreferences { get; set; } = new List<UserHumorPreference>();
         public virtual ICollection<Video> Videos { get; set; }
     }
 }

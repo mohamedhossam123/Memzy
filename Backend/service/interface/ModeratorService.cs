@@ -21,17 +21,8 @@ public interface IModeratorService
     Task<bool> DeleteImageAsync(int postId, int moderatorId);
     Task<bool> DeleteVideoAsync(int postId, int moderatorId);
 }
-public class ModeratorService : IModeratorService
+    public class ModeratorService : IModeratorService
 {
-    public async Task DeleteUserAsync(int id)
-    {
-        var user = await _context.Users.FindAsync(id);
-        if (user != null)
-        {
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-        }
-    }
     private readonly MemzyContext _context;
     private readonly IWebHostEnvironment _environment;
 
@@ -41,8 +32,16 @@ public class ModeratorService : IModeratorService
         _environment = environment;
     }
 
+    private async Task<bool> IsUserModeratorAsync(int moderatorId)
+    {
+        var user = await _context.Users.FindAsync(moderatorId);
+        return user != null && user.Status == "moderator";
+    }
+
     public async Task<bool> ApproveimageAsync(int postId, int moderatorId)
     {
+        if (!await IsUserModeratorAsync(moderatorId)) return false;
+
         var image = await _context.Images.FindAsync(postId);
         if (image == null) return false;
 
@@ -50,8 +49,11 @@ public class ModeratorService : IModeratorService
         await _context.SaveChangesAsync();
         return true;
     }
+
     public async Task<bool> ApproveVideoAsync(int postId, int moderatorId)
     {
+        if (!await IsUserModeratorAsync(moderatorId)) return false;
+
         var video = await _context.Videos.FindAsync(postId);
         if (video == null) return false;
 
@@ -59,8 +61,11 @@ public class ModeratorService : IModeratorService
         await _context.SaveChangesAsync();
         return true;
     }
+
     public async Task<bool> RejectimageAsync(int postId, int moderatorId)
     {
+        if (!await IsUserModeratorAsync(moderatorId)) return false;
+
         var image = await _context.Images.FindAsync(postId);
         if (image == null) return false;
 
@@ -68,8 +73,11 @@ public class ModeratorService : IModeratorService
         await _context.SaveChangesAsync();
         return true;
     }
+
     public async Task<bool> RejectvideoAsync(int postId, int moderatorId)
     {
+        if (!await IsUserModeratorAsync(moderatorId)) return false;
+
         var video = await _context.Videos.FindAsync(postId);
         if (video == null) return false;
 
@@ -82,12 +90,16 @@ public class ModeratorService : IModeratorService
     {
         return await _context.Images.Where(i => !i.IsApproved).ToListAsync();
     }
+
     public async Task<List<Video>> GetPendingVideosAsync()
     {
         return await _context.Videos.Where(v => !v.IsApproved).ToListAsync();
     }
+
     public async Task<bool> DeleteImageAsync(int postId, int moderatorId)
     {
+        if (!await IsUserModeratorAsync(moderatorId)) return false;
+
         var image = await _context.Images.FindAsync(postId);
         if (image == null) return false;
 
@@ -95,8 +107,11 @@ public class ModeratorService : IModeratorService
         await _context.SaveChangesAsync();
         return true;
     }
+
     public async Task<bool> DeleteVideoAsync(int postId, int moderatorId)
     {
+        if (!await IsUserModeratorAsync(moderatorId)) return false;
+
         var video = await _context.Videos.FindAsync(postId);
         if (video == null) return false;
 
@@ -104,5 +119,14 @@ public class ModeratorService : IModeratorService
         await _context.SaveChangesAsync();
         return true;
     }
-    
+
+    public async Task DeleteUserAsync(int id)
+    {
+        var user = await _context.Users.FindAsync(id);
+        if (user != null)
+        {
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+        }
     }
+}

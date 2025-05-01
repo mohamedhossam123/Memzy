@@ -6,137 +6,91 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-public interface IHumorService
+namespace Memzy_finalist.Services
 {
-    Task<User> ChangeHumorAsync(int userId, List<string> humor);
-    Task<User> AddHumorAsync(int userId, List<string> humor);
-}
-
-public class HumorService : IHumorService
-{
-    private readonly MemzyContext _context;
-    private readonly ILogger<HumorService> _logger;
-    
-    private static readonly List<string> AllowedHumorTypes = new List<string> 
-    { 
-        "DarkHumor", 
-        "FriendlyHumor" 
-    };
-
-    public HumorService(MemzyContext context, ILogger<HumorService> logger)
+    public interface IHumorService
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        Task<User> ChangeHumorAsync(int userId, string humorType);
+        Task<User> AddHumorAsync(int userId, string humorType);
+        Task RemoveHumorAsync(int userId);
     }
 
-    public async Task<User> AddHumorAsync(int userId, List<string> humor)
+    public class HumorService : IHumorService
     {
-        ValidateHumorInput(humor);
+        private readonly MemzyContext _context;
+        private readonly ILogger<HumorService> _logger;
         
-        var user = await GetUserWithHumorPreferences(userId);
-        var validHumorTypes = await GetValidHumorTypes();
+        private static readonly List<string> AllowedHumorTypes = new List<string> 
+        { 
+            "Dark Humor", 
+            "Friendly Humor" 
+        };
 
-        foreach (var humorTypeName in humor.Distinct())
+        public HumorService(MemzyContext context, ILogger<HumorService> logger)
         {
-            var humorType = validHumorTypes.FirstOrDefault(ht => 
-                ht.HumorTypeName == humorTypeName);
+            _context = context;
+            _logger = logger;
+        }
 
-            if (humorType != null && !UserHasHumorPreference(user, humorType.HumorTypeId))
+        public async Task<User> ChangeHumorAsync(int userId, string humorType)
+        {
+            try
             {
-                AddHumorPreference(user, humorType.HumorTypeId);
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null)
+                {
+                    throw new KeyNotFoundException("User not found");
+                }
+
+                if (!AllowedHumorTypes.Contains(humorType))
+                {
+                    throw new ArgumentException("Invalid humor type provided");
+                }
+
+                var humorTypeEntity = await _context.HumorTypes
+                    .FirstOrDefaultAsync(h => h.HumorTypeName == humorType);
+
+                if (humorTypeEntity == null)
+                {
+                    throw new ArgumentException("Humor type not found in database");
+                }
+
+                user.HumorTypeId = humorTypeEntity.HumorTypeId;
+                await _context.SaveChangesAsync();
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error changing humor for user {UserId}", userId);
+                throw;
             }
         }
 
-        await SaveChangesWithExceptionHandling();
-        return user;
-    }
-
-    public async Task<User> ChangeHumorAsync(int userId, List<string> humor)
-    {
-        ValidateHumorInput(humor);
-        
-        var user = await GetUserWithHumorPreferences(userId);
-        var validHumorTypes = await GetValidHumorTypes();
-
-        user.UserHumorPreferences.Clear();
-
-        foreach (var humorTypeName in humor.Distinct())
+        public async Task<User> AddHumorAsync(int userId, string humorType)
         {
-            var humorType = validHumorTypes.FirstOrDefault(ht => 
-                ht.HumorTypeName == humorTypeName);
+            // Since we now have a single humor type, AddHumor is essentially the same as ChangeHumor
+            return await ChangeHumorAsync(userId, humorType);
+        }
 
-            if (humorType != null)
+        public async Task RemoveHumorAsync(int userId)
+        {
+            try
             {
-                AddHumorPreference(user, humorType.HumorTypeId);
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null)
+                {
+                    throw new KeyNotFoundException("User not found");
+                }
+
+                user.HumorTypeId = null;
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing humor for user {UserId}", userId);
+                throw;
             }
         }
-
-        await SaveChangesWithExceptionHandling();
-        return user;
     }
-
-    #region Private Helper Methods
-
-    private void ValidateHumorInput(List<string> humor)
-    {
-        if (humor == null || !humor.Any())
-        {
-            throw new ArgumentException("At least one humor type must be specified");
-        }
-
-        var invalidTypes = humor.Except(AllowedHumorTypes).ToList();
-        if (invalidTypes.Any())
-        {
-            throw new ArgumentException(
-                $"Invalid humor types: {string.Join(", ", invalidTypes)}. " +
-                "Allowed types: DarkHumor, FriendlyHumor");
-        }
-    }
-
-    private async Task<User> GetUserWithHumorPreferences(int userId)
-    {
-        return await _context.Users
-            .Include(u => u.UserHumorPreferences)
-            .ThenInclude(uh => uh.HumorType)
-            .FirstOrDefaultAsync(u => u.UserId == userId)
-            ?? throw new ArgumentException("User not found");
-    }
-
-    private async Task<List<HumorType>> GetValidHumorTypes()
-    {
-        return await _context.HumorTypes
-            .Where(ht => AllowedHumorTypes.Contains(ht.HumorTypeName))
-            .ToListAsync();
-    }
-
-    private bool UserHasHumorPreference(User user, int humorTypeId)
-    {
-        return user.UserHumorPreferences.Any(uh => 
-            uh.HumorTypeId == humorTypeId);
-    }
-
-    private void AddHumorPreference(User user, int humorTypeId)
-{
-    user.UserHumorPreferences.Add(new UserHumorPreference
-    {
-        UserId = user.UserId,
-        HumorTypeId = humorTypeId
-    });
-}
-
-
-    private async Task SaveChangesWithExceptionHandling()
-    {
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateException ex)
-        {
-            _logger.LogError(ex, "Database update failed");
-            throw new ApplicationException("Failed to save humor preferences", ex);
-        }
-    }
-
-    #endregion
 }
