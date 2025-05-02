@@ -7,8 +7,9 @@ namespace Memzy_finalist.Models
         public MemzyContext() { }
         public MemzyContext(DbContextOptions<MemzyContext> options) : base(options) { }
 
-        public virtual DbSet<Friend> Friends { get; set; }
+        public virtual DbSet<Friendship> Friends { get; set; }
         public virtual DbSet<FriendRequest> FriendRequests { get; set; }
+        public virtual DbSet<Friendship> Friendships { get; set; }
         public virtual DbSet<HumorType> HumorTypes { get; set; }
         public virtual DbSet<Image> Images { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
@@ -28,7 +29,8 @@ namespace Memzy_finalist.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Friend>(entity =>
+            // Old Friend entity (can be removed after migration)
+            modelBuilder.Entity<Friendship>(entity =>
             {
                 entity.HasKey(e => e.FriendshipId);
                 entity.HasOne(d => d.User1)
@@ -39,6 +41,23 @@ namespace Memzy_finalist.Models
                     .WithMany(p => p.FriendsAsUser2)
                     .HasForeignKey(d => d.User2Id)
                     .OnDelete(DeleteBehavior.NoAction);
+            });
+            
+            // New Friendship entity
+            modelBuilder.Entity<Friendship>(entity =>
+            {
+                entity.HasKey(e => e.FriendshipId);
+                entity.HasOne(d => d.User1)
+                    .WithMany(p => p.FriendsAsUser1)
+                    .HasForeignKey(d => d.User1Id)
+                    .OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(d => d.User2)
+                    .WithMany(p => p.FriendsAsUser2)
+                    .HasForeignKey(d => d.User2Id)
+                    .OnDelete(DeleteBehavior.NoAction);
+                
+                // Add unique constraint to prevent duplicate friendships
+                entity.HasIndex(e => new { e.User1Id, e.User2Id }).IsUnique();
             });
             
             modelBuilder.Entity<Message>(entity =>
@@ -65,6 +84,11 @@ namespace Memzy_finalist.Models
                     .WithMany(p => p.FriendRequestsReceived)
                     .HasForeignKey(d => d.ReceiverId)
                     .OnDelete(DeleteBehavior.NoAction);
+                
+                // Add unique constraint to prevent duplicate friend requests
+                entity.HasIndex(fr => new { fr.SenderId, fr.ReceiverId })
+                    .IsUnique()
+                    .HasFilter($"[Status] = '{FriendRequestStatus.Pending}'");
             });
             
             modelBuilder.Entity<Image>(entity =>
@@ -114,7 +138,7 @@ namespace Memzy_finalist.Models
                 .HasOne(u => u.HumorType)
                 .WithMany()
                 .HasForeignKey(u => u.HumorTypeId)
-                .OnDelete(DeleteBehavior.SetNull); // Set null on delete
+                .OnDelete(DeleteBehavior.SetNull);
 
             OnModelCreatingPartial(modelBuilder);
         }

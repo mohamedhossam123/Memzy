@@ -24,6 +24,7 @@ builder.Services.AddScoped<IModeratorService, ModeratorService>();
 builder.Services.AddScoped<IHumorService, HumorService>();
 builder.Services.AddScoped<IFeedService, FeedService>();
 builder.Services.AddScoped<ICreatingPostsService, CreatingPostsService>();
+builder.Services.AddScoped<IFriendsService, FriendsService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");

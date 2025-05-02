@@ -18,12 +18,6 @@ public interface IUserService
 
     Task<User> ForgotPasswordAsync(string email);
     Task<User> ResetPasswordAsync(User user, string newPassword);
-    Task<User> AddFriendAsync(User user, int friendId);
-    Task<User> RemoveFriendAsync(User user, int friendId);
-    Task<User> GetFriendsAsync(int userId);
-    Task<List<FriendRequest>> GetFriendRequestsAsync(int userId);
-    Task<User> AcceptFriendRequestAsync(User user, int friendId);
-    Task<User> RejectFriendRequestAsync(User user, int friendId);
     Task<bool> UploadProfilePictureAsync(IFormFile file,int userId, string webRootPath);
 }
 
@@ -120,126 +114,7 @@ public class UserService : IUserService
         return await UpdateUserPassword(user.UserId, newPassword);
     }
 
-    public async Task<User> AddFriendAsync(User user, int friendId)
-    {
-        var existingRequest = await _context.FriendRequests
-            .FirstOrDefaultAsync(fr => 
-                (fr.SenderId == user.UserId && fr.ReceiverId == friendId) || 
-                (fr.SenderId == friendId && fr.ReceiverId == user.UserId));
-
-        if (existingRequest != null)
-        {
-            throw new InvalidOperationException("A friend request already exists between these users.");
-        }
-
-        var friendRequest = new FriendRequest
-        {
-            SenderId = user.UserId,
-            ReceiverId = friendId,
-            Status = "pending",
-            CreatedAt = DateTime.UtcNow
-        };
-
-        await _context.FriendRequests.AddAsync(friendRequest);
-        await _context.SaveChangesAsync();
-        return user;
-    }
-
-    public async Task<User> RemoveFriendAsync(User user, int friendId)
-    {
-        var friendRequest = await _context.FriendRequests
-            .FirstOrDefaultAsync(fr => 
-                (fr.SenderId == user.UserId && fr.ReceiverId == friendId) || 
-                (fr.SenderId == friendId && fr.ReceiverId == user.UserId));
-
-        if (friendRequest != null)
-        {
-            _context.FriendRequests.Remove(friendRequest);
-            await _context.SaveChangesAsync();
-        }
-
-        var friendship = await _context.Friends
-            .FirstOrDefaultAsync(f => 
-                (f.User1Id == user.UserId && f.User2Id == friendId) || 
-                (f.User1Id == friendId && f.User2Id == user.UserId));
-
-        if (friendship != null)
-        {
-            _context.Friends.Remove(friendship);
-            await _context.SaveChangesAsync();
-        }
-        return user;
-    }
-
-    public async Task<User> GetFriendsAsync(int userId)
-    {
-        var user = await _context.Users
-            .Include(u => u.FriendsAsUser1)
-                .ThenInclude(f => f.User2) 
-            .Include(u => u.FriendsAsUser2)
-                .ThenInclude(f => f.User1) 
-            .FirstOrDefaultAsync(u => u.UserId == userId);
-
-        return user ?? throw new ArgumentException("User not found.");
-    }
-
-    public async Task<List<FriendRequest>> GetFriendRequestsAsync(int userId)
-    {
-        return await _context.FriendRequests
-            .Where(fr => fr.ReceiverId == userId || fr.SenderId == userId)
-            .Include(fr => fr.Sender)
-            .Include(fr => fr.Receiver)
-            .ToListAsync();
-    }
-
-    public async Task<User> AcceptFriendRequestAsync(User user, int friendId)
-    {
-        var friendRequest = await _context.FriendRequests
-            .FirstOrDefaultAsync(fr => 
-                fr.SenderId == friendId && 
-                fr.ReceiverId == user.UserId && 
-                fr.Status == "pending");
-
-        if (friendRequest == null)
-        {
-            throw new ArgumentException("No pending friend request found.");
-        }
-
-        friendRequest.Status = "accepted";
-        await _context.SaveChangesAsync();
-
-        var existingFriendship = await _context.Friends
-            .AnyAsync(f => 
-                (f.User1Id == user.UserId && f.User2Id == friendId) || 
-                (f.User1Id == friendId && f.User2Id == user.UserId));
-
-        if (!existingFriendship)
-        {
-            await _context.Friends.AddAsync(new Friend
-            {
-                User1Id = user.UserId,
-                User2Id = friendId,
-                CreatedAt = DateTime.UtcNow
-            });
-            await _context.SaveChangesAsync();
-        }
-        return user;
-    }
-
-    public async Task<User> RejectFriendRequestAsync(User user, int friendId)
-    {
-        var friendRequest = await _context.FriendRequests
-            .FirstOrDefaultAsync(fr => 
-                (fr.SenderId == user.UserId && fr.ReceiverId == friendId) || 
-                (fr.SenderId == friendId && fr.ReceiverId == user.UserId));
-
-        if (friendRequest != null)
-        {
-            _context.FriendRequests.Remove(friendRequest);
-            await _context.SaveChangesAsync();
-        }
-        return user;
-    }
+    
     public async Task<bool> UploadProfilePictureAsync(IFormFile file,int userId, string webRootPath)
     {
         if (file == null || file.Length == 0) return false;

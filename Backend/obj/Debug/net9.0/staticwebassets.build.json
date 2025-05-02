@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "g9By3b2JEj07Cw5nc7lPboPDeiMHf0WTCXfktrc/b2k=",
+  "Hash": "13Mj5Ih/jDXcSs7fYjnpz0CC3BJN9hGpufDAfgpVkFw=",
   "Source": "Memzy_finalist",
   "BasePath": "_content/Memzy_finalist",
   "Mode": "Default",
@@ -36,6 +36,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
+      "SourceId": "Memzy_finalist",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\",
+      "BasePath": "_content/Memzy_finalist",
+      "RelativePath": "uploads/profile_pictures/2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "6ftiu4hpdk",
+      "Integrity": "jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg"
     },
     {
       "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
@@ -129,6 +150,88 @@
         {
           "Name": "Last-Modified",
           "Value": "Thu, 01 May 2025 10:52:14 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/profile_pictures/2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.6ftiu4hpdk.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "99692"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 01 May 2025 15:34:13 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "6ftiu4hpdk"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/profile_pictures/2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/profile_pictures/2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "99692"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 01 May 2025 15:34:13 GMT"
         },
         {
           "Name": "Cache-Control",
