@@ -7,17 +7,17 @@ using Microsoft.EntityFrameworkCore;
 namespace Memzy_finalist.Models
 {
     public interface IFriendsService
-    {
-        Task<FriendRequest> SendFriendRequest(FriendRequest senderId, int receiverId);/**---------**/
-        Task<Friendship> AcceptFriendRequest(FriendRequest requestId, int userId);/**---------**/
-        Task<FriendRequest> RejectFriendRequest(FriendRequest requestId, int userId);/**---------**/
-        Task<FriendRequest> CancelFriendRequest(FriendRequest requestId, int userId);/**---------**/
-        Task<bool> RemoveFriend(int userId, int friendId);/**---------**/
-        Task<IEnumerable<User>> GetFriends(int userId, bool includeOnlineOnly = false);/**---------**/
-        Task<IEnumerable<FriendRequest>> GetPendingFriendRequests(int userId);
-        Task<IEnumerable<FriendRequest>> GetSentFriendRequests(int userId);/**---------**/
-        Task<bool> ToggleCanMessage(int userId, int friendId);
-    }
+{
+    Task<FriendRequest> SendFriendRequest(int senderId, int receiverId, string message = "");
+    Task<Friendship> AcceptFriendRequest(FriendRequest request, int userId);
+    Task<FriendRequest> RejectFriendRequest(FriendRequest request, int userId);
+    Task<FriendRequest> CancelFriendRequest(FriendRequest request, int userId);
+    Task<bool> RemoveFriend(int userId, int friendId);
+    Task<IEnumerable<User>> GetFriends(int userId, bool includeOnlineOnly = false);
+    Task<IEnumerable<FriendRequest>> GetPendingFriendRequests(int userId);
+    Task<IEnumerable<FriendRequest>> GetSentFriendRequests(int userId);
+    Task<bool> ToggleCanMessage(int userId, int friendId);
+}
     public class FriendsService: IFriendsService
     {
         private readonly MemzyContext _context;
@@ -27,34 +27,44 @@ namespace Memzy_finalist.Models
             _context = context;
         }
 
-        public async Task<FriendRequest> SendFriendRequest(FriendRequest friendRequest, int userId)
+        public async Task<FriendRequest> SendFriendRequest(int senderId, int receiverId, string message = "")
         {
-            var sender = await _context.Users.FindAsync(userId);
-            var receiver = await _context.Users.FindAsync(friendRequest.ReceiverId);    
-            if (sender == null || receiver == null)
-                throw new ArgumentException("One or both users not found");
-            if (await sender.IsFriendWith(receiver.UserId))
-                throw new InvalidOperationException("Users are already friends");
-            var existingRequest = await _context.FriendRequests
-                .FirstOrDefaultAsync(fr => 
-                    fr.SenderId == userId && 
-                    fr.ReceiverId == friendRequest.ReceiverId && 
-                    fr.Status == FriendRequestStatus.Pending);
-                    
-            if (existingRequest != null)
-                throw new InvalidOperationException("Friend request already sent");
-            var request = new FriendRequest
+            try
             {
-                SenderId = userId,
-                ReceiverId = friendRequest.ReceiverId,
-                Status = FriendRequestStatus.Pending,
-                Message = friendRequest.Message,
-                CreatedAt = DateTime.UtcNow
-            };
-            _context.FriendRequests.Add(request);
-            await _context.SaveChangesAsync();
-            
-            return request;
+                var sender = await _context.Users.FindAsync(senderId);
+                var receiver = await _context.Users.FindAsync(receiverId);    
+                
+                if (sender == null || receiver == null)
+                    throw new ArgumentException($"One or both users not found. SenderId: {senderId}, ReceiverId: {receiverId}");
+                if (sender.IsFriendWith != null && await sender.IsFriendWith(receiverId))
+                    throw new InvalidOperationException("Users are already friends");
+                var existingRequest = await _context.FriendRequests
+                    .FirstOrDefaultAsync(fr => 
+                        fr.SenderId == senderId && 
+                        fr.ReceiverId == receiverId && 
+                        fr.Status == FriendRequestStatus.Pending);
+                        
+                if (existingRequest != null)
+                    throw new InvalidOperationException("Friend request already sent");
+                
+                var request = new FriendRequest
+                {
+                    SenderId = senderId,
+                    ReceiverId = receiverId,
+                    Status = FriendRequestStatus.Pending,
+                    Message = message ?? "", 
+                    CreatedAt = DateTime.UtcNow
+                };
+                
+                _context.FriendRequests.Add(request);
+                await _context.SaveChangesAsync();
+                
+                return request;
+            }
+            catch (Exception )
+            {
+                throw; 
+            }
         }
         public async Task<Friendship> AcceptFriendRequest(FriendRequest friendRequest, int userId)
 {
@@ -120,35 +130,7 @@ namespace Memzy_finalist.Models
             
             return request;
         }
-        public async Task<FriendRequest> SendFriendRequest(int senderId, int receiverId, string message = "")
-        {
-            var sender = await _context.Users.FindAsync(senderId);
-        var receiver = await _context.Users.FindAsync(receiverId);    
-            if (sender == null || receiver == null)
-                throw new ArgumentException("One or both users not found");
-            if (await sender.IsFriendWith(receiverId))
-                throw new InvalidOperationException("Users are already friends");
-            var existingRequest = await _context.FriendRequests
-                .FirstOrDefaultAsync(fr => 
-                    fr.SenderId == senderId && 
-                    fr.ReceiverId == receiverId && 
-                    fr.Status == FriendRequestStatus.Pending);
-                    
-            if (existingRequest != null)
-                throw new InvalidOperationException("Friend request already sent");
-            var request = new FriendRequest
-            {
-                SenderId = senderId,
-                ReceiverId = receiverId,
-                Status = FriendRequestStatus.Pending,
-                Message = message,
-                CreatedAt = DateTime.UtcNow
-            };
-            _context.FriendRequests.Add(request);
-            await _context.SaveChangesAsync();
-            
-            return request;
-        }
+        
 
         public async Task<bool> RemoveFriend(int userId, int friendId)
         {
@@ -219,5 +201,16 @@ namespace Memzy_finalist.Models
             
             return friendship.CanMessage;
         }
+        public class FriendRequestDto
+{
+    public int RequestId { get; set; } 
+    public int? ReceiverId { get; set; } 
+    public string Message { get; set; }
+}
+
+public class FriendIdDto
+{
+    public int FriendId { get; set; }
+}
     }
 }
