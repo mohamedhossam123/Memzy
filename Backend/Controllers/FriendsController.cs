@@ -50,7 +50,6 @@ namespace MyApiProject.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception here with your logging framework
                 return StatusCode(500, new { error = "An error occurred while processing your request", details = ex.Message });
             }
         }

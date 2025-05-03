@@ -14,7 +14,7 @@ namespace Memzy_finalist.Models
         [Required]
         public string Content { get; set; } = null!;
         
-        public DateTime SentAt { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         public DateTime? ReadAt { get; set; }
         
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]

@@ -16,7 +16,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.WebHost.UseWebRoot("wwwroot");
-
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
@@ -25,6 +24,7 @@ builder.Services.AddScoped<IHumorService, HumorService>();
 builder.Services.AddScoped<IFeedService, FeedService>();
 builder.Services.AddScoped<ICreatingPostsService, CreatingPostsService>();
 builder.Services.AddScoped<IFriendsService, FriendsService>();
+builder.Services.AddScoped<ImessagingService, MessagingService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -44,14 +44,14 @@ builder.Services.AddAuthentication(options =>
 .AddJwtBearer(options =>
 {
     options.SaveToken = true;
-    options.RequireHttpsMetadata = false; // Set to true in production
+    options.RequireHttpsMetadata = false;
     options.TokenValidationParameters = new TokenValidationParameters()
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ClockSkew = TimeSpan.Zero, // Remove default 5-minute tolerance
+        ClockSkew = TimeSpan.Zero, 
         
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
@@ -75,9 +75,9 @@ builder.Services.AddSwaggerGen(c =>
     Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
     Name = "Authorization",
     In = ParameterLocation.Header,
-    Type = SecuritySchemeType.Http, // ← CHANGE FROM ApiKey TO Http
+    Type = SecuritySchemeType.Http,
     Scheme = "Bearer",
-    BearerFormat = "JWT" // ← ADD THIS
+    BearerFormat = "JWT" 
 });
     
     c.AddSecurityRequirement(new OpenApiSecurityRequirement()
