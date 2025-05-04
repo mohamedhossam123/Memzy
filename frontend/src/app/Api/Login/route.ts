@@ -18,18 +18,14 @@ export async function POST(req: NextRequest) {
     
     // Simple validation example (replace with your actual authentication logic)
     if (email === 'user@example.com' && password === 'password') {
-      // Successful login
       const userData = {
         name: 'Test User',
         email: email,
         profilePic: '/default-avatar.png',
         token: 'sample-jwt-token'
       };
-      
-      // Return user data with proper JSON Content-Type header
       return NextResponse.json(userData);
     } else {
-      // Failed login
       return NextResponse.json(
         { message: 'Invalid email or password' },
         { status: 401 }
