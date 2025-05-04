@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: #8e44ad;
+    --primary-dark: #6c3483;
+    --primary-light: #a569bd;
+    --accent: #c56cf0;
+    --accent-glow: rgba(197, 108, 240, 0.3);
+    --dark: #121212;
+    --darker: #0a0a0a;
+    --light: #f5f5f5;
+    --glass: rgba(255, 255, 255, 0.1);
+    --glass-dark: rgba(0, 0, 0, 0.3);
+  }
+}
+
+@layer utilities {
+  .bg-radial-gradient {
+    background: radial-gradient(circle, var(--tw-gradient-from) 0%, var(--tw-gradient-to) 70%);
+  }
+  
+  .shadow-glow {
+    box-shadow: 0 0 15px var(--accent-glow);
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 10px var(--accent-glow);
+  }
+  
+  .backdrop-blur-sm {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(40px, 40px); }
+}
+
+@keyframes float-reverse {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-40px, -40px); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.2); opacity: 0.5; }
+}
+
+.animate-float-15 {
+  animation: float 15s infinite ease-in-out;
+}
+
+.animate-float-20-reverse {
+  animation: float-reverse 20s infinite ease-in-out;
+}
+
+.animate-pulse {
+  animation: pulse 8s infinite ease-in-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--darker);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-light);
+}

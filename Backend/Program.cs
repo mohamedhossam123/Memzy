@@ -10,6 +10,7 @@ using Swashbuckle.AspNetCore.Filters;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Memzy_finalist.Services;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,27 +99,25 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-
-
-
-
-
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll",
-        policy => policy
-            .AllowAnyOrigin()
+builder.Services.AddCors(options => {
+    options.AddPolicy("NextJsFrontend", policy => {
+        policy.WithOrigins(
+                "http://localhost:3000",  
+                "http://localhost:5001"  
+            )
+            .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowAnyHeader());
+            .AllowCredentials();
+    });
 });
+
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
-// Build the application
 var app = builder.Build();
 
 // Use CORS
-app.UseCors("AllowAll");
+app.UseCors("NextJsFrontend");
+
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
