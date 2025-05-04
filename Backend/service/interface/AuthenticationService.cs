@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
+using System.Linq;
+
+
 using System.Text;
 
 public interface IAuthenticationService
@@ -16,6 +21,7 @@ public interface IAuthenticationService
     Task<User> VerifyUserAsync(string email, string password);
     Task<int> GetAuthenticatedUserId();  
     Task <string> GenerateJwtToken(User user);
+    string HashPassword(string password);
 }
 
 public class AuthenticationService : IAuthenticationService
@@ -78,11 +84,23 @@ private readonly IConfiguration _configuration;
         return user;
     }
 
-    public async Task<User> VerifyUserAsync(string email, string password)
-    {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        if (user == null || password != user.PasswordHash)
-            return null;
-        return user;
-    }
+public string HashPassword(string password)
+{
+    if (string.IsNullOrWhiteSpace(password))
+        throw new ArgumentException("Password cannot be null or empty", nameof(password));
+    return BCrypt.Net.BCrypt.HashPassword(password);
+}
+
+private bool VerifyPassword(string password, string hashedPassword)
+{
+    return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+}
+
+public async Task<User> VerifyUserAsync(string email, string password)
+{
+    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+    if (user == null || !VerifyPassword(password, user.PasswordHash))
+        return null;
+    return user;
+}
 }

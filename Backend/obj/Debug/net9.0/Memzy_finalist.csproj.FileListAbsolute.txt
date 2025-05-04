@@ -376,3 +376,4 @@ C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Swash
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\Memzy_finalist.staticwebassets.runtime.json
+C:\Users\dell\OneDrive\Desktop\.vs\Memzy_finalist\Backend\bin\Debug\net9.0\BCrypt.Net-Next.dll

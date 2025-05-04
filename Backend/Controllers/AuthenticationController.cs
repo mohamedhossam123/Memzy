@@ -22,37 +22,41 @@ namespace MyApiProject.Controllers
             _authService = AuthService;
         }
 
-        [HttpPost("signup")]
+[HttpPost("signup")]
 public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
 {
-    
     try
     {
-        if (string.IsNullOrWhiteSpace(dto.Email)) 
+        if (string.IsNullOrWhiteSpace(dto.Email) )
             return BadRequest("Email is required");
         if (string.IsNullOrWhiteSpace(dto.Password))
             return BadRequest("Password is required");
+        
+        var existingUser = await _authService.VerifyUserAsync(dto.Email, "anypassword");
+        if (existingUser != null)
+            return BadRequest("Email already registered");
         
         var user = new User
         {
             Name = dto.Name,
             Email = dto.Email,
-            PasswordHash = dto.Password, 
+            PasswordHash = _authService.HashPassword(dto.Password),
             CreatedAt = DateTime.UtcNow
         };
-        var existingUser = await _authService.VerifyUserAsync(dto.Email, "anypassword");
-        if (existingUser != null)
-            return BadRequest("Email already registered");
+
         var createdUser = await _authService.CreateUserAsync(user);
         if (createdUser.UserId == 0) 
             return StatusCode(500, "Failed to create user");
         
-        return CreatedAtAction(nameof(GetUser), new { id = createdUser.UserId }, createdUser);
+        return CreatedAtAction(nameof(GetUser), new { id = createdUser.UserId }, new {
+            UserId = createdUser.UserId,
+            Name = createdUser.Name,
+            Email = createdUser.Email
+        });
     }
-    catch (Exception ex)
+    catch (Exception )
     {
-        Console.WriteLine($"SIGNUP ERROR: {ex}");
-        return StatusCode(500, ex.Message);
+        return StatusCode(500, "Registration failed");
     }
 }
 
@@ -65,24 +69,32 @@ public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
 
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
-        {
-        try
-        {
-        if (string.IsNullOrWhiteSpace(dto.Email))
-            return BadRequest("Email is required");
-        if (string.IsNullOrWhiteSpace(dto.Password))
-            return BadRequest("Password is required");
+public async Task<IActionResult> Login([FromBody] LoginDto dto)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
+            return BadRequest("Email and password are required");
 
         var user = await _authService.VerifyUserAsync(dto.Email, dto.Password);
         if (user == null)
             return Unauthorized("Invalid credentials");
-        var token = _authService.GenerateJwtToken(user);
-        return Ok(new { Token = token });
+
+        var token = await _authService.GenerateJwtToken(user);
+        
+        return Ok(new {
+            Token = token,
+            User = new {
+                UserId = user.UserId,
+                Name = user.Name,
+                Email = user.Email,
+                ProfilePictureUrl = user.ProfilePictureUrl
+            }
+        });
     }
-    catch (Exception ex)
+    catch (Exception )
     {
-        return BadRequest(ex.Message);
+        return StatusCode(500, "An error occurred during login");
     }
 }
 
