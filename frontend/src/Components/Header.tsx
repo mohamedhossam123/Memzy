@@ -27,8 +27,8 @@ export function Header() {
                 />
               ) : (
                 <span className="text-white font-bold">
-                  {user.name.charAt(0).toUpperCase()}
-                </span>
+    {user.name?.charAt(0).toUpperCase() ?? '?'}
+  </span>
               )}
             </div>
             <span className="text-[#f5f5f5]">{user.name}</span>
@@ -48,18 +48,18 @@ export function Header() {
       </div>
       
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-[#c56cf0] grid place-items-center text-[#f5f5f5] shadow-[0_0_10px_rgba(197,108,240,0.3)]">
-          <Image
-            src="/memzy-logo.svg" // Replace with your logo
-            alt="Memzy Logo"
-            width={24}
-            height={24}
-          />
-        </div>
-        <h1 className="text-3xl text-[#c56cf0] font-bold drop-shadow-[0_0_15px_rgba(197,108,240,0.3)]">
-          Memzy
-        </h1>
-      </div>
+      <div className="w-10 h-10 rounded-lg bg-[#c56cf0] relative overflow-hidden">
+  <Image
+    src="/memzyiconcopyyy.jpg"
+    alt="Memzy Logo"
+    fill
+    className="object-cover"
+  />
+</div>
+  <h1 className="text-3xl text-[#c56cf0] font-bold drop-shadow-[0_0_15px_rgba(197,108,240,0.3)]">
+    Memzy
+  </h1>
+</div>
     </header>
   );
 }

@@ -49,7 +49,7 @@ export function Sidebar() {
         <h2 className="text-xs uppercase text-[#dee2e6] mb-4 pl-4">Account</h2>
         <ul className="space-y-2">
           <li>
-            <Link href="/auth/login" className="flex items-center gap-3 py-3 px-4 rounded-lg text-[#e9ecef] hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f5f5f5] hover:translate-x-1 transition-all">
+            <Link href="/login/page.tsx" className="flex items-center gap-3 py-3 px-4 rounded-lg text-[#e9ecef] hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f5f5f5] hover:translate-x-1 transition-all">
               <span className="text-xl">🚪</span>
               <span>Logout</span>
             </Link>

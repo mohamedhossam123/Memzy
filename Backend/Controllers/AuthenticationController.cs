@@ -97,8 +97,37 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
         return StatusCode(500, "An error occurred during login");
     }
 }
+[HttpGet("validate")]
+        [Authorize] 
+        public async Task<IActionResult> ValidateToken()
+        {
+            try
+            {
+                int userId = await _authService.GetAuthenticatedUserId();
+                var user = await _authService.GetUserByIdAsync(userId);
+                
+                if (user == null)
+                {
+                    return Unauthorized("Invalid user");
+                }
+
+                return Ok(new {
+                    UserId = user.UserId,
+                    Name = user.Name,
+                    Email = user.Email,
+                    ProfilePictureUrl = user.ProfilePictureUrl
+                });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized("Invalid token");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Token validation error: {ex.Message}");
+            }
 
 }
 
-
+    }
 }

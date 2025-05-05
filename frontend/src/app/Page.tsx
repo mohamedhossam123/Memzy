@@ -15,7 +15,7 @@ export default function Home() {
   }, [user, router])
 
   if (!user) {
-    return null // Redirect will happen
+    return null 
   }
 
   return (

@@ -52,7 +52,7 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ClockSkew = TimeSpan.Zero, 
+        ClockSkew = TimeSpan.FromMinutes(1),
         
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
@@ -60,6 +60,7 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
 });
+
 
 builder.Services.AddExceptionHandler(options => 
 {
@@ -110,13 +111,13 @@ builder.Services.AddCors(options => {
             .AllowCredentials();
     });
 });
-
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 var app = builder.Build();
-
-// Use CORS
-app.UseCors("NextJsFrontend");
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -124,14 +125,15 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Memzy API v1");
 });
 
-// Configure the exception handler middleware
 app.UseExceptionHandler();
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseRouting();
+
+app.UseCors("NextJsFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
+app.Urls.Add("http://localhost:5001");
 app.Run();

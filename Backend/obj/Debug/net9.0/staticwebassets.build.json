@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "13Mj5Ih/jDXcSs7fYjnpz0CC3BJN9hGpufDAfgpVkFw=",
+  "Hash": "UZhWXFX9Remd87/wFVdeXiWqd5VOdk94JexM7CnDKtY=",
   "Source": "Memzy_finalist",
   "BasePath": "_content/Memzy_finalist",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "Memzy_finalist\\wwwroot",
       "Source": "Memzy_finalist",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
       "SourceId": "Memzy_finalist",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "RelativePath": "uploads/Images/3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -38,10 +38,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg"
     },
     {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
       "SourceId": "Memzy_finalist",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "RelativePath": "uploads/profile_pictures/2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -59,10 +59,31 @@
       "OriginalItemSpec": "wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg"
     },
     {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg",
       "SourceId": "Memzy_finalist",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "BasePath": "_content/Memzy_finalist",
+      "RelativePath": "uploads/profile_pictures/521dd907-5cf9-4914-8214-69e1bf23e58b#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "6ftiu4hpdk",
+      "Integrity": "jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
+      "SourceId": "Memzy_finalist",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "RelativePath": "uploads/Videos/4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM#[.{fingerprint}]?.png",
       "AssetKind": "All",
@@ -83,7 +104,7 @@
   "Endpoints": [
     {
       "Route": "uploads/Images/3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.6ftiu4hpdk.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -128,7 +149,7 @@
     },
     {
       "Route": "uploads/Images/3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -165,7 +186,7 @@
     },
     {
       "Route": "uploads/profile_pictures/2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.6ftiu4hpdk.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -210,7 +231,7 @@
     },
     {
       "Route": "uploads/profile_pictures/2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -246,8 +267,90 @@
       ]
     },
     {
+      "Route": "uploads/profile_pictures/521dd907-5cf9-4914-8214-69e1bf23e58b.6ftiu4hpdk.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "99692"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Mon, 05 May 2025 20:18:40 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "6ftiu4hpdk"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/profile_pictures/521dd907-5cf9-4914-8214-69e1bf23e58b.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/profile_pictures/521dd907-5cf9-4914-8214-69e1bf23e58b.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "99692"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Mon, 05 May 2025 20:18:40 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4="
+        }
+      ]
+    },
+    {
       "Route": "uploads/Videos/4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.hdw5bc5pug.png",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -292,7 +395,7 @@
     },
     {
       "Route": "uploads/Videos/4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
       "Selectors": [],
       "ResponseHeaders": [
         {

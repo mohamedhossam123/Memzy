@@ -1,16 +1,16 @@
-// next.config.mjs
-/** @type {import('next').NextConfig} */
+/** next.config.mjs */
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  modularizeImports: {
-    '@mui/icons-material': {
-      transform: '@mui/icons-material/{{member}}',
-    },
+  experimental: { appDir: true },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:5001/api/:path*',
+      },
+    ]
   },
-  experimental: {
-    appDir: true,
-  },
-};
+}
 
-export default nextConfig;
+export default nextConfig

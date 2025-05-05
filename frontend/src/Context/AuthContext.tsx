@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 type User = {
   name: string
   email: string
-  profilePic?: string  // Made optional
+  profilePic?: string
   token: string
 }
 
@@ -27,14 +27,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/auth/login', {
-          credentials: 'include',
-        })
-        
-        if (response.ok) {
-          const userData = await response.json()
-          setUser(userData)
-        }
+const res = await fetch('/api/auth/check', { credentials: 'include' });
+if (res.ok) {
+  const { authenticated, user } = await res.json();
+  if (authenticated) setUser(user);
+}
+
       } catch (error) {
         console.error('Auth check failed:', error)
       } finally {
@@ -47,28 +45,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/login', {  // Note capital A
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ 
-          Email: email,  // Match backend casing
-          Password: password 
-        }),
+        body: JSON.stringify({ email, password }),
       });
   
       if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || 'Login failed');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Login response error:', errorData);
+        throw new Error(errorData.message || 'Login failed');
       }
   
-      const { Token, User } = await response.json();
+      const userData = await response.json();
+      console.log('Login successful, user data:', userData);
       
       setUser({
-        name: User.Name,
-        email: User.Email,
-        profilePic: User.ProfilePictureUrl,
-        token: Token
+        name: userData.name,
+        email: userData.email,
+        profilePic: userData.profilePic,
+        token: userData.token
       });
       
       router.push('/');
