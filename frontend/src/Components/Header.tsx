@@ -17,12 +17,12 @@ export function Header() {
             <div className="w-10 h-10 rounded-full bg-[#a569bd] grid place-items-center overflow-hidden border-2 border-[#f5f5f5]">
               {user.profilePic ? (
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_BACKEND_API_URL}${user.profilePic}`}
-                  alt="Profile"
-                  width={40}
-                  height={40}
-                  className="object-cover"
-                />
+                src={`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/uploads/profile_pictures/${user.profilePic.replace('uploads\\profile_pictures\\', '')}`}
+                alt="Profile"
+                width={40}
+                height={40}
+                className="object-cover"
+              />
               ) : (
                 <span className="text-white font-bold">
                   {user.name?.charAt(0).toUpperCase() ?? '?'}
@@ -43,20 +43,26 @@ export function Header() {
         />
         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#dee2e6] text-base pointer-events-none">🔍</span>
       </div>
-      
+
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-[#c56cf0] relative overflow-hidden">
-          <Image
-            src="/memzyiconcopyyy.jpg"
-            alt="Memzy Logo"
-            fill
-            className="object-cover"
-          />
-        </div>
-        <h1 className="text-3xl text-[#c56cf0] font-bold drop-shadow-[0_0_15px_rgba(197,108,240,0.3)]">
-          Memzy
-        </h1>
-      </div>
+  <div className="w-10 h-10 rounded-lg bg-[#c56cf0] relative overflow-hidden">
+    <Image
+      src="/memzyiconcopyyy.jpg"
+      alt="Memzy Logo"
+      fill
+      className="object-cover"
+    />
+  </div>
+  <div className="relative w-[136px] h-[40px] flex items-center">
+  <h1 className="absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-bold 
+                whitespace-nowrap overflow-hidden animate-smooth-typing
+                border-r-2 border-[#c56cf0] 
+                text-[#c56cf0] drop-shadow-[0_0_15px_rgba(197,108,240,0.3)]">
+    Memzy
+  </h1>
+  <h1 className="text-3xl font-bold invisible">Memzy</h1>
+</div>
+</div>
     </header>
   );
 }

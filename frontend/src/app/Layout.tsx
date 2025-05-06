@@ -19,6 +19,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <link rel="icon" href="/memzyiconcopyyy.jpg" />
+      <link rel="apple-touch-icon" href="/memzyiconcopyyy.jpg" />
       <body className={`${inter.className} bg-gradient-to-br from-darker to-primary-dark text-light min-h-screen leading-relaxed overflow-x-hidden`}>
         <AuthProvider>
           <AuthLayout>{children}</AuthLayout>
