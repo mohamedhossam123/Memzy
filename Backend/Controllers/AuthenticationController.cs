@@ -126,8 +126,36 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
             {
                 return StatusCode(500, $"Token validation error: {ex.Message}");
             }
-
 }
+        [HttpPost("logout")]
+        [Authorize]
+        public IActionResult Logout()
+        {
+            return Ok("Logged out successfully");
+        }
+
+        [HttpGet("refresh")]
+        [Authorize]
+        public async Task<IActionResult> RefreshToken()
+        {
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+                var user = await _authService.GetUserByIdAsync(userId);
+                
+                if (user == null)
+                {
+                    return Unauthorized("Invalid user");
+                }
+                var token = await _authService.GenerateJwtToken(user);
+                
+                return Ok(new { Token = token });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Token refresh error: {ex.Message}");
+            }
+        }
 
     }
 }

@@ -1,6 +1,9 @@
+//login/page.tsx
+
 'use client'
 import { useState } from 'react'
 import { useAuth } from '@/Context/AuthContext'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -21,24 +24,24 @@ export default function LoginPage() {
   }
   
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="bg-[rgba(20,20,20,0.8)] p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center text-[#c56cf0]">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#2d1b3a] to-[#201429]">
+      <div className="bg-[#121212] p-8 rounded-lg shadow-lg w-full max-w-md border border-[rgba(255,255,255,0.05)]">
+        <h2 className="text-3xl font-bold mb-6 text-center text-[#c56cf0] drop-shadow-[0_0_10px_rgba(197,108,240,0.3)]">
           Login to Memzy
         </h2>
         
         {error && (
-          <div className="mb-4 p-2 bg-red-500/20 text-red-300 rounded text-center">
+          <div className="mb-4 p-3 bg-red-500/20 text-red-300 rounded-lg text-center">
             {error}
           </div>
         )}
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-gray-300 mb-2">Email</label>
+            <label className="block text-gray-300 mb-2 font-medium">Email</label>
             <input
               type="email"
-              className="w-full px-3 py-2 bg-[rgba(30,30,30,0.5)] border border-[rgba(255,255,255,0.1)] rounded-lg text-white"
+              className="w-full px-4 py-3 bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)] rounded-lg text-white focus:outline-none focus:border-[#c56cf0] focus:ring-1 focus:ring-[rgba(197,108,240,0.3)] transition-all"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -46,10 +49,10 @@ export default function LoginPage() {
           </div>
           
           <div>
-            <label className="block text-gray-300 mb-2">Password</label>
+            <label className="block text-gray-300 mb-2 font-medium">Password</label>
             <input
               type="password"
-              className="w-full px-3 py-2 bg-[rgba(30,30,30,0.5)] border border-[rgba(255,255,255,0.1)] rounded-lg text-white"
+              className="w-full px-4 py-3 bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)] rounded-lg text-white focus:outline-none focus:border-[#c56cf0] focus:ring-1 focus:ring-[rgba(197,108,240,0.3)] transition-all"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -58,10 +61,22 @@ export default function LoginPage() {
           
           <button
             type="submit"
-            className="w-full bg-[#c56cf0] hover:bg-[#a569bd] text-white font-medium py-2 px-4 rounded-lg transition"
+            className="w-full bg-[#c56cf0] hover:bg-[#a569bd] text-white font-medium py-3 px-4 rounded-lg transition-all"
           >
             Login
           </button>
+          
+          <div className="mt-4 text-center">
+            <p className="text-gray-400">
+              Don't have an account?{" "}
+              <Link 
+                href="/SignUp" 
+                className="text-[#c56cf0] hover:text-[#a569bd] font-medium transition-all hover:underline"
+              >
+                Sign up now
+              </Link>
+            </p>
+          </div>
         </form>
       </div>
     </div>

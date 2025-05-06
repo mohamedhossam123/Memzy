@@ -19,6 +19,13 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+function normalizePicPath(path: string) {
+  const withSlashes = path.replace(/\\/g, '/')
+  return withSlashes.startsWith('/')
+    ? withSlashes
+    : '/' + withSlashes
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -27,12 +34,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-const res = await fetch('/api/auth/check', { credentials: 'include' });
-if (res.ok) {
-  const { authenticated, user } = await res.json();
-  if (authenticated) setUser(user);
-}
-
+        const res = await fetch('/api/auth/check', { credentials: 'include' })
+        if (res.ok) {
+          const { authenticated, user: u } = await res.json()
+          if (authenticated) {
+            setUser({
+              ...u,
+              profilePic: u.profilePic
+                ? normalizePicPath(u.profilePic)
+                : undefined,
+            })
+          }
+        }
       } catch (error) {
         console.error('Auth check failed:', error)
       } finally {
@@ -50,49 +63,57 @@ if (res.ok) {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ email, password }),
-      });
-  
+      })
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Login response error:', errorData);
-        throw new Error(errorData.message || 'Login failed');
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Login response error:', errorData)
+        throw new Error(errorData.message || 'Login failed')
       }
-  
-      const userData = await response.json();
-      console.log('Login successful, user data:', userData);
-      
+
+      const userData = await response.json()
+      console.log('Login successful, user data:', userData)
+
       setUser({
         name: userData.name,
         email: userData.email,
-        profilePic: userData.profilePic,
-        token: userData.token
-      });
-      
-      router.push('/');
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error instanceof Error ? error : new Error('Login failed');
-    }
-  }
-
-  const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
+        token: userData.token,
+        profilePic: userData.profilePic
+          ? normalizePicPath(userData.profilePic)
+          : undefined,
       })
-      setUser(null)
-      router.push('/login')
+
+      router.push('/')
     } catch (error) {
-      console.error('Logout error:', error)
+      console.error('Login error:', error)
+      throw error instanceof Error ? error : new Error('Login failed')
     }
   }
+const logout = async () => {
+  setLoading(true); 
+  try {
+    const response = await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Logout request failed');
+    }
+    setUser(null);
+    router.push('/login');
+  } catch (error) {
+    console.error('Logout error:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const value = {
     user,
     login,
     logout,
-    loading
+    loading,
   }
 
   return (
@@ -104,7 +125,7 @@ if (res.ok) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider')
   }
   return context

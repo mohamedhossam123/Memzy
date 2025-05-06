@@ -1,6 +1,4 @@
-// components/Header.tsx
 'use client'
-
 import { useAuth } from '../Context/AuthContext';
 import Image from 'next/image';
 
@@ -19,7 +17,7 @@ export function Header() {
             <div className="w-10 h-10 rounded-full bg-[#a569bd] grid place-items-center overflow-hidden border-2 border-[#f5f5f5]">
               {user.profilePic ? (
                 <Image
-                  src={user.profilePic}
+                  src={`${process.env.NEXT_PUBLIC_BACKEND_API_URL}${user.profilePic}`}
                   alt="Profile"
                   width={40}
                   height={40}
@@ -27,11 +25,10 @@ export function Header() {
                 />
               ) : (
                 <span className="text-white font-bold">
-    {user.name?.charAt(0).toUpperCase() ?? '?'}
-  </span>
+                  {user.name?.charAt(0).toUpperCase() ?? '?'}
+                </span>
               )}
             </div>
-            <span className="text-[#f5f5f5]">{user.name}</span>
           </div>
         ) : (
           <div className="text-[#f5f5f5]">Please log in</div>
@@ -48,18 +45,18 @@ export function Header() {
       </div>
       
       <div className="flex items-center gap-3">
-      <div className="w-10 h-10 rounded-lg bg-[#c56cf0] relative overflow-hidden">
-  <Image
-    src="/memzyiconcopyyy.jpg"
-    alt="Memzy Logo"
-    fill
-    className="object-cover"
-  />
-</div>
-  <h1 className="text-3xl text-[#c56cf0] font-bold drop-shadow-[0_0_15px_rgba(197,108,240,0.3)]">
-    Memzy
-  </h1>
-</div>
+        <div className="w-10 h-10 rounded-lg bg-[#c56cf0] relative overflow-hidden">
+          <Image
+            src="/memzyiconcopyyy.jpg"
+            alt="Memzy Logo"
+            fill
+            className="object-cover"
+          />
+        </div>
+        <h1 className="text-3xl text-[#c56cf0] font-bold drop-shadow-[0_0_15px_rgba(197,108,240,0.3)]">
+          Memzy
+        </h1>
+      </div>
     </header>
   );
 }
