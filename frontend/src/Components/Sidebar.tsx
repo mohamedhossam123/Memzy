@@ -22,8 +22,7 @@ export function Sidebar() {
   const isActive = (path: string) => pathname === path
   
   return (
-    <nav className="row-start-2 bg-[rgba(10,10,10,0.75)] backdrop-blur border-r border-[rgba(255,255,255,0.1)] p-8 overflow-y-auto">
-      <div className="mb-8">
+    <nav className="row-start-2 bg-[rgba(10,10,10,0.75)] backdrop-blur border-r border-[rgba(255,255,255,0.1)] p-6 overflow-y-auto w-[240px]">     <div className="mb-8">
         <h2 className="text-xs uppercase text-[#dee2e6] mb-4 pl-4">Main</h2>
         <ul className="space-y-2">
           <li>
@@ -68,15 +67,7 @@ export function Sidebar() {
               <span>Messages</span>
             </Link>
           </li>
-          <li>
-            <Link 
-              href="/settings" 
-              className={`flex items-center gap-3 py-3 px-4 rounded-lg ${isActive('/settings') ? 'bg-[#8e44ad] text-[#f5f5f5] font-semibold' : 'text-[#e9ecef] hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f5f5f5]'} hover:translate-x-1 transition-all`}
-            >
-              <span className="text-xl">⚙️</span>
-              <span>Settings</span>
-            </Link>
-          </li>
+          
         </ul>
       </div>
       
