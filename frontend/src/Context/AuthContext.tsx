@@ -8,6 +8,9 @@ type User = {
   email: string
   profilePic?: string
   token: string
+  bio?: string
+  humorTypeId?: number
+  createdAt?: string
 }
 
 type AuthContextType = {
@@ -21,9 +24,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 function normalizePicPath(path: string) {
   const withSlashes = path.replace(/\\/g, '/')
-  return withSlashes.startsWith('/')
-    ? withSlashes
-    : '/' + withSlashes
+  return withSlashes.startsWith('/') ? withSlashes : '/' + withSlashes
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -39,10 +40,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const { authenticated, user: u } = await res.json()
           if (authenticated) {
             setUser({
-              ...u,
-              profilePic: u.profilePic
-                ? normalizePicPath(u.profilePic)
-                : undefined,
+              name: u.name,
+              email: u.email,
+              token: u.token,
+              profilePic: u.profilePic ? normalizePicPath(u.profilePic) : undefined,
+              bio: u.bio,
+              humorTypeId: u.humorTypeId,
+              createdAt: u.createdAt,
             })
           }
         }
@@ -67,20 +71,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        console.error('Login response error:', errorData)
         throw new Error(errorData.message || 'Login failed')
       }
 
       const userData = await response.json()
-      console.log('Login successful, user data:', userData)
-
       setUser({
         name: userData.name,
         email: userData.email,
         token: userData.token,
-        profilePic: userData.profilePic
-          ? normalizePicPath(userData.profilePic)
-          : undefined,
+        profilePic: userData.profilePic ? normalizePicPath(userData.profilePic) : undefined,
+        bio: userData.bio,
+        humorTypeId: userData.humorTypeId,
+        createdAt: userData.createdAt,
       })
 
       router.push('/')
@@ -89,25 +91,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error instanceof Error ? error : new Error('Login failed')
     }
   }
-const logout = async () => {
-  setLoading(true); 
-  try {
-    const response = await fetch('/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include',
-    });
 
-    if (!response.ok) {
-      throw new Error('Logout request failed');
+  const logout = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new Error('Logout request failed')
+      }
+      setUser(null)
+      router.push('/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      setLoading(false)
     }
-    setUser(null);
-    router.push('/login');
-  } catch (error) {
-    console.error('Logout error:', error);
-  } finally {
-    setLoading(false);
   }
-};
 
   const value = {
     user,

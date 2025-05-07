@@ -156,6 +156,34 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
                 return StatusCode(500, $"Token refresh error: {ex.Message}");
             }
         }
+        [HttpGet("getCurrentUser")]
+        [Authorize]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+                var user = await _authService.GetUserByIdAsync(userId);
+                
+                if (user == null)
+                {
+                    return Unauthorized("Invalid user");
+                }
 
+                return Ok(new {
+                    UserId = user.UserId,
+                    Name = user.Name,
+                    Email = user.Email,
+                    ProfilePictureUrl = user.ProfilePictureUrl,
+                    Bio = user.Bio,
+                    HumorTypeId = user.HumorTypeId,
+                    CreatedAt = user.CreatedAt,
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error retrieving current user: {ex.Message}");
+            }
+        }
     }
 }

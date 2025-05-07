@@ -88,7 +88,7 @@ await Task.Delay(0);
 
         public async Task<bool> HasPendingFriendRequestTo(int userId)
         {
-            await Task.Delay(0); // Simulate async operation
+            await Task.Delay(0);
             return FriendRequestsSent.Any(fr => fr.ReceiverId == userId && fr.Status == FriendRequestStatus.Pending);
         }
     }
