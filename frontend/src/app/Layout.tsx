@@ -1,9 +1,9 @@
-// app/layout.tsx
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/Context/AuthContext'
 import { AuthLayout } from '@/Components/Authlayout'
+import { SearchProvider } from '@/Context/SearchContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -23,7 +23,9 @@ export default function RootLayout({
       <link rel="apple-touch-icon" href="/memzyiconcopyyy.jpg" />
       <body className={`${inter.className} bg-gradient-to-br from-darker to-primary-dark text-light min-h-screen leading-relaxed overflow-x-hidden`}>
         <AuthProvider>
-          <AuthLayout>{children}</AuthLayout>
+          <SearchProvider>
+            <AuthLayout>{children}</AuthLayout>
+          </SearchProvider>
         </AuthProvider>
       </body>
     </html>

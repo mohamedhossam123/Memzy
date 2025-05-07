@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
-  // 1) parse & validate
   const { email, password } = await req.json()
   if (!email || !password) {
     return NextResponse.json(
@@ -12,7 +11,6 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // 2) proxy to ASP.NET
     const resp = await fetch(
       `http://localhost:5001/api/Auth/login`,
       {
@@ -22,11 +20,9 @@ export async function POST(req: NextRequest) {
       }
     )
 
-    // 3) read raw JSON
     const payload = await resp.json().catch(() => ({}))
     console.log('Login proxy payload:', payload)
 
-    // 4) if backend errored, pass it along
     if (!resp.ok) {
       return NextResponse.json(
         { message: payload.message || 'Authentication failed' },
@@ -34,7 +30,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 5) normalize token + user keys
     const token = payload.Token ?? payload.token
     const userData = payload.User ?? payload.user
 
@@ -45,16 +40,14 @@ export async function POST(req: NextRequest) {
         { status: 502 }
       )
     }
-
-    // 6) build the front-end user object
+  
     const responsePayload = {
       name: userData.Name ?? userData.name,
       email: userData.Email ?? userData.email,
       profilePic: userData.ProfilePictureUrl ?? userData.profilePictureUrl,
       token,
     }
-
-    // 7) set cookie + return JSON
+  
     const responseObj = NextResponse.json(responsePayload)
     responseObj.cookies.set({
       name: 'auth_token',

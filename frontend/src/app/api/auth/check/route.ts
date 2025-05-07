@@ -6,7 +6,6 @@ export async function GET(req: NextRequest) {
   if (!token) return NextResponse.json({ authenticated: false, user: null })
 
   try {
-    // forwards to ASP.NET /api/Auth/validate
     const resp = await fetch('http://localhost:5001/api/Auth/validate', {
       headers: { Authorization: `Bearer ${token}` },
     })
