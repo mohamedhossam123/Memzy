@@ -26,6 +26,37 @@ namespace MyApiProject.Controllers
             _authService = authService;
             _environment = environment;
         }
+        [HttpPost("UpdateUsername")]
+        [Authorize]
+        public async Task<IActionResult> UpdateUsername([FromBody] string newName)
+        {
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+                var user = await _userService.UpdateUsernameAsync(userId, newName);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+                return Ok(new { Message = "Username updated successfully" });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
         
         [HttpDelete("DeleteUser")]
         [Authorize] 

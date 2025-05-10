@@ -60,8 +60,9 @@ export default function UserProfile() {
         }
       )
       if (!response.ok) throw new Error('Failed to fetch')
-
+      
       const data = await response.json()
+      console.log("Data from getCurrentUser:", data);
       setUserData(data)
       setNewName(data.name || '')
       setNewBio(data.bio || '')
@@ -75,7 +76,6 @@ export default function UserProfile() {
       setIsLoading(false)
     }
   }
-  
 
   const confirmHumorChange = async () => {
     try {
@@ -87,9 +87,7 @@ export default function UserProfile() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${user?.token ?? ''}`,
           },
-          body: JSON.stringify({
-            humorTypes: humorPreferences
-          }),
+          body: JSON.stringify({ humorTypes: humorPreferences }),
         }
       )
       if (!response.ok) throw new Error('Failed to update humor preferences')
@@ -103,9 +101,9 @@ export default function UserProfile() {
   const confirmNameChange = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateName`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateUsername`,
         {
-          method: 'PUT',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${user?.token ?? ''}`,
@@ -135,19 +133,16 @@ export default function UserProfile() {
     
     try {
       const formData = new FormData()
-      formData.append('profilePicture', newProfilePic)
+      formData.append('ProfilePicture', newProfilePic)
       
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/ChangeProfilePicture`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateProfilePicture`,
         {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${user?.token ?? ''}`,
-          },
+          method: 'POST',
+          headers: { Authorization: `Bearer ${user?.token ?? ''}` },
           body: formData,
         }
       )
-      
       if (!response.ok) throw new Error('Failed to update profile picture')
       await fetchUserDetails()
       setProfilePicModalOpen(false)
@@ -160,52 +155,43 @@ export default function UserProfile() {
   }
 
   const updateBio = async () => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateUserBio`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user?.token}`,
-        },
-        // Send as JSON object instead of raw string
-        body: JSON.stringify({ newBio }),
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateUserBio`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user?.token}` },
+          body: JSON.stringify(newBio),
+        }
+      )
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to update bio')
       }
-    );
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to update bio');
+      await fetchUserDetails()
+      setBioModalOpen(false)
+    } catch (err) {
+      console.error(err)
     }
-    await fetchUserDetails();
-    setBioModalOpen(false);
-  } catch (err) {
-    console.error(err);
-    // Add error toast/notification here
   }
-}
 
   const toggleHumorType = (type: string) => {
-    setHumorPreferences(prev => 
-      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
-    )
+    setHumorPreferences(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-      </div>
-    )
-  }
-
+  if (isLoading) return (<div className="flex items-center justify-center h-screen"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div></div>)
   if (!user) return null
 
   const getProfilePicUrl = (picPath?: string) => {
-    if (!picPath) return null
-    const normalizedPath = picPath.replace(/\\/g, '/').replace('uploads/profile_pictures/', '')
-    return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/uploads/profile_pictures/${normalizedPath}`
-  }
+  if (!picPath) return null;
+  
+  // Handle full URLs and local paths correctly
+  if (picPath.startsWith('http')) return picPath;
+  
+  // Add cache busting
+  const timestamp = new Date().getTime();
+  return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/${picPath.replace(/^\\?\/?/, '')}?t=${timestamp}`;
+};
 
 
   return (
@@ -216,15 +202,15 @@ export default function UserProfile() {
           {/* Profile Picture */}
           <div className="relative w-40 h-40 rounded-full border-4 border-accent overflow-hidden shadow-glow">
             {user.profilePic ? (
-              <Image
-                src={getProfilePicUrl(user.profilePic) || ''}
-                alt="Profile"
-                fill
-                className="object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none'
-                }}
-              />
+             <Image
+  src={getProfilePicUrl(user.profilePic) || ''}
+  alt="Profile"
+  width={160}  // Add explicit dimensions
+  height={160}
+  className="object-cover rounded-full"
+  priority
+  unoptimized={process.env.NODE_ENV !== 'production'} // Bypass optimization in dev
+/>
             ) : (
               <div className="w-full h-full bg-primary flex items-center justify-center">
                 <span className="text-5xl font-bold text-white">
@@ -248,8 +234,8 @@ export default function UserProfile() {
 
             <div className="py-4 max-w-2xl mx-auto">
               <p className="text-light/90 text-base italic">
-                {user.bio || "No bio yet. Tell us about yourself!"}
-              </p>
+  {userData?.bio || user?.bio || "No bio yet. Tell us about yourself!"}
+</p>
             </div>
           </div>
         </div>
@@ -300,6 +286,7 @@ export default function UserProfile() {
 <button
   onClick={() => setBioModalOpen(true)}
   className="bg-glass rounded-xl p-4 px-8 transition hover:scale-105 hover:bg-glass/80 flex items-center gap-2"
+
 >
   <span className="text-xl">📝</span>
   <span className="text-light/90">Change Bio</span>
@@ -447,16 +434,21 @@ export default function UserProfile() {
                 />
 
                 <button
-                  onClick={updateBio}
-                  disabled={!newBio.trim()}
-                  className={`mt-6 w-full py-2 rounded-xl font-semibold transition-all shadow-lg ${
-                    newBio.trim()
-                      ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white hover:from-[#9e44f0] hover:to-[#5a10e0]'
-                      : 'bg-gray-600 text-gray-300 cursor-not-allowed'
-                  }`}
-                >
-                  Save Bio
-                </button>
+  onClick={(e) => {
+    e.preventDefault(); // Prevent default form behavior
+    e.stopPropagation(); // Stop event bubbling
+    updateBio();
+  }}
+  disabled={!newBio.trim()}
+  type="button" 
+  className={`mt-6 w-full py-2 rounded-xl font-semibold transition-all shadow-lg ${
+    newBio.trim()
+      ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white hover:from-[#9e44f0] hover:to-[#5a10e0]'
+      : 'bg-gray-600 text-gray-300 cursor-not-allowed'
+  }`}
+>
+  Save Bio
+</button>
               </div>
             </Transition.Child>
           </div>
@@ -532,6 +524,7 @@ export default function UserProfile() {
                 <button
                   onClick={confirmProfilePicChange}
                   disabled={!newProfilePic}
+                  type="button"
                   className={`mt-6 w-full py-2 rounded-xl font-semibold transition-all shadow-lg ${
                     newProfilePic 
                       ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white hover:from-[#9e44f0] hover:to-[#5a10e0]' 
@@ -608,8 +601,13 @@ export default function UserProfile() {
                 </div>
 
                 <button
-                  onClick={confirmNameChange}
+                  onClick={(e) => {
+                    e.preventDefault(); 
+                    e.stopPropagation();
+                    confirmNameChange();
+                  }}
                   disabled={!newName.trim()}
+                  type="button"
                   className={`mt-6 w-full py-2 rounded-xl font-semibold transition-all shadow-lg
                              ${newName.trim() 
                                ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white hover:from-[#9e44f0] hover:to-[#5a10e0]' 

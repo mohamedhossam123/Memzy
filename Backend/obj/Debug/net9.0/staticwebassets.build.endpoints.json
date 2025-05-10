@@ -329,6 +329,88 @@
           "Value": "sha256-jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4="
         }
       ]
+    },
+    {
+      "Route": "uploads/profile_pictures/6768b159-0c92-405d-ace9-7203437953de.jpg",
+      "AssetFile": "uploads/profile_pictures/6768b159-0c92-405d-ace9-7203437953de.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "159788"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 10 May 2025 13:53:59 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/profile_pictures/6768b159-0c92-405d-ace9-7203437953de.qknalsq6kg.jpg",
+      "AssetFile": "uploads/profile_pictures/6768b159-0c92-405d-ace9-7203437953de.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "159788"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 10 May 2025 13:53:59 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "qknalsq6kg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM="
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/profile_pictures/6768b159-0c92-405d-ace9-7203437953de.jpg"
+        }
+      ]
     }
   ]
 }

@@ -18,7 +18,7 @@ public interface IUserService
 
     Task<User> ForgotPasswordAsync(string email);
     Task<User> ResetPasswordAsync(User user, string newPassword);
-    Task<bool> UploadProfilePictureAsync(IFormFile file,int userId, string webRootPath);
+    Task<string> UploadProfilePictureAsync(IFormFile file,int userId, string webRootPath);
 }
 
 public class UserService : IUserService
@@ -114,12 +114,9 @@ public class UserService : IUserService
     }
 
     
-    public async Task<bool> UploadProfilePictureAsync(IFormFile file,int userId, string webRootPath)
+    public async Task<string> UploadProfilePictureAsync(IFormFile file,int userId, string webRootPath)
     {
-        if (file == null || file.Length == 0) return false;
-
         var user = await _context.Users.FindAsync(userId);
-        if (user == null) return false;
 
         var directoryPath = Path.Combine(webRootPath, "uploads", "profile_pictures");
         if (!Directory.Exists(directoryPath))
@@ -135,7 +132,7 @@ public class UserService : IUserService
         user.ProfilePictureUrl = Path.Combine("uploads", "profile_pictures", fileName);
         await _context.SaveChangesAsync();
 
-        return true;
+        return user.ProfilePictureUrl;
     }
 
 }

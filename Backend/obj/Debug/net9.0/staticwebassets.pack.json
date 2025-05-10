@@ -17,6 +17,10 @@
       "PackagePath": "staticwebassets\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg"
     },
     {
+      "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg",
+      "PackagePath": "staticwebassets\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg"
+    },
+    {
       "Id": "obj\\Debug\\net9.0\\staticwebassets\\msbuild.Memzy_finalist.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
     },

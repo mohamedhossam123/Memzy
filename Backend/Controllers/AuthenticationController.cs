@@ -88,7 +88,8 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
                 UserId = user.UserId,
                 Name = user.Name,
                 Email = user.Email,
-                ProfilePictureUrl = user.ProfilePictureUrl
+                ProfilePictureUrl = user.ProfilePictureUrl,
+                Bio = user.Bio,
             }
         });
     }
@@ -115,7 +116,8 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
                     UserId = user.UserId,
                     Name = user.Name,
                     Email = user.Email,
-                    ProfilePictureUrl = user.ProfilePictureUrl
+                    ProfilePictureUrl = user.ProfilePictureUrl,
+                    Bio = user.Bio,
                 });
             }
             catch (UnauthorizedAccessException)

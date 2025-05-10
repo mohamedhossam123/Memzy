@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "UZhWXFX9Remd87/wFVdeXiWqd5VOdk94JexM7CnDKtY=",
+  "Hash": "TIhtJW7CEtW/rRjshF2G/NJsFpTFfUKgBZczF3kXFS8=",
   "Source": "Memzy_finalist",
   "BasePath": "_content/Memzy_finalist",
   "Mode": "Default",
@@ -78,6 +78,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg",
+      "SourceId": "Memzy_finalist",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "BasePath": "_content/Memzy_finalist",
+      "RelativePath": "uploads/profile_pictures/6768b159-0c92-405d-ace9-7203437953de#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "qknalsq6kg",
+      "Integrity": "2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg"
     },
     {
       "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
@@ -345,6 +366,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/profile_pictures/6768b159-0c92-405d-ace9-7203437953de.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "159788"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 10 May 2025 13:53:59 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/profile_pictures/6768b159-0c92-405d-ace9-7203437953de.qknalsq6kg.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "159788"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 10 May 2025 13:53:59 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "qknalsq6kg"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/profile_pictures/6768b159-0c92-405d-ace9-7203437953de.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM="
         }
       ]
     },
