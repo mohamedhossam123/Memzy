@@ -28,7 +28,7 @@ namespace Memzy_finalist.Controllers
             try
             {
                 var userId = await _authService.GetAuthenticatedUserId();
-                var user = await _humorService.AddHumorAsync(userId, humorPreference.HumorType);
+                var user = await _humorService.ChangeHumorAsync(userId, humorPreference.HumorTypes);
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -50,32 +50,26 @@ namespace Memzy_finalist.Controllers
         }
         
         [HttpPut("ChangeHumor")]
-        [Authorize]
-        public async Task<IActionResult> ChangeHumor([FromBody] HumorPreferenceDto humorPreference)
+[Authorize]
+public async Task<IActionResult> ChangeHumor([FromBody] HumorPreferenceDto humorPreference)
+{
+    try
+    {
+        var userId = await _authService.GetAuthenticatedUserId();
+        var user = await _humorService.AddHumorAsync(userId, humorPreference.HumorTypes);
+
+        if (user == null)
         {
-            try
-            {
-                var userId = await _authService.GetAuthenticatedUserId();
-                var user = await _humorService.ChangeHumorAsync(userId, humorPreference.HumorType);
-                if (user == null)
-                {
-                    return NotFound("User not found");
-                }
-                return Ok(new { Message = "Humor preference updated successfully", UserId = user.UserId });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
+            return NotFound("User not found");
         }
+        return Ok(new { Message = "Humor preference updated successfully", UserId = user.UserId });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, $"An error occurred: {ex.Message}");
+    }
+}
+
 
         [HttpDelete("RemoveHumor")]
         [Authorize]
@@ -103,7 +97,8 @@ namespace Memzy_finalist.Controllers
     }
     
     public class HumorPreferenceDto
-    {
-        public string HumorType { get; set; }
-    }
+{
+    public List<string> HumorTypes { get; set; }
+}
+
 }

@@ -9,11 +9,12 @@ using System.Threading.Tasks;
 namespace Memzy_finalist.Services
 {
     public interface IHumorService
-    {
-        Task<User> ChangeHumorAsync(int userId, string humorType);
-        Task<User> AddHumorAsync(int userId, string humorType);
-        Task RemoveHumorAsync(int userId);
-    }
+{
+    Task<User> ChangeHumorAsync(int userId, List<string> humorTypes);
+    Task<User> AddHumorAsync(int userId, List<string> humorTypes);
+    Task RemoveHumorAsync(int userId);
+}
+
 
     public class HumorService : IHumorService
     {
@@ -32,63 +33,65 @@ namespace Memzy_finalist.Services
             _logger = logger;
         }
 
-        public async Task<User> ChangeHumorAsync(int userId, string humorType)
+        public async Task<User> ChangeHumorAsync(int userId, List<string> humorTypes)
+{
+    try
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
         {
-            try
-            {
-                var user = await _context.Users.FindAsync(userId);
-                if (user == null)
-                {
-                    throw new KeyNotFoundException("User not found");
-                }
-
-                if (!AllowedHumorTypes.Contains(humorType))
-                {
-                    throw new ArgumentException("Invalid humor type provided");
-                }
-
-                var humorTypeEntity = await _context.HumorTypes
-                    .FirstOrDefaultAsync(h => h.HumorTypeName == humorType);
-
-                if (humorTypeEntity == null)
-                {
-                    throw new ArgumentException("Humor type not found in database");
-                }
-
-                // Update or add the humor type association
-                var existingUserHumorType = await _context.UserHumorTypes
-                    .FirstOrDefaultAsync(uht => uht.UserId == userId);
-
-                if (existingUserHumorType != null)
-                {
-                    existingUserHumorType.HumorTypeId = humorTypeEntity.HumorTypeId;
-                }
-                else
-                {
-                    // Add a new user-humor type association
-                    _context.UserHumorTypes.Add(new UserHumorType
-                    {
-                        UserId = userId,
-                        HumorTypeId = humorTypeEntity.HumorTypeId
-                    });
-                }
-
-                await _context.SaveChangesAsync();
-
-                return user;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error changing humor for user {UserId}", userId);
-                throw;
-            }
+            throw new KeyNotFoundException("User not found");
         }
 
-        public async Task<User> AddHumorAsync(int userId, string humorType)
+        if (humorTypes == null || !humorTypes.Any())
         {
-            // Add humor is similar to change humor in this case
-            return await ChangeHumorAsync(userId, humorType);
+            throw new ArgumentException("No humor types provided");
         }
+
+        var validTypes = humorTypes
+            .Where(ht => AllowedHumorTypes.Contains(ht))
+            .ToList();
+
+        if (!validTypes.Any())
+        {
+            throw new ArgumentException("No valid humor types provided");
+        }
+
+        // Remove existing humor preferences
+        var existingPrefs = _context.UserHumorTypes
+            .Where(uht => uht.UserId == userId);
+        _context.UserHumorTypes.RemoveRange(existingPrefs);
+
+        // Fetch the corresponding HumorType entities
+        var humorTypeEntities = await _context.HumorTypes
+            .Where(ht => validTypes.Contains(ht.HumorTypeName))
+            .ToListAsync();
+
+        foreach (var humorTypeEntity in humorTypeEntities)
+        {
+            _context.UserHumorTypes.Add(new UserHumorType
+            {
+                UserId = userId,
+                HumorTypeId = humorTypeEntity.HumorTypeId
+            });
+        }
+
+        await _context.SaveChangesAsync();
+        return user;
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error changing humor for user {UserId}", userId);
+        throw;
+    }
+}
+
+
+        public async Task<User> AddHumorAsync(int userId, List<string> humorTypes)
+{
+    return await ChangeHumorAsync(userId, humorTypes);
+}
+
 
         public async Task RemoveHumorAsync(int userId)
         {
