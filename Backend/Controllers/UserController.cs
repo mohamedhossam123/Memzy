@@ -48,63 +48,24 @@ public async Task<IActionResult> UploadProfilePicture([FromForm] profilePictureD
     try
     {
         var userId = await _authService.GetAuthenticatedUserId();
-        if (dto.ProfilePicture == null || dto.ProfilePicture.Length == 0)
-            return BadRequest("Profile picture is required");
+        var result = await _userService.UploadProfilePictureAsync(
+            dto.ProfilePicture, 
+            userId, 
+            _environment.WebRootPath
+        );
 
-        var filePath = await _userService.UploadProfilePictureAsync(dto.ProfilePicture, userId, _environment.WebRootPath);
-        
-        return Ok(new { FilePath = filePath, Message = "Profile picture uploaded successfully" });
-    }
-    catch (UnauthorizedAccessException ex)
-    {
-        return Unauthorized(ex.Message);
-    }
-    catch (ArgumentException ex)
-    {
-        return BadRequest(ex.Message);
-    }
-    catch (KeyNotFoundException ex)
-    {
-        return NotFound(ex.Message);
+        return Ok(new { 
+            Message = "Profile picture uploaded successfully",
+            Path = result 
+        });
     }
     catch (Exception ex)
     {
-        return StatusCode(500, $"An error occurred: {ex.Message}");
+        return StatusCode(500, $"Internal server error: {ex.Message}");
     }
 }
 
-        [HttpPut("UpdateName")]
-        [Authorize]
-        public async Task<IActionResult> UpdateUserName([FromBody] string newName)
-        {
-            try
-            {
-                var userId = await _authService.GetAuthenticatedUserId();
-                var user = await _userService.UpdateUsernameAsync(userId, newName);
-                
-                return Ok(new { 
-                    Message = "User name updated successfully",
-                    UserId = user.UserId,
-                    NewName = user.Name
-                });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
-        }
+        
 
         [HttpPost("UpdatePassword")]
         [Authorize]

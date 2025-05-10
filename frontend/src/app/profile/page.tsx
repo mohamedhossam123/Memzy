@@ -75,6 +75,7 @@ export default function UserProfile() {
       setIsLoading(false)
     }
   }
+  
 
   const confirmHumorChange = async () => {
     try {
@@ -159,25 +160,30 @@ export default function UserProfile() {
   }
 
   const updateBio = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateUserBio`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${user?.token}`,
-          },
-          body: JSON.stringify(newBio),
-        }
-      )
-      if (!response.ok) throw new Error('Failed to update bio')
-      await fetchUserDetails()
-      setBioModalOpen(false)
-    } catch (err) {
-      console.error(err)
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateUserBio`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user?.token}`,
+        },
+        // Send as JSON object instead of raw string
+        body: JSON.stringify({ newBio }),
+      }
+    );
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update bio');
     }
+    await fetchUserDetails();
+    setBioModalOpen(false);
+  } catch (err) {
+    console.error(err);
+    // Add error toast/notification here
   }
+}
 
   const toggleHumorType = (type: string) => {
     setHumorPreferences(prev => 

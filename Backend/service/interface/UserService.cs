@@ -45,20 +45,19 @@ public class UserService : IUserService
     }
 
     public async Task<User> UpdateUsernameAsync(int userId, string newName)
-    {
-        if (string.IsNullOrWhiteSpace(newName))
-            throw new ArgumentException("Name cannot be empty");
-        if (newName.Length > 100) 
-            throw new ArgumentException("Name is too long");
+{
+    if (string.IsNullOrWhiteSpace(newName))
+        throw new ArgumentException("Name cannot be empty");
 
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null)
-            throw new KeyNotFoundException("User not found");
-        user.Name = newName.Trim();
-        
-        await _context.SaveChangesAsync();
-        return user;
-    }
+    var user = await _context.Users
+        .FirstOrDefaultAsync(u => u.UserId == userId)
+        ?? throw new KeyNotFoundException("User not found");
+
+    user.Name = newName.Trim();
+    await _context.SaveChangesAsync();
+
+    return user;
+}
 
     public async Task<User> UpdateUserPassword(int userid, string user)
     {
