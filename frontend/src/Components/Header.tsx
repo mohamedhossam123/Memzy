@@ -75,77 +75,54 @@ export function Header() {
         )}
       </div>
       
-      {/* Center - Search bar */}
-      <div ref={searchRef} className="relative flex items-center justify-center">
-        <div className="relative">
-          {/* Glow effect */}
-          <div className="glow absolute -z-10 overflow-hidden blur-[30px] opacity-40 max-h-[130px] max-w-[354px] h-full w-full rounded-[12px]"
-            style={{
-              backgroundImage: `conic-gradient(#000, #402fb5 5%, #000 38%, #000 50%, #cf30aa 60%, #000 87%)`
-            }}
-          ></div>
-          
-          {/* Dark border background */}
-          <div className="darkBorderBg absolute -z-10 overflow-hidden max-h-[65px] max-w-[312px] h-full w-full rounded-[12px] blur-[3px]"></div>
-          
-          {/* Border effect */}
-          <div className="border absolute -z-10 overflow-hidden max-h-[59px] max-w-[303px] h-full w-full rounded-[11px] blur-[0.5px]"></div>
-          
-          {/* White effect */}
-          <div className="white absolute -z-10 overflow-hidden max-h-[63px] max-w-[307px] h-full w-full rounded-[10px] blur-[2px]"></div>
-          
-          {/* Input field */}
-          <input 
+      {/* Center - Search bar (moved slightly right) */}
+      <div ref={searchRef} className="relative ml-6">
+        <div className="flex max-w-[320px] w-[320px] items-center justify-between gap-2 bg-[#2f3640] rounded-[50px] relative">
+          <button 
+            className="text-white absolute right-2 w-[42px] h-[42px] rounded-full bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] border-0 inline-block transition-all duration-300 ease-[cubic-bezier(.23,1,0.32,1)] hover:text-white hover:bg-[#1A1A1A] hover:shadow-[0_10px_20px_rgba(0,0,0,0.5)] hover:-translate-y-[3px] active:shadow-none active:translate-y-0"
+          >
+            🔍
+          </button>
+          <input
             type="text"
+            className="border-none bg-transparent outline-none text-white text-[15px] py-4 px-6 pr-[46px] w-full"
+            placeholder="Search..."
             value={query}
             onChange={(e) => handleSearchChange(e.target.value)}
             onFocus={() => query.trim() && setShowResults(true)}
-            className="input bg-[#010201] border-none w-[301px] h-[56px] rounded-[10px] text-white px-[59px] text-[18px] focus:outline-none"
-            placeholder="Search..."
           />
-          
-          {/* Search icon - Simplified */}
-          <div className="absolute left-[20px] top-[15px]">
-            🔍
-          </div>
-          
-          {/* Input mask */}
-          <div className="pointer-events-none w-[100px] h-[20px] absolute top-[18px] left-[70px] bg-gradient-to-r from-transparent to-black"></div>
-          
-          {/* Pink mask */}
-          <div className="pointer-events-none w-[30px] h-[20px] absolute top-[10px] left-[5px] bg-[#cf30aa] blur-[20px] opacity-80 transition-all duration-2000"></div>
-          
-          {/* Search results dropdown */}
-          {showResults && results.length > 0 && (
-            <div className="absolute top-full mt-2 w-full bg-[#2d1b3a] rounded-lg shadow-lg border border-[rgba(255,255,255,0.1)] max-h-60 overflow-auto z-50">
-              {results.map((result) => (
-                <div 
-                  key={result.id}
-                  className="p-3 hover:bg-[#3a2449] cursor-pointer flex items-center gap-3"
-                  onClick={() => handleResultClick(result.name)}
-                >
-                  {result.profilePic ? (
-                    <Image
-                      src={result.profilePic}
-                      width={32}
-                      height={32}
-                      alt={result.name}
-                      className="rounded-full"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none'
-                      }}
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-[#3a2449] flex items-center justify-center">
-                      {result.name.charAt(0)}
-                    </div>
-                  )}
-                  <span>{result.name}</span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
+        
+        {/* Search results dropdown */}
+        {showResults && results.length > 0 && (
+          <div className="absolute top-full mt-2 w-full bg-[#2d1b3a] rounded-lg shadow-lg border border-[rgba(255,255,255,0.1)] max-h-60 overflow-auto z-50">
+            {results.map((result) => (
+              <div 
+                key={result.id}
+                className="p-3 hover:bg-[#3a2449] cursor-pointer flex items-center gap-3"
+                onClick={() => handleResultClick(result.name)}
+              >
+                {result.profilePic ? (
+                  <Image
+                    src={result.profilePic}
+                    width={32}
+                    height={32}
+                    alt={result.name}
+                    className="rounded-full"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none'
+                    }}
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-[#3a2449] flex items-center justify-center">
+                    {result.name.charAt(0)}
+                  </div>
+                )}
+                <span>{result.name}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Right side - Logo */}

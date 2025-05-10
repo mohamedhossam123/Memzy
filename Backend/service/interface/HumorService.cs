@@ -19,7 +19,7 @@ namespace Memzy_finalist.Services
     {
         private readonly MemzyContext _context;
         private readonly ILogger<HumorService> _logger;
-        
+
         private static readonly List<string> AllowedHumorTypes = new List<string> 
         { 
             "Dark Humor", 
@@ -55,7 +55,24 @@ namespace Memzy_finalist.Services
                     throw new ArgumentException("Humor type not found in database");
                 }
 
-                user.HumorTypeId = humorTypeEntity.HumorTypeId;
+                // Update or add the humor type association
+                var existingUserHumorType = await _context.UserHumorTypes
+                    .FirstOrDefaultAsync(uht => uht.UserId == userId);
+
+                if (existingUserHumorType != null)
+                {
+                    existingUserHumorType.HumorTypeId = humorTypeEntity.HumorTypeId;
+                }
+                else
+                {
+                    // Add a new user-humor type association
+                    _context.UserHumorTypes.Add(new UserHumorType
+                    {
+                        UserId = userId,
+                        HumorTypeId = humorTypeEntity.HumorTypeId
+                    });
+                }
+
                 await _context.SaveChangesAsync();
 
                 return user;
@@ -69,7 +86,7 @@ namespace Memzy_finalist.Services
 
         public async Task<User> AddHumorAsync(int userId, string humorType)
         {
-            // Since we now have a single humor type, AddHumor is essentially the same as ChangeHumor
+            // Add humor is similar to change humor in this case
             return await ChangeHumorAsync(userId, humorType);
         }
 
@@ -83,8 +100,19 @@ namespace Memzy_finalist.Services
                     throw new KeyNotFoundException("User not found");
                 }
 
-                user.HumorTypeId = null;
-                await _context.SaveChangesAsync();
+                // Remove humor type association
+                var userHumorType = await _context.UserHumorTypes
+                    .FirstOrDefaultAsync(uht => uht.UserId == userId);
+
+                if (userHumorType != null)
+                {
+                    _context.UserHumorTypes.Remove(userHumorType);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    throw new KeyNotFoundException("User humor preference not found");
+                }
             }
             catch (Exception ex)
             {

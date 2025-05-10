@@ -6,7 +6,7 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace MyApiProject.Controllers
+namespace Memzy_finalist.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -33,7 +33,7 @@ namespace MyApiProject.Controllers
                 {
                     return NotFound("User not found");
                 }
-                return Ok(new { Message = "Humor preference updated successfully", UserId = user.UserId });
+                return Ok(new { Message = "Humor preference added successfully", UserId = user.UserId });
             }
             catch (UnauthorizedAccessException ex)
             {

@@ -1,8 +1,10 @@
-// Profile Page Component (optimized layout)
 'use client'
 
 import { useAuth } from '@/Context/AuthContext'
-import { useRouter } from 'next/navigation'
+import { useRouter} from 'next/navigation'
+import Link from 'next/link'
+import { Dialog } from '@headlessui/react'
+
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 
@@ -10,7 +12,6 @@ export default function UserProfile() {
   const { user } = useAuth()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
-
   useEffect(() => {
     if (!user) {
       router.push('/login')
@@ -18,7 +19,20 @@ export default function UserProfile() {
       setIsLoading(false)
     }
   }, [user, router])
+const [isHumorModalOpen, setHumorModalOpen] = useState(false)
+const [humorPreferences, setHumorPreferences] = useState<string[]>([])
 
+const toggleHumorType = (type: string) => {
+  setHumorPreferences((prev) =>
+    prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+  )
+}
+
+const confirmHumorChange = () => {
+  console.log("Selected Humor Types:", humorPreferences)
+  setHumorModalOpen(false)
+  // TODO: Send to backend here
+}
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -36,8 +50,8 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-darker to-primary-dark text-light p-4 sm:p-6 md:p-8 pl-[264px]"> {/* Added left padding */}
-      <div className="max-w-4xl mx-auto space-y-8"> {/* Increased max-width */}
+    <div className="min-h-screen bg-gradient-to-br from-darker to-primary-dark text-light">
+      <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 md:p-8">
         {/* Centered Profile Section */}
         <div className="flex flex-col items-center text-center space-y-6">
           {/* Profile Picture */}
@@ -97,21 +111,73 @@ export default function UserProfile() {
         {/* Additional Separator Line */}
         <div className="border-t border-glass/50 w-full mx-auto my-8" />
 
-        {/* Activity Section */}
-        <div className="text-center space-y-6">
-          <h2 className="text-xl font-semibold text-glow">Recent Activity</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-glass rounded-xl p-4 text-left">
-              <h3 className="text-base font-semibold mb-2">Latest Memory</h3>
-              <p className="text-light/80 text-sm italic">"That amazing concert last night!"</p>
-            </div>
-            <div className="bg-glass rounded-xl p-4 text-left">
-              <h3 className="text-base font-semibold mb-2">Recent Achievement</h3>
-              <p className="text-light/80 text-sm italic">Memory Master Level 5</p>
-            </div>
-          </div>
-        </div>
+        {/* Settings */}
+<div className="text-center space-y-6">
+  <h2 className="text-xl font-semibold text-glow">Account Settings</h2>
+  <div className="flex flex-wrap justify-center gap-4">
+    <Link
+      href="/change-profile-picture"
+      className="bg-glass rounded-xl p-4 px-8 transition hover:scale-105 hover:bg-glass/80 flex items-center gap-2"
+    >
+      <span className="text-xl">🖼️</span>
+      <span className="text-light/90">Change Profile Picture</span>
+    </Link>
+    <button
+  onClick={() => setHumorModalOpen(true)}
+  className="bg-glass rounded-xl p-4 px-8 transition hover:scale-105 hover:bg-glass/80 flex items-center gap-2"
+>
+  <span className="text-xl">😄</span>
+  <span className="text-light/90">Change Humor</span>
+</button>
+
+    <Link
+      href="/change-name"
+      className="bg-glass rounded-xl p-4 px-8 transition hover:scale-105 hover:bg-glass/80 flex items-center gap-2"
+    >
+      <span className="text-xl">✏️</span>
+      <span className="text-light/90">Change Name</span>
+    </Link>
+  </div>
+</div>
+
       </div>
+      <Dialog open={isHumorModalOpen} onClose={() => setHumorModalOpen(false)} className="relative z-50">
+  <div className="fixed inset-0 bg-black/60" aria-hidden="true" />
+
+  <div className="fixed inset-0 flex items-center justify-center p-4">
+    <Dialog.Panel className="bg-glass p-6 rounded-2xl shadow-lg text-center w-[90%] max-w-md">
+      <Dialog.Title className="text-xl font-bold mb-4 text-glow">Select Your Humor Type</Dialog.Title>
+
+      <div className="flex flex-col gap-4">
+        <button
+          onClick={() => toggleHumorType('Dark Humor')}
+          className={`px-4 py-2 rounded-lg font-semibold transition ${
+            humorPreferences.includes('Dark Humor') ? 'bg-accent text-white' : 'bg-glass/50 text-light/80'
+          }`}
+        >
+          Dark Humor
+        </button>
+        <button
+          onClick={() => toggleHumorType('Friendly Humor')}
+          className={`px-4 py-2 rounded-lg font-semibold transition ${
+            humorPreferences.includes('Friendly Humor') ? 'bg-accent text-white' : 'bg-glass/50 text-light/80'
+          }`}
+        >
+          Friendly Humor
+        </button>
+      </div>
+
+      <button
+        onClick={confirmHumorChange}
+        className="mt-6 bg-accent text-white px-6 py-2 rounded-xl hover:bg-accent/80 transition"
+      >
+        Confirm
+      </button>
+    </Dialog.Panel>
+  </div>
+</Dialog>
+
+
     </div>
   )
 }

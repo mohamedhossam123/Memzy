@@ -157,33 +157,39 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
             }
         }
         [HttpGet("getCurrentUser")]
-        [Authorize]
-        public async Task<IActionResult> GetCurrentUser()
+[Authorize]
+public async Task<IActionResult> GetCurrentUser()
+{
+    try
+    {
+        var userId = await _authService.GetAuthenticatedUserId();
+        var user = await _authService.GetUserByIdAsync(userId);
+        
+        if (user == null)
         {
-            try
-            {
-                var userId = await _authService.GetAuthenticatedUserId();
-                var user = await _authService.GetUserByIdAsync(userId);
-                
-                if (user == null)
-                {
-                    return Unauthorized("Invalid user");
-                }
-
-                return Ok(new {
-                    UserId = user.UserId,
-                    Name = user.Name,
-                    Email = user.Email,
-                    ProfilePictureUrl = user.ProfilePictureUrl,
-                    Bio = user.Bio,
-                    HumorTypeId = user.HumorTypeId,
-                    CreatedAt = user.CreatedAt,
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error retrieving current user: {ex.Message}");
-            }
+            return Unauthorized("Invalid user");
         }
+        var humorTypes = user.UserHumorTypes.Select(uht => uht.HumorType).ToList();
+
+        return Ok(new {
+            UserId = user.UserId,
+            Name = user.Name,
+            Email = user.Email,
+            ProfilePictureUrl = user.ProfilePictureUrl,
+            Bio = user.Bio,
+            HumorTypes = humorTypes.Select(ht => new {
+                HumorTypeId = ht.HumorTypeId,
+                HumorTypeName = ht.HumorTypeName
+            }).ToList(),
+            CreatedAt = user.CreatedAt,
+        });
     }
+    catch (Exception ex)
+    {
+        return StatusCode(500, $"Error retrieving current user: {ex.Message}");
+    }
+}
+
+        }
+    
 }

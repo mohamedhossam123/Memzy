@@ -19,38 +19,40 @@ namespace Memzy_finalist.Models
             MessagesSent = new HashSet<Message>();
             MessagesReceived = new HashSet<Message>();
             Videos = new HashSet<Video>();
+            UserHumorTypes = new HashSet<UserHumorType>();
         }
 
         [Key]
         public int UserId { get; set; }
-        
+
         [Required]
         [MaxLength(100)]
         public string Name { get; set; } = null!;
-        
+
         [Required]
         [MaxLength(255)]
         [EmailAddress]
         public string Email { get; set; } = null!;
-        
+
         [MaxLength(500)]
         public string ProfilePictureUrl { get; set; }
-        
+
         [MaxLength(500)]
         public string Bio { get; set; }
-        
+
         [Required]
         public string PasswordHash { get; set; } = null!;
-        
+
         [MaxLength(20)]
         public string Status { get; set; } = "normal";
-        
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastActive { get; set; }
         public bool IsOnline { get; set; } = false;
-        public int? HumorTypeId { get; set; }
-        
-        public virtual HumorType HumorType { get; set; }
+
+        // New navigation for many-to-many humor types
+        public virtual ICollection<UserHumorType> UserHumorTypes { get; set; }
+
         public virtual ICollection<FriendRequest> FriendRequestsSent { get; set; }
         public virtual ICollection<FriendRequest> FriendRequestsReceived { get; set; }
         public virtual ICollection<Friendship> FriendsAsUser1 { get; set; }
@@ -61,8 +63,8 @@ namespace Memzy_finalist.Models
         public virtual ICollection<Video> Videos { get; set; }
 
         [NotMapped]
-        public IEnumerable<User> Friends 
-        { 
+        public IEnumerable<User> Friends
+        {
             get
             {
                 var friends1 = FriendsAsUser1.Select(f => f.User2);
@@ -76,7 +78,7 @@ namespace Memzy_finalist.Models
 
         public async Task<bool> IsFriendWith(int userId)
         {
-await Task.Delay(0);
+            await Task.Delay(0);
             return Friends.Any(f => f.UserId == userId);
         }
 

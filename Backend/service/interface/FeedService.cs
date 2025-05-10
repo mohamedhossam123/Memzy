@@ -29,32 +29,33 @@ namespace Memzy_finalist.Services
 
         public async Task<FeedResult> FeedGeneratorBasedOnHumor(int userId)
         {
-            // Get the user's single humor type
-            var userHumorTypeId = await _context.Users
-                .Where(u => u.UserId == userId)
-                .Select(u => u.HumorTypeId)
-                .FirstOrDefaultAsync();
+            // Get the user's humor types
+            var userHumorTypeIds = await _context.UserHumorTypes
+                .Where(uht => uht.UserId == userId)
+                .Select(uht => uht.HumorTypeId)
+                .ToListAsync();
 
-            if (userHumorTypeId == null)
+            if (!userHumorTypeIds.Any())
             {
+                // If the user has no humor types, return everything
                 return await FeedGeneratorEverythingGoes();
             }
 
-            // Get videos matching the user's humor preference
+            // Get videos matching any of the user's humor preferences
             var videos = await _context.Videos
                 .Include(v => v.VideoHumors)
                 .ThenInclude(vh => vh.HumorType)
-                .Where(v => v.VideoHumors.Any(vh => vh.HumorTypeId == userHumorTypeId))
+                .Where(v => v.VideoHumors.Any(vh => userHumorTypeIds.Contains(vh.HumorTypeId)))
                 .Where(v => v.IsApproved == true)
                 .OrderByDescending(v => v.CreatedAt)
                 .Take(3)
                 .ToListAsync();
 
-            // Get images matching the user's humor preference
+            // Get images matching any of the user's humor preferences
             var images = await _context.Images
                 .Include(i => i.ImageHumors)
                 .ThenInclude(ih => ih.HumorType)
-                .Where(i => i.ImageHumors.Any(ih => ih.HumorTypeId == userHumorTypeId))
+                .Where(i => i.ImageHumors.Any(ih => userHumorTypeIds.Contains(ih.HumorTypeId)))
                 .Where(i => i.IsApproved == true)
                 .OrderByDescending(i => i.CreatedAt)
                 .Take(3)
@@ -70,14 +71,14 @@ namespace Memzy_finalist.Services
         public async Task<FeedResult> FeedGeneratorEverythingGoes()
         {
             var videos = await _context.Videos
-                .OrderByDescending(v => v.CreatedAt)
                 .Where(v => v.IsApproved == true)
+                .OrderByDescending(v => v.CreatedAt)
                 .Take(3)
                 .ToListAsync();
 
             var images = await _context.Images
-                .OrderByDescending(i => i.CreatedAt)
                 .Where(i => i.IsApproved == true)
+                .OrderByDescending(i => i.CreatedAt)
                 .Take(3)
                 .ToListAsync();
 

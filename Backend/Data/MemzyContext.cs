@@ -6,7 +6,7 @@ namespace Memzy_finalist.Models
     {
         public MemzyContext() { }
         public MemzyContext(DbContextOptions<MemzyContext> options) : base(options) { }
-
+        public virtual DbSet<UserHumorType> UserHumorTypes { get; set; }
         public virtual DbSet<Friendship> Friends { get; set; }
         public virtual DbSet<FriendRequest> FriendRequests { get; set; }
         public virtual DbSet<Friendship> Friendships { get; set; }
@@ -28,121 +28,111 @@ namespace Memzy_finalist.Models
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            // Old Friend entity (can be removed after migration)
-            modelBuilder.Entity<Friendship>(entity =>
-            {
-                entity.HasKey(e => e.FriendshipId);
-                entity.HasOne(d => d.User1)
-                    .WithMany(p => p.FriendsAsUser1)
-                    .HasForeignKey(d => d.User1Id)
-                    .OnDelete(DeleteBehavior.NoAction);
-                entity.HasOne(d => d.User2)
-                    .WithMany(p => p.FriendsAsUser2)
-                    .HasForeignKey(d => d.User2Id)
-                    .OnDelete(DeleteBehavior.NoAction);
-            });
-            
-            // New Friendship entity
-            modelBuilder.Entity<Friendship>(entity =>
-            {
-                entity.HasKey(e => e.FriendshipId);
-                entity.HasOne(d => d.User1)
-                    .WithMany(p => p.FriendsAsUser1)
-                    .HasForeignKey(d => d.User1Id)
-                    .OnDelete(DeleteBehavior.NoAction);
-                entity.HasOne(d => d.User2)
-                    .WithMany(p => p.FriendsAsUser2)
-                    .HasForeignKey(d => d.User2Id)
-                    .OnDelete(DeleteBehavior.NoAction);
-                
-                // Add unique constraint to prevent duplicate friendships
-                entity.HasIndex(e => new { e.User1Id, e.User2Id }).IsUnique();
-            });
-            
-            modelBuilder.Entity<Message>(entity =>
-            {
-                entity.HasKey(e => e.MessageId);
-                entity.HasOne(m => m.Sender)
-                    .WithMany(u => u.MessagesSent)
-                    .HasForeignKey(m => m.SenderId)
-                    .OnDelete(DeleteBehavior.Restrict);
-                entity.HasOne(m => m.Receiver)
-                    .WithMany(u => u.MessagesReceived)
-                    .HasForeignKey(m => m.ReceiverId)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
-            
-            modelBuilder.Entity<FriendRequest>(entity =>
-            {
-                entity.HasKey(e => e.RequestId);
-                entity.HasOne(d => d.Sender)
-                    .WithMany(p => p.FriendRequestsSent)
-                    .HasForeignKey(d => d.SenderId)
-                    .OnDelete(DeleteBehavior.NoAction); 
-                entity.HasOne(d => d.Receiver)
-                    .WithMany(p => p.FriendRequestsReceived)
-                    .HasForeignKey(d => d.ReceiverId)
-                    .OnDelete(DeleteBehavior.NoAction);
-                
-                // Add unique constraint to prevent duplicate friend requests
-                entity.HasIndex(fr => new { fr.SenderId, fr.ReceiverId })
-                    .IsUnique()
-                    .HasFilter($"[Status] = '{FriendRequestStatus.Pending}'");
-            });
-            
-            modelBuilder.Entity<Image>(entity =>
-            {
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.Images)
-                    .HasForeignKey(d => d.UserId);
-            });
-            
-            modelBuilder.Entity<Video>(entity =>
-            {
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.Videos)
-                    .HasForeignKey(d => d.UserId);
-            });
-            
-            modelBuilder.Entity<ImageHumor>(entity =>
-            {
-                entity.HasOne(ih => ih.Image)
-                    .WithMany(i => i.ImageHumors)
-                    .HasForeignKey(ih => ih.ImageId);
-                entity.HasOne(ih => ih.HumorType)
-                    .WithMany(ht => ht.ImageHumors)
-                    .HasForeignKey(ih => ih.HumorTypeId);
-            });
-
-            modelBuilder.Entity<VideoHumor>(entity =>
-            {
-                entity.HasOne(vh => vh.Video)
-                    .WithMany(v => v.VideoHumors)
-                    .HasForeignKey(vh => vh.VideoId);
-                entity.HasOne(vh => vh.HumorType)
-                    .WithMany(ht => ht.VideoHumors)
-                    .HasForeignKey(vh => vh.HumorTypeId);
-            });
-
-            modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
-
-            modelBuilder.Entity<HumorType>()
-                .HasIndex(ht => ht.HumorTypeName)
-                .IsUnique();
-
-            // Add the relationship between User and HumorType
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.HumorType)
-                .WithMany()
-                .HasForeignKey(u => u.HumorTypeId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            OnModelCreatingPartial(modelBuilder);
-        }
+{
+    modelBuilder.Entity<Friendship>(entity =>
+    {
+        entity.HasKey(e => e.FriendshipId);
+        entity.HasOne(d => d.User1)
+            .WithMany(p => p.FriendsAsUser1)
+            .HasForeignKey(d => d.User1Id)
+            .OnDelete(DeleteBehavior.NoAction);
+        entity.HasOne(d => d.User2)
+            .WithMany(p => p.FriendsAsUser2)
+            .HasForeignKey(d => d.User2Id)
+            .OnDelete(DeleteBehavior.NoAction);
         
+        // Add unique constraint to prevent duplicate friendships
+        entity.HasIndex(e => new { e.User1Id, e.User2Id }).IsUnique();
+    });
+
+    modelBuilder.Entity<UserHumorType>()
+        .HasKey(uht => new { uht.UserId, uht.HumorTypeId });
+
+    modelBuilder.Entity<UserHumorType>()
+        .HasOne(uht => uht.User)
+        .WithMany(u => u.UserHumorTypes)
+        .HasForeignKey(uht => uht.UserId);
+
+    modelBuilder.Entity<UserHumorType>()
+        .HasOne(uht => uht.HumorType)
+        .WithMany(ht => ht.UserHumorTypes)
+        .HasForeignKey(uht => uht.HumorTypeId);
+
+    modelBuilder.Entity<Message>(entity =>
+    {
+        entity.HasKey(e => e.MessageId);
+        entity.HasOne(m => m.Sender)
+            .WithMany(u => u.MessagesSent)
+            .HasForeignKey(m => m.SenderId)
+            .OnDelete(DeleteBehavior.Restrict);
+        entity.HasOne(m => m.Receiver)
+            .WithMany(u => u.MessagesReceived)
+            .HasForeignKey(m => m.ReceiverId)
+            .OnDelete(DeleteBehavior.Restrict);
+    });
+
+    modelBuilder.Entity<FriendRequest>(entity =>
+    {
+        entity.HasKey(e => e.RequestId);
+        entity.HasOne(d => d.Sender)
+            .WithMany(p => p.FriendRequestsSent)
+            .HasForeignKey(d => d.SenderId)
+            .OnDelete(DeleteBehavior.NoAction); 
+        entity.HasOne(d => d.Receiver)
+            .WithMany(p => p.FriendRequestsReceived)
+            .HasForeignKey(d => d.ReceiverId)
+            .OnDelete(DeleteBehavior.NoAction);
+        
+        // Add unique constraint to prevent duplicate friend requests
+        entity.HasIndex(fr => new { fr.SenderId, fr.ReceiverId })
+            .IsUnique()
+            .HasFilter($"[Status] = '{FriendRequestStatus.Pending}'");
+    });
+
+    modelBuilder.Entity<Image>(entity =>
+    {
+        entity.HasOne(d => d.User)
+            .WithMany(p => p.Images)
+            .HasForeignKey(d => d.UserId);
+    });
+
+    modelBuilder.Entity<Video>(entity =>
+    {
+        entity.HasOne(d => d.User)
+            .WithMany(p => p.Videos)
+            .HasForeignKey(d => d.UserId);
+    });
+
+    modelBuilder.Entity<ImageHumor>(entity =>
+    {
+        entity.HasOne(ih => ih.Image)
+            .WithMany(i => i.ImageHumors)
+            .HasForeignKey(ih => ih.ImageId);
+        entity.HasOne(ih => ih.HumorType)
+            .WithMany(ht => ht.ImageHumors)
+            .HasForeignKey(ih => ih.HumorTypeId);
+    });
+
+    modelBuilder.Entity<VideoHumor>(entity =>
+    {
+        entity.HasOne(vh => vh.Video)
+            .WithMany(v => v.VideoHumors)
+            .HasForeignKey(vh => vh.VideoId);
+        entity.HasOne(vh => vh.HumorType)
+            .WithMany(ht => ht.VideoHumors)
+            .HasForeignKey(vh => vh.HumorTypeId);
+    });
+
+    modelBuilder.Entity<User>()
+        .HasIndex(u => u.Email)
+        .IsUnique();
+
+    modelBuilder.Entity<HumorType>()
+        .HasIndex(ht => ht.HumorTypeName)
+        .IsUnique();
+
+    OnModelCreatingPartial(modelBuilder);
+}
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
     }
 }
