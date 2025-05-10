@@ -10,7 +10,7 @@ namespace Memzy_finalist.Services
 {
     public interface IHumorService
 {
-    Task<User> ChangeHumorAsync(int userId, List<string> humorTypes);
+   Task<User> ChangeHumorAsync(int userId, List<string> humorTypes);
     Task<User> AddHumorAsync(int userId, List<string> humorTypes);
     Task RemoveHumorAsync(int userId);
 }
