@@ -239,8 +239,6 @@ export default function UserProfile() {
             </div>
           </div>
         </div>
-
-        {/* Separator Line */}
         <div className="border-t border-glass/50 w-full mx-auto my-8" />
 
         {/* Social Connections */}
@@ -261,8 +259,6 @@ export default function UserProfile() {
             </div>
           </div>
         </div>
-
-        {/* Additional Separator Line */}
         <div className="border-t border-glass/50 w-full mx-auto my-8" />
 
         {/* Settings */}
@@ -311,7 +307,6 @@ export default function UserProfile() {
           onClose={() => setHumorModalOpen(false)}
         >
           <div className="min-h-screen px-4 text-center">
-            {/* Backdrop */}
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -326,13 +321,9 @@ export default function UserProfile() {
                 aria-hidden="true"
               />
             </Transition.Child>
-
-            {/* Center hack */}
             <span className="inline-block h-screen align-middle" aria-hidden="true">
               &#8203;
             </span>
-
-            {/* Panel */}
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -435,8 +426,8 @@ export default function UserProfile() {
 
                 <button
   onClick={(e) => {
-    e.preventDefault(); // Prevent default form behavior
-    e.stopPropagation(); // Stop event bubbling
+    e.preventDefault();
+    e.stopPropagation(); 
     updateBio();
   }}
   disabled={!newBio.trim()}
@@ -547,7 +538,6 @@ export default function UserProfile() {
           onClose={() => setNameModalOpen(false)}
         >
           <div className="min-h-screen px-4 text-center">
-            {/* Backdrop */}
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -562,13 +552,9 @@ export default function UserProfile() {
                 aria-hidden="true"
               />
             </Transition.Child>
-
-            {/* Center hack */}
             <span className="inline-block h-screen align-middle" aria-hidden="true">
               &#8203;
             </span>
-
-            {/* Panel */}
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"

@@ -36,18 +36,14 @@ export function Header() {
     setQuery(userName)
     setShowResults(false)
   }
-
-  // Safely get profile picture URL
   const getProfilePicUrl = (picPath?: string) => {
     if (!picPath) return null
-    // Handle both forward and backward slashes
     const normalizedPath = picPath.replace(/\\/g, '/').replace('uploads/profile_pictures/', '')
     return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/uploads/profile_pictures/${normalizedPath}`
   }
 
   return (
     <header className="col-span-full flex justify-between items-center py-5 px-8 bg-[rgba(10,10,10,0.7)] backdrop-blur-sm border-b border-[rgba(255,255,255,0.1)] z-[100] shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
-      {/* Left side - User profile */}
       <div className="flex items-center gap-6">
         {user ? (
           <div className="flex items-center gap-3 cursor-pointer">
@@ -69,7 +65,7 @@ export function Header() {
                 </span>
               )}
             </div>
-            <span className="text-[#f5f5f5] font-semibold">{user.name}</span> {/* ADD THIS LINE */}
+            <span className="text-[#f5f5f5] font-semibold">{user.name}</span> 
           </div>
         ) : (
           <div className="text-[#f5f5f5]">Please log in</div>

@@ -102,8 +102,6 @@ namespace Memzy_finalist.Services
                 {
                     throw new KeyNotFoundException("User not found");
                 }
-
-                // Remove humor type association
                 var userHumorType = await _context.UserHumorTypes
                     .FirstOrDefaultAsync(uht => uht.UserId == userId);
 
