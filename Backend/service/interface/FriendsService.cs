@@ -16,7 +16,6 @@ namespace Memzy_finalist.Models
     Task<IEnumerable<User>> GetFriends(int userId, bool includeOnlineOnly = false);
     Task<IEnumerable<FriendRequest>> GetPendingFriendRequests(int userId);
     Task<IEnumerable<FriendRequest>> GetSentFriendRequests(int userId);
-    Task<bool> ToggleCanMessage(int userId, int friendId);
 }
     public class FriendsService: IFriendsService
     {
@@ -84,7 +83,6 @@ namespace Memzy_finalist.Models
     {
         User1Id = request.SenderId,
         User2Id = request.ReceiverId,
-        CanMessage = true, 
         CreatedAt = DateTime.UtcNow,
         LastInteractionAt = DateTime.UtcNow 
     };
@@ -185,22 +183,6 @@ namespace Memzy_finalist.Models
         }
 
 
-
-        public async Task<bool> ToggleCanMessage(int userId, int friendId)
-        {
-            var friendship = await _context.Friendships
-                .FirstOrDefaultAsync(f => 
-                    (f.User1Id == userId && f.User2Id == friendId) || 
-                    (f.User1Id == friendId && f.User2Id == userId));
-                    
-            if (friendship == null)
-                throw new ArgumentException("Friendship not found");
-
-            friendship.CanMessage = !friendship.CanMessage;
-            await _context.SaveChangesAsync();
-            
-            return friendship.CanMessage;
-        }
         public class FriendRequestDto
 {
     public int RequestId { get; set; } 

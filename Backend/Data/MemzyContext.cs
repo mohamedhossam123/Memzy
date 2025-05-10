@@ -7,9 +7,8 @@ namespace Memzy_finalist.Models
         public MemzyContext() { }
         public MemzyContext(DbContextOptions<MemzyContext> options) : base(options) { }
         public virtual DbSet<UserHumorType> UserHumorTypes { get; set; }
-        public virtual DbSet<Friendship> Friends { get; set; }
-        public virtual DbSet<FriendRequest> FriendRequests { get; set; }
         public virtual DbSet<Friendship> Friendships { get; set; }
+        public virtual DbSet<FriendRequest> FriendRequests { get; set; }
         public virtual DbSet<HumorType> HumorTypes { get; set; }
         public virtual DbSet<Image> Images { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
@@ -26,24 +25,25 @@ namespace Memzy_finalist.Models
                 optionsBuilder.UseSqlServer("data source=DESKTOP-FM1OTR0;initial catalog=Memzy;trusted_connection=true;");
             }
         }
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
 {
-    modelBuilder.Entity<Friendship>(entity =>
-    {
-        entity.HasKey(e => e.FriendshipId);
-        entity.HasOne(d => d.User1)
-            .WithMany(p => p.FriendsAsUser1)
-            .HasForeignKey(d => d.User1Id)
-            .OnDelete(DeleteBehavior.NoAction);
-        entity.HasOne(d => d.User2)
-            .WithMany(p => p.FriendsAsUser2)
-            .HasForeignKey(d => d.User2Id)
-            .OnDelete(DeleteBehavior.NoAction);
-        
-        // Add unique constraint to prevent duplicate friendships
-        entity.HasIndex(e => new { e.User1Id, e.User2Id }).IsUnique();
-    });
+   modelBuilder.Entity<Friendship>(entity =>
+{
+    entity.HasOne(d => d.User1)
+        .WithMany(p => p.FriendsAsUser1)
+        .HasForeignKey(d => d.User1Id)
+        .OnDelete(DeleteBehavior.NoAction); // Changed to NoAction
+
+    entity.HasOne(d => d.User2)
+        .WithMany(p => p.FriendsAsUser2)
+        .HasForeignKey(d => d.User2Id)
+        .OnDelete(DeleteBehavior.NoAction); // Changed to NoAction
+
+    entity.HasIndex(e => new { e.User1Id, e.User2Id }).IsUnique();
+    entity.HasIndex(e => new { e.User2Id, e.User1Id }).IsUnique();
+});
 
     modelBuilder.Entity<UserHumorType>()
         .HasKey(uht => new { uht.UserId, uht.HumorTypeId });
@@ -133,6 +133,8 @@ namespace Memzy_finalist.Models
 
     OnModelCreatingPartial(modelBuilder);
 }
+
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
     }
+    
 }

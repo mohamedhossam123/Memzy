@@ -4,6 +4,7 @@ using Memzy_finalist.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,10 +12,13 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Memzy_finalist.Migrations
 {
     [DbContext(typeof(MemzyContext))]
-    partial class MemzyContextModelSnapshot : ModelSnapshot
+    [Migration("20250510222911_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
+            
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.4")
@@ -109,13 +113,12 @@ namespace Memzy_finalist.Migrations
 
                     b.HasKey("FriendshipId");
 
+                    b.HasIndex("User2Id");
+
                     b.HasIndex("User1Id", "User2Id")
                         .IsUnique();
 
-                    b.HasIndex("User2Id", "User1Id")
-                        .IsUnique();
-
-                    b.ToTable("Friendships");
+                    b.ToTable("Friendship");
                 });
 
             modelBuilder.Entity("Memzy_finalist.Models.Image", b =>
@@ -371,13 +374,13 @@ namespace Memzy_finalist.Migrations
                     b.HasOne("Memzy_finalist.Models.User", "User1")
                         .WithMany("FriendsAsUser1")
                         .HasForeignKey("User1Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Memzy_finalist.Models.User", "User2")
                         .WithMany("FriendsAsUser2")
                         .HasForeignKey("User2Id")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User1");

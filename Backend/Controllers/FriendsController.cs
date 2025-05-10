@@ -119,15 +119,6 @@ namespace MyApiProject.Controllers
             var result = await _friendsService.RemoveFriend(userId, friendId);
             return Ok(result);
         }
-
-        [HttpPatch("toggle-messaging")]
-        [Authorize]
-        public async Task<IActionResult> ToggleCanMessage(int friendId)
-        {
-            var userId = await _authService.GetAuthenticatedUserId();
-            var result = await _friendsService.ToggleCanMessage(userId, friendId);
-            return Ok(new { CanMessage = result });
-        }
     }
     public class FriendRequestDto
 {
