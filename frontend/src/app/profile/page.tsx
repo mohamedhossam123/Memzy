@@ -299,6 +299,7 @@ export default function UserProfile() {
         </div>
       </div>
 
+
       {/* Humor Modal */}
       <Transition appear show={isHumorModalOpen} as={Fragment}>
         <Dialog
