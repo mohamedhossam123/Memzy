@@ -8,15 +8,15 @@ namespace Memzy_finalist.Models
 {
     public interface IFriendsService
 {
-    Task<FriendRequest> SendFriendRequest(int senderId, int receiverId, string message = "");
-    Task<Friendship> AcceptFriendRequest(FriendRequest request, int userId);
-    Task<FriendRequest> RejectFriendRequest(FriendRequest request, int userId);
-    Task<FriendRequest> CancelFriendRequest(FriendRequest request, int userId);
+    Task<IEnumerable<FriendRequest>> GetAllReceivedRequests(int userId);
+Task<IEnumerable<FriendRequest>> GetAllSentRequests(int userId);
+    Task<FriendRequest> SendFriendRequest(int senderId, int receiverId);
+    Task<Friendship> AcceptFriendRequest(int requestId, int userId);
+    Task<FriendRequest> RejectFriendRequest(int requestId, int userId);
+    Task<bool> CancelFriendRequest(int requestId, int userId);
     Task<bool> RemoveFriend(int userId, int friendId);
-    Task<IEnumerable<User>> GetFriends(int userId, bool includeOnlineOnly = false);
+Task<IEnumerable<User>> GetFriends(int userId);
     Task<IEnumerable<FriendRequest>> GetPendingFriendRequests(int userId);
-    Task<IEnumerable<FriendRequest>> GetSentFriendRequests(int userId);
-    Task<bool> ToggleCanMessage(int userId, int friendId);
 }
     public class FriendsService: IFriendsService
     {
@@ -27,66 +27,72 @@ namespace Memzy_finalist.Models
             _context = context;
         }
 
-        public async Task<FriendRequest> SendFriendRequest(int senderId, int receiverId, string message = "")
-        {
-            try
-            {
-                var sender = await _context.Users.FindAsync(senderId);
-                var receiver = await _context.Users.FindAsync(receiverId);    
-                
-                if (sender == null || receiver == null)
-                    throw new ArgumentException($"One or both users not found. SenderId: {senderId}, ReceiverId: {receiverId}");
-                if (sender.IsFriendWith != null && await sender.IsFriendWith(receiverId))
-                    throw new InvalidOperationException("Users are already friends");
-                var existingRequest = await _context.FriendRequests
-                    .FirstOrDefaultAsync(fr => 
-                        fr.SenderId == senderId && 
-                        fr.ReceiverId == receiverId && 
-                        fr.Status == FriendRequestStatus.Pending);
-                        
-                if (existingRequest != null)
-                    throw new InvalidOperationException("Friend request already sent");
-                
-                var request = new FriendRequest
-                {
-                    SenderId = senderId,
-                    ReceiverId = receiverId,
-                    Status = FriendRequestStatus.Pending,
-                    Message = message ?? "", 
-                    CreatedAt = DateTime.UtcNow
-                };
-                
-                _context.FriendRequests.Add(request);
-                await _context.SaveChangesAsync();
-                
-                return request;
-            }
-            catch (Exception )
-            {
-                throw; 
-            }
-        }
-        public async Task<Friendship> AcceptFriendRequest(FriendRequest friendRequest, int userId)
+        public async Task<FriendRequest> SendFriendRequest(int senderId, int receiverId)
 {
-    var request = await _context.FriendRequests
-        .FirstOrDefaultAsync(fr => fr.RequestId == friendRequest.RequestId && fr.ReceiverId == userId);
+    try
+    {
+        if (senderId == receiverId)
+            throw new ArgumentException("Cannot send request to yourself");
+
+        // Check for existing friendship
+        var existingFriendship = await _context.Friendships
+            .AnyAsync(f => 
+                (f.User1Id == senderId && f.User2Id == receiverId) ||
+                (f.User1Id == receiverId && f.User2Id == senderId));
+        
+        if (existingFriendship)
+            throw new InvalidOperationException("Users are already friends");
+
+        // Check for existing requests in both directions
+        var existingRequest = await _context.FriendRequests
+            .AnyAsync(fr => 
+                (fr.SenderId == senderId && fr.ReceiverId == receiverId) ||
+                (fr.SenderId == receiverId && fr.ReceiverId == senderId));
+        
+        if (existingRequest)
+            throw new InvalidOperationException("Pending request already exists between these users");
+
+        var sender = await _context.Users.FindAsync(senderId);
+        var receiver = await _context.Users.FindAsync(receiverId);
+        
+        if (sender == null || receiver == null)
+            throw new ArgumentException("One or both users not found");
+
+        var request = new FriendRequest
+        {
+            SenderId = senderId,
+            ReceiverId = receiverId,
+            Status = FriendRequestStatus.Pending,
+            CreatedAt = DateTime.UtcNow
+        };
+        
+        _context.FriendRequests.Add(request);
+        await _context.SaveChangesAsync();
+        
+        return request;
+    }
+    catch (Exception)
+    {
+        throw;
+    }
+}
+        public async Task<Friendship> AcceptFriendRequest(int requestId, int userId)
+{var request = await _context.FriendRequests
+        .FirstOrDefaultAsync(fr => fr.RequestId == requestId && fr.ReceiverId == userId);
         
     if (request == null)
-        throw new ArgumentException("Friend request not found or you're not authorized to accept it");
+        throw new ArgumentException("Friend request not found or unauthorized");
         
     if (request.Status != FriendRequestStatus.Pending)
-        throw new InvalidOperationException($"Friend request is already {request.Status}");
-
-    request.Status = FriendRequestStatus.Accepted;
+        throw new InvalidOperationException($"Request is already {request.Status}");
+request.Status = FriendRequestStatus.Accepted; // This removes it from pending lists
     request.RespondedAt = DateTime.UtcNow;
     
     var friendship = new Friendship
     {
         User1Id = request.SenderId,
         User2Id = request.ReceiverId,
-        CanMessage = true, 
-        CreatedAt = DateTime.UtcNow,
-        LastInteractionAt = DateTime.UtcNow 
+        CreatedAt = DateTime.UtcNow
     };
     
     _context.Friendships.Add(friendship);
@@ -94,42 +100,39 @@ namespace Memzy_finalist.Models
     
     return friendship;
 }
-        public async Task<FriendRequest> RejectFriendRequest(FriendRequest friendRequest, int userId)
-        {
-            var request = await _context.FriendRequests
-                .FirstOrDefaultAsync(fr => fr.RequestId == friendRequest.RequestId && fr.ReceiverId == userId);
-                
-            if (request == null)
-                throw new ArgumentException("Friend request not found or you're not authorized to reject it");
-                
-            if (request.Status != FriendRequestStatus.Pending)
-                throw new InvalidOperationException($"Friend request is already {request.Status}");
+        public async Task<FriendRequest> RejectFriendRequest(int requestId, int userId)
+{
+    var request = await _context.FriendRequests
+        .FirstOrDefaultAsync(fr => fr.RequestId == requestId && fr.ReceiverId == userId);
+            
+    if (request == null)
+        throw new ArgumentException("Friend request not found or unauthorized");
+            
+    if (request.Status != FriendRequestStatus.Pending)
+        throw new InvalidOperationException($"Request is already {request.Status}");
 
-            request.Status = FriendRequestStatus.Rejected;
-            request.RespondedAt = DateTime.UtcNow;
-            
-            await _context.SaveChangesAsync();
-            
-            return request;
-        }
-        public async Task<FriendRequest> CancelFriendRequest(FriendRequest friendRequest, int userId)
-        {
-            var request = await _context.FriendRequests
-                .FirstOrDefaultAsync(fr => fr.RequestId == friendRequest.RequestId && fr.SenderId == userId);
-                
-            if (request == null)
-                throw new ArgumentException("Friend request not found or you're not authorized to cancel it");
-                
-            if (request.Status != FriendRequestStatus.Pending)
-                throw new InvalidOperationException($"Friend request is already {request.Status}");
+    request.Status = FriendRequestStatus.Rejected;
+    request.RespondedAt = DateTime.UtcNow;
+    
+    await _context.SaveChangesAsync();
+    
+    return request;
+}
+public async Task<bool> CancelFriendRequest(int requestId, int userId)
+{
+    var request = await _context.FriendRequests
+        .FirstOrDefaultAsync(fr => fr.RequestId == requestId && fr.SenderId == userId);
 
-            request.Status = FriendRequestStatus.Canceled;
-            request.RespondedAt = DateTime.UtcNow;
-            
-            await _context.SaveChangesAsync();
-            
-            return request;
-        }
+    if (request == null)
+        throw new ArgumentException("Friend request not found or you're not authorized to cancel it");
+
+    if (request.Status != FriendRequestStatus.Pending)
+        throw new InvalidOperationException($"Friend request is already {request.Status}");
+    _context.FriendRequests.Remove(request);
+    await _context.SaveChangesAsync();
+    
+    return true;
+}
         
 
         public async Task<bool> RemoveFriend(int userId, int friendId)
@@ -147,25 +150,16 @@ namespace Memzy_finalist.Models
             
             return true;
         }
-        public async Task<IEnumerable<User>> GetFriends(int userId, bool includeOnlineOnly = false)
-        {
-            var user = await _context.Users
-                .Include(u => u.FriendsAsUser1)
-                .ThenInclude(f => f.User2)
-                .Include(u => u.FriendsAsUser2)
-                .ThenInclude(f => f.User1)
-                .FirstOrDefaultAsync(u => u.UserId == userId);
-                
-            if (user == null)
-                throw new ArgumentException("User not found");
-
-            var friends = user.Friends;
-            
-            if (includeOnlineOnly)
-                friends = friends.Where(f => f.IsOnline);
-                
-            return friends;
-        }
+        public async Task<IEnumerable<User>> GetFriends(int userId)
+{
+    return await _context.Friendships
+        .Include(f => f.User1)
+        .Include(f => f.User2)
+        .Where(f => f.User1Id == userId || f.User2Id == userId)
+        .Select(f => f.User1Id == userId ? f.User2 : f.User1)
+        .Distinct()
+        .ToListAsync();
+}
         public async Task<IEnumerable<FriendRequest>> GetPendingFriendRequests(int userId)
         {
             return await _context.FriendRequests
@@ -175,31 +169,25 @@ namespace Memzy_finalist.Models
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<FriendRequest>> GetSentFriendRequests(int userId)
-        {
-            return await _context.FriendRequests
-                .Where(fr => fr.SenderId == userId && fr.Status == FriendRequestStatus.Pending)
-                .Include(fr => fr.Receiver)
-                .OrderByDescending(fr => fr.CreatedAt)
-                .ToListAsync();
-        }
+        public async Task<IEnumerable<FriendRequest>> GetAllReceivedRequests(int userId)
+{
+    return await _context.FriendRequests
+        .Where(fr => fr.ReceiverId == userId)
+        .Include(fr => fr.Sender)
+        .OrderByDescending(fr => fr.CreatedAt)
+        .ToListAsync();
+}
+
+public async Task<IEnumerable<FriendRequest>> GetAllSentRequests(int userId)
+{
+    return await _context.FriendRequests
+        .Where(fr => fr.SenderId == userId)
+        .Include(fr => fr.Receiver)
+        .OrderByDescending(fr => fr.CreatedAt)
+        .ToListAsync();
+}
 
 
-
-        public async Task<bool> ToggleCanMessage(int userId, int friendId)
-        {
-            var friendship = await _context.Friendships
-                .FirstOrDefaultAsync(f => 
-                    (f.User1Id == userId && f.User2Id == friendId) || 
-                    (f.User1Id == friendId && f.User2Id == userId));
-                    
-            if (friendship == null)
-                throw new ArgumentException("Friendship not found");
-
-            friendship.CanMessage = !friendship.CanMessage;
-            await _context.SaveChangesAsync();
-            
-            return friendship.CanMessage;
         }
         public class FriendRequestDto
 {
@@ -213,4 +201,3 @@ public class FriendIdDto
     public int FriendId { get; set; }
 }
     }
-}
