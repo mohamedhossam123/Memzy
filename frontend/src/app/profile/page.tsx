@@ -11,13 +11,13 @@ export default function UserProfile() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   
-  interface FullUser {
+    interface FullUser {
     profilePic?: string
     name?: string
     bio?: string
     token?: string
-    friendsCount?: number
-    postsCount?: number
+    friendCount?: number
+    postCount?: number
     humorTypes?: { humorTypeName: string }[]
   }
 
@@ -201,15 +201,15 @@ export default function UserProfile() {
         <div className="flex flex-col items-center text-center space-y-6">
           {/* Profile Picture */}
           <div className="relative w-40 h-40 rounded-full border-4 border-accent overflow-hidden shadow-glow">
-            {user.profilePic ? (
+            {userData?.profilePic ? (
              <Image
-  src={getProfilePicUrl(user.profilePic) || ''}
+  src={getProfilePicUrl(userData?.profilePic) || ''}
   alt="Profile"
-  width={160}  // Add explicit dimensions
+  width={160} 
   height={160}
   className="object-cover rounded-full"
   priority
-  unoptimized={process.env.NODE_ENV !== 'production'} // Bypass optimization in dev
+  unoptimized={process.env.NODE_ENV !== 'production'}
 />
             ) : (
               <div className="w-full h-full bg-primary flex items-center justify-center">
@@ -247,13 +247,13 @@ export default function UserProfile() {
           <div className="flex justify-center gap-4 flex-wrap">
             <div className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105">
               <div className="text-2xl font-bold mb-2">
-                {userData?.friendsCount || '0'}
+                {userData?.friendCount || '0'}
               </div>
               <div className="text-light/80 text-sm">Friends</div>
             </div>
             <div className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105">
               <div className="text-2xl font-bold mb-2">
-                {userData?.postsCount || '0'}
+                {userData?.postCount || '0'}
               </div>
               <div className="text-light/80 text-sm">Posts</div>
             </div>

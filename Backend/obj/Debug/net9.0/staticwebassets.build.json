@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "TIhtJW7CEtW/rRjshF2G/NJsFpTFfUKgBZczF3kXFS8=",
+  "Hash": "RBwaQDpZSXftFKFcqTKfN3O2rycJQJ+cxNmFJ8sGbl0=",
   "Source": "Memzy_finalist",
   "BasePath": "_content/Memzy_finalist",
   "Mode": "Default",
@@ -36,6 +36,90 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg",
+      "SourceId": "Memzy_finalist",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "BasePath": "_content/Memzy_finalist",
+      "RelativePath": "uploads/Images/78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "4g5bcmyeni",
+      "Integrity": "VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\Images\\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg",
+      "SourceId": "Memzy_finalist",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "BasePath": "_content/Memzy_finalist",
+      "RelativePath": "uploads/Images/8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "4g5bcmyeni",
+      "Integrity": "VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\Images\\8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg",
+      "SourceId": "Memzy_finalist",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "BasePath": "_content/Memzy_finalist",
+      "RelativePath": "uploads/Images/b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "4g5bcmyeni",
+      "Integrity": "VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\Images\\b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg",
+      "SourceId": "Memzy_finalist",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "BasePath": "_content/Memzy_finalist",
+      "RelativePath": "uploads/Images/d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "4g5bcmyeni",
+      "Integrity": "VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\Images\\d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg"
     },
     {
       "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
@@ -202,6 +286,334 @@
         {
           "Name": "integrity",
           "Value": "sha256-jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/Images/78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.4g5bcmyeni.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "206307"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 11 May 2025 22:44:46 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "4g5bcmyeni"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/Images/78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/Images/78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "206307"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 11 May 2025 22:44:46 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/Images/8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.4g5bcmyeni.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "206307"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 11 May 2025 22:46:47 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "4g5bcmyeni"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/Images/8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/Images/8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "206307"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 11 May 2025 22:46:47 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/Images/b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.4g5bcmyeni.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "206307"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 11 May 2025 22:44:40 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "4g5bcmyeni"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/Images/b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/Images/b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "206307"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 11 May 2025 22:44:40 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/Images/d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.4g5bcmyeni.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "206307"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 11 May 2025 22:44:58 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "4g5bcmyeni"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/Images/d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/Images/d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "206307"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 11 May 2025 22:44:58 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0="
         }
       ]
     },

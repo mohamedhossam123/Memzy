@@ -198,6 +198,22 @@ public async Task<IActionResult> GetCurrentUser()
     }
 }
 
-        }
-    
+        
+        [HttpGet("Get friend count and post count")]
+        [Authorize]
+        public async Task<IActionResult> GetFriendCountAndPostCount()
+        {
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+                var friendCount = await _authService.GetFriendCountAsync(userId);
+                var postCount = await _authService.GetPostCountAsync(userId);
+
+                return Ok(new { FriendCount = friendCount, PostCount = postCount });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error retrieving counts: {ex.Message}");
+            }
+        }}
 }
