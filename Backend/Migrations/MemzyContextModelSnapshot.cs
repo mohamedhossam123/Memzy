@@ -17,7 +17,7 @@ namespace Memzy_finalist.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true)
@@ -92,17 +92,11 @@ namespace Memzy_finalist.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FriendshipId"));
 
-                    b.Property<bool>("CanMessage")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("Favorite")
                         .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastInteractionAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("User1Id")
                         .HasColumnType("int");
@@ -117,7 +111,7 @@ namespace Memzy_finalist.Migrations
                     b.HasIndex("User1Id", "User2Id")
                         .IsUnique();
 
-                    b.ToTable("Friendship");
+                    b.ToTable("Friendships");
                 });
 
             modelBuilder.Entity("Memzy_finalist.Models.Image", b =>

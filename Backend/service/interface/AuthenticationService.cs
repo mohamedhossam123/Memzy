@@ -22,6 +22,8 @@ public interface IAuthenticationService
     Task<int> GetAuthenticatedUserId();  
     Task <string> GenerateJwtToken(User user);
     string HashPassword(string password);
+    Task<int> GetFriendCountAsync(int userId);
+    Task<int> GetPostCountAsync(int userId);
 }
 
 public class AuthenticationService : IAuthenticationService
@@ -103,4 +105,16 @@ public async Task<User> VerifyUserAsync(string email, string password)
         return null;
     return user;
 }
+public async Task<int> GetFriendCountAsync(int userId)
+    {
+        return await _context.Friendships
+            .CountAsync(f => f.User1Id == userId || f.User2Id == userId);
+    }
+
+    public async Task<int> GetPostCountAsync(int userId)
+    {
+        var imagesCount = await _context.Images.CountAsync(i => i.UserId == userId);
+        var videosCount = await _context.Videos.CountAsync(v => v.UserId == userId);
+        return imagesCount + videosCount;
+    }
 }

@@ -33,8 +33,6 @@ Task<IEnumerable<User>> GetFriends(int userId);
     {
         if (senderId == receiverId)
             throw new ArgumentException("Cannot send request to yourself");
-
-        // Check for existing friendship
         var existingFriendship = await _context.Friendships
             .AnyAsync(f => 
                 (f.User1Id == senderId && f.User2Id == receiverId) ||
@@ -42,8 +40,6 @@ Task<IEnumerable<User>> GetFriends(int userId);
         
         if (existingFriendship)
             throw new InvalidOperationException("Users are already friends");
-
-        // Check for existing requests in both directions
         var existingRequest = await _context.FriendRequests
             .AnyAsync(fr => 
                 (fr.SenderId == senderId && fr.ReceiverId == receiverId) ||
@@ -77,27 +73,29 @@ Task<IEnumerable<User>> GetFriends(int userId);
     }
 }
         public async Task<Friendship> AcceptFriendRequest(int requestId, int userId)
-{var request = await _context.FriendRequests
+{
+    var request = await _context.FriendRequests
         .FirstOrDefaultAsync(fr => fr.RequestId == requestId && fr.ReceiverId == userId);
-        
+    
     if (request == null)
         throw new ArgumentException("Friend request not found or unauthorized");
-        
+    
     if (request.Status != FriendRequestStatus.Pending)
         throw new InvalidOperationException($"Request is already {request.Status}");
-request.Status = FriendRequestStatus.Accepted; // This removes it from pending lists
+    request.Status = FriendRequestStatus.Accepted;
     request.RespondedAt = DateTime.UtcNow;
-    
     var friendship = new Friendship
     {
         User1Id = request.SenderId,
         User2Id = request.ReceiverId,
         CreatedAt = DateTime.UtcNow
     };
-    
+
     _context.Friendships.Add(friendship);
-    await _context.SaveChangesAsync();
     
+    _context.FriendRequests.Remove(request); 
+    await _context.SaveChangesAsync();
+
     return friendship;
 }
         public async Task<FriendRequest> RejectFriendRequest(int requestId, int userId)
@@ -153,12 +151,11 @@ public async Task<bool> CancelFriendRequest(int requestId, int userId)
         public async Task<IEnumerable<User>> GetFriends(int userId)
 {
     return await _context.Friendships
-        .Include(f => f.User1)
-        .Include(f => f.User2)
-        .Where(f => f.User1Id == userId || f.User2Id == userId)
-        .Select(f => f.User1Id == userId ? f.User2 : f.User1)
-        .Distinct()
-        .ToListAsync();
+    .Where(f => f.User1Id == userId || f.User2Id == userId)
+    .Include(f => f.User1) // Load User1
+    .Include(f => f.User2) // Load User2
+    .Select(f => f.User1Id == userId ? f.User2 : f.User1)
+    .ToListAsync();
 }
         public async Task<IEnumerable<FriendRequest>> GetPendingFriendRequests(int userId)
         {

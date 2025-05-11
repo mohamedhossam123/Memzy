@@ -11,6 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Memzy_finalist.Services;
 using Microsoft.Extensions.Options;
+using System.Text.Json.Serialization;
+using MyApiProject.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,7 +62,9 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
 });
-
+builder.Services.AddControllers()
+    .AddJsonOptions(options => 
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 builder.Services.AddExceptionHandler(options => 
 {

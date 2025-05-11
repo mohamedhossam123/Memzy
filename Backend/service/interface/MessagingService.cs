@@ -10,103 +10,122 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-public interface IMessagingService
+namespace MyApiProject.Services
 {
-    Task<int> SendMessageAsync(int senderId, int receiverId, string messageContent);
-    Task<List<Message>> GetMessagesAsync(int userId, int contactId);
-    Task<bool> DeleteMessageAsync(int messageId);
-    Task<Message> GetMessageByIdAsync(int messageId);
-}
-
-
-public class MessagingService : IMessagingService
-{
-    private readonly MemzyContext _context;
-    private readonly ILogger<MessagingService> _logger;
-
-    public MessagingService(
-        MemzyContext context,
-        ILogger<MessagingService> logger)
+    public interface IMessagingService
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        Task<int> SendMessageAsync(int senderId, int receiverId, string messageContent);
+        Task<List<MessageResponseDto>> GetMessagesAsync(int userId, int contactId, int page, int pageSize);
+        Task<bool> DeleteMessageAsync(int messageId, int userId);
     }
 
-    public async Task<int> SendMessageAsync(int senderId, int receiverId, string messageContent)
+    public class MessagingService : IMessagingService
     {
-        if (string.IsNullOrWhiteSpace(messageContent))
+        private readonly MemzyContext _context;
+        private readonly ILogger<MessagingService> _logger;
+
+        public MessagingService(
+            MemzyContext context,
+            ILogger<MessagingService> logger)
         {
-            _logger.LogError("Message content is null or empty");
-            throw new ArgumentException("Message content is required", nameof(messageContent));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        // Verify friendship using a consolidated query
-        var friendshipExists = await _context.Friendships
-            .AnyAsync(f => 
-                (f.User1Id == senderId && f.User2Id == receiverId) || 
-                (f.User1Id == receiverId && f.User2Id == senderId));
-
-        if (!friendshipExists)
+        public async Task<int> SendMessageAsync(int senderId, int receiverId, string messageContent)
         {
-            _logger.LogWarning($"Security: User {senderId} attempted to message non-friend {receiverId}");
-            throw new InvalidOperationException("You can only send messages to friends");
+            if (senderId == receiverId)
+                throw new ArgumentException("Cannot send messages to yourself");
+            if (string.IsNullOrWhiteSpace(messageContent))
+            {
+                _logger.LogError("Message content is null or empty");
+                throw new ArgumentException("Message content is required", nameof(messageContent));
+            }
+
+            var friendshipExists = await _context.Friendships
+                .AnyAsync(f =>
+                    (f.User1Id == senderId && f.User2Id == receiverId) ||
+                    (f.User1Id == receiverId && f.User2Id == senderId));
+
+            if (!friendshipExists)
+            {
+                _logger.LogWarning($"Security: User {senderId} attempted to message non-friend {receiverId}");
+                throw new InvalidOperationException("You can only send messages to friends");
+            }
+
+            var message = new Message
+            {
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                Content = messageContent.Trim(),
+                Timestamp = DateTime.UtcNow
+            };
+
+            try
+            {
+                await _context.Messages.AddAsync(message);
+                await _context.SaveChangesAsync();
+                return message.MessageId;
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, $"Failed to save message from {senderId} to {receiverId}");
+                throw new ApplicationException("Failed to send message", ex);
+            }
         }
 
-        var message = new Message
+        public async Task<List<MessageResponseDto>> GetMessagesAsync(
+            int userId, int contactId, int page = 1, int pageSize = 50)
         {
-            SenderId = senderId,
-            ReceiverId = receiverId,
-            Content = messageContent.Trim(),
-            Timestamp = DateTime.UtcNow
-        };
+            var areFriends = await _context.Friendships
+                .AnyAsync(f =>
+                    (f.User1Id == userId && f.User2Id == contactId) ||
+                    (f.User1Id == contactId && f.User2Id == userId));
+            if (!areFriends)
+                throw new InvalidOperationException("You can only view messages with friends");
 
-        try
+            return await _context.Messages
+                .Where(m => (m.SenderId == userId && m.ReceiverId == contactId) ||
+                            (m.SenderId == contactId && m.ReceiverId == userId))
+                .OrderByDescending(m => m.Timestamp)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(m => new MessageResponseDto
+                {
+                    MessageId = m.MessageId,
+                    Content = m.Content,
+                    Timestamp = m.Timestamp,
+                    SenderId = m.SenderId,
+                    ReceiverId = m.ReceiverId
+                })
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<bool> DeleteMessageAsync(int messageId, int userId)
         {
-            await _context.Messages.AddAsync(message);
+            var message = await _context.Messages
+                .FirstOrDefaultAsync(m => m.MessageId == messageId &&
+                                     (m.SenderId == userId || m.ReceiverId == userId));
+
+            if (message == null) return false;
+
+            // Uncomment if soft delete is used:
+            // message.IsDeleted = true;
+            // await _context.SaveChangesAsync();
+
+            _context.Messages.Remove(message); // Hard delete
             await _context.SaveChangesAsync();
-            return message.MessageId;
-        }
-        catch (DbUpdateException ex)
-        {
-            _logger.LogError(ex, $"Failed to save message from {senderId} to {receiverId}");
-            throw new ApplicationException("Failed to send message", ex);
-        }
-    }
-
-    public async Task<List<Message>> GetMessagesAsync(int userId, int contactId)
-    {
-        return await _context.Messages
-            .Where(m => (m.SenderId == userId && m.ReceiverId == contactId) ||
-                        (m.SenderId == contactId && m.ReceiverId == userId))
-            .OrderBy(m => m.Timestamp)
-            .AsNoTracking()
-            .ToListAsync();
-    }
-
-    public async Task<Message> GetMessageByIdAsync(int messageId)
-    {
-        return await _context.Messages
-            .FirstOrDefaultAsync(m => m.MessageId == messageId);
-    }
-
-    public async Task<bool> DeleteMessageAsync(int messageId)
-    {
-        var message = await _context.Messages.FindAsync(messageId);
-        if (message == null) return false;
-
-        using var transaction = await _context.Database.BeginTransactionAsync();
-        try
-        {
-            _context.Messages.Remove(message);
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
             return true;
         }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            _logger.LogError(ex, $"Failed to delete message {messageId}");
-            throw;
-        }
+    }
+
+    public class MessageResponseDto
+    {
+        public int MessageId { get; set; }
+        public string Content { get; set; }
+        public DateTime Timestamp { get; set; }
+        public int SenderId { get; set; }
+        public int ReceiverId { get; set; }
     }
 }

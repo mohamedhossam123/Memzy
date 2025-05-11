@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Memzy_finalist.Migrations
 {
     [DbContext(typeof(MemzyContext))]
-    [Migration("20250510224225_FixCascadePaths")]
-    partial class FixCascadePaths
+    [Migration("20250511181046_FixFriendshipCascadeIssue")]
+    partial class FixFriendshipCascadeIssue
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -101,9 +101,6 @@ namespace Memzy_finalist.Migrations
                     b.Property<bool>("Favorite")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("LastInteractionAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("User1Id")
                         .HasColumnType("int");
 
@@ -112,10 +109,9 @@ namespace Memzy_finalist.Migrations
 
                     b.HasKey("FriendshipId");
 
-                    b.HasIndex("User1Id", "User2Id")
-                        .IsUnique();
+                    b.HasIndex("User2Id");
 
-                    b.HasIndex("User2Id", "User1Id")
+                    b.HasIndex("User1Id", "User2Id")
                         .IsUnique();
 
                     b.ToTable("Friendships");

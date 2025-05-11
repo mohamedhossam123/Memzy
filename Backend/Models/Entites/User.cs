@@ -49,8 +49,6 @@ namespace Memzy_finalist.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastActive { get; set; }
         public bool IsOnline { get; set; } = false;
-
-        // New navigation for many-to-many humor types
         public virtual ICollection<UserHumorType> UserHumorTypes { get; set; }
 
         public virtual ICollection<FriendRequest> FriendRequestsSent { get; set; }

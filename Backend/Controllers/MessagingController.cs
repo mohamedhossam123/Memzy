@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using MyApiProject.Services;
 
 namespace MyApiProject.Controllers
 {
@@ -32,46 +33,16 @@ namespace MyApiProject.Controllers
         }
 
         [HttpPost("SendMessage")]
-[Authorize]
-public async Task<IActionResult> SendMessage([FromBody] MessageDto messageDto)
-{
-    try
+    [Authorize]
+    public async Task<IActionResult> SendMessage([FromBody] MessageDto messageDto)
     {
-        var userId = await _authService.GetAuthenticatedUserId();
+        try
+        {
+            var userId = await _authService.GetAuthenticatedUserId();
+            var messageId = await _messagingService.SendMessageAsync(userId, messageDto.ReceiverId, messageDto.Content);
+            return Ok(new { MessageId = messageId, Status = "Message sent successfully" });
+        }
         
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Invalid message DTO received");
-            return BadRequest(ModelState);
-        }
-
-        // Prevent self-messaging
-        if (userId == messageDto.ReceiverId)
-        {
-            _logger.LogWarning($"User {userId} attempted to self-message");
-            return BadRequest("Cannot send messages to yourself");
-        }
-
-        // Verify friendship - updated to match GetMessages pattern
-        var friends = await _friendsService.GetFriends(userId);
-        var isFriend = friends.Any(f => f.UserId == messageDto.ReceiverId);
-
-        if (!isFriend)
-        {
-            _logger.LogWarning($"User {userId} attempted to message non-friend {messageDto.ReceiverId}");
-            return Forbid("You can only message friends");
-        }
-
-        var messageId = await _messagingService.SendMessageAsync(
-            userId, 
-            messageDto.ReceiverId, 
-            messageDto.Content);
-
-        return Ok(new { 
-            MessageId = messageId,
-            Status = "Message sent successfully"
-        });
-    }
     catch (ArgumentException ex)
     {
         _logger.LogError(ex, "Argument error in SendMessage");
@@ -92,27 +63,18 @@ public async Task<IActionResult> SendMessage([FromBody] MessageDto messageDto)
     }
 }
         [HttpGet("GetMessages")]
-[Authorize]
-public async Task<IActionResult> GetMessages([FromQuery] int contactId)
-{
-    try
+    [Authorize]
+    public async Task<IActionResult> GetMessages(
+        [FromQuery] int contactId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
     {
-        var userId = await _authService.GetAuthenticatedUserId();
-        var friends = await _friendsService.GetFriends(userId);
-        var isFriend = friends.Any(f => f.UserId == contactId);
-
-        if (!isFriend)
+        try
         {
-            _logger.LogWarning($"User {userId} attempted to access messages with non-friend {contactId}");
-            return Forbid("You can only view messages with friends");
+            var userId = await _authService.GetAuthenticatedUserId();
+            var messages = await _messagingService.GetMessagesAsync(userId, contactId, page, pageSize);
+            return Ok(new { Count = messages.Count, Messages = messages });
         }
-
-        var messages = await _messagingService.GetMessagesAsync(userId, contactId);
-        return Ok(new {
-            Count = messages.Count,
-            Messages = messages
-        });
-    }
     catch (ArgumentException ex)
     {
         _logger.LogError(ex, "Argument error in GetMessages");
@@ -129,33 +91,18 @@ public async Task<IActionResult> GetMessages([FromQuery] int contactId)
 }
 
         [HttpDelete("DeleteMessage")]
-        [Authorize]
-        public async Task<IActionResult> DeleteMessage([FromQuery] int messageId)
+    [Authorize]
+    public async Task<IActionResult> DeleteMessage([FromQuery] int messageId)
+    {
+        try
         {
-            try
-            {
-                var userId = await _authService.GetAuthenticatedUserId();
-                
-                // Verify message exists and ownership
-                var message = await _messagingService.GetMessageByIdAsync(messageId);
-                if (message == null)
-                {
-                    _logger.LogWarning($"Attempt to delete non-existent message: {messageId}");
-                    return NotFound(new { Error = "Message not found" });
-                }
-
-                if (message.SenderId != userId && message.ReceiverId != userId)
-                {
-                    _logger.LogWarning($"User {userId} attempted to delete message {messageId} they don't own");
-                    return Forbid("You can only delete your own messages");
-                }
-
-                var result = await _messagingService.DeleteMessageAsync(messageId);
-                
-                return result ? 
-                    Ok(new { Status = "Message deleted successfully" }) :
-                    StatusCode(500, new { Error = "Failed to delete message" });
-            }
+            var userId = await _authService.GetAuthenticatedUserId();
+            var result = await _messagingService.DeleteMessageAsync(messageId, userId);
+            
+            return result ? 
+                Ok(new { Status = "Message deleted successfully" }) : 
+                NotFound(new { Error = "Message not found" });
+        }
             catch (ArgumentException ex)
             {
                 _logger.LogError(ex, "Argument error in DeleteMessage");
@@ -183,4 +130,12 @@ public async Task<IActionResult> GetMessages([FromQuery] int contactId)
             ErrorMessage = "Message must be between 1 and 1000 characters")]
         public string Content { get; set; }
     }
+    public class MessageResponseDto
+{
+    public int MessageId { get; set; }
+    public string Content { get; set; }
+    public DateTime Timestamp { get; set; }
+    public int SenderId { get; set; }
+    public int ReceiverId { get; set; }
+}
 }

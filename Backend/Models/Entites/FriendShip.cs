@@ -17,10 +17,6 @@ namespace Memzy_finalist.Models
         public bool Favorite { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? LastInteractionAt { get; set; }
-
-        // Removed CanMessage since it's always true for friends
-        // Removed Favorite as it's not mentioned in requirements
         public virtual User User1 { get; set; } = null!;
         public virtual User User2 { get; set; } = null!;
     }

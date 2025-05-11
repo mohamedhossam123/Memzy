@@ -172,6 +172,10 @@ public async Task<IActionResult> GetCurrentUser()
             return Unauthorized("Invalid user");
         }
         var humorTypes = user.UserHumorTypes.Select(uht => uht.HumorType).ToList();
+        
+        var friendCount = await _authService.GetFriendCountAsync(userId);
+        var postCount = await _authService.GetPostCountAsync(userId);
+
 
         return Ok(new {
             UserId = user.UserId,
@@ -184,6 +188,8 @@ public async Task<IActionResult> GetCurrentUser()
                 HumorTypeName = ht.HumorTypeName
             }).ToList(),
             CreatedAt = user.CreatedAt,
+            FriendCount = friendCount,
+            PostCount = postCount
         });
     }
     catch (Exception ex)
