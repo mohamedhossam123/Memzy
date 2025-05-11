@@ -14,6 +14,7 @@ namespace Memzy_finalist.Models
 
         [ForeignKey("User2")]
         public int User2Id { get; set; }
+        public bool Favorite { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastInteractionAt { get; set; }

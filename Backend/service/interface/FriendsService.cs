@@ -92,7 +92,8 @@ request.Status = FriendRequestStatus.Accepted; // This removes it from pending l
     {
         User1Id = request.SenderId,
         User2Id = request.ReceiverId,
-        CreatedAt = DateTime.UtcNow
+        CreatedAt = DateTime.UtcNow,
+        LastInteractionAt = DateTime.UtcNow 
     };
     
     _context.Friendships.Add(friendship);
@@ -188,7 +189,6 @@ public async Task<IEnumerable<FriendRequest>> GetAllSentRequests(int userId)
 }
 
 
-        }
         public class FriendRequestDto
 {
     public int RequestId { get; set; } 
@@ -200,4 +200,4 @@ public class FriendIdDto
 {
     public int FriendId { get; set; }
 }
-    }
+    }}
