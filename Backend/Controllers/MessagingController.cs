@@ -53,7 +53,7 @@ public async Task<IActionResult> SendMessage([FromBody] MessageDto messageDto)
         }
 
         // Verify friendship - updated to match GetMessages pattern
-        var friends = await _friendsService.GetFriends(userId, false);
+        var friends = await _friendsService.GetFriends(userId);
         var isFriend = friends.Any(f => f.UserId == messageDto.ReceiverId);
 
         if (!isFriend)
@@ -98,7 +98,7 @@ public async Task<IActionResult> GetMessages([FromQuery] int contactId)
     try
     {
         var userId = await _authService.GetAuthenticatedUserId();
-        var friends = await _friendsService.GetFriends(userId, false);
+        var friends = await _friendsService.GetFriends(userId);
         var isFriend = friends.Any(f => f.UserId == contactId);
 
         if (!isFriend)
