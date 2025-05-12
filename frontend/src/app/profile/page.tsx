@@ -200,7 +200,7 @@ export default function UserProfile() {
         const err = await res.json()
         throw new Error(err.error || 'Password update failed')
       }
-      setCurrentPassword('')
+    setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
       setPasswordModalOpen(false)
