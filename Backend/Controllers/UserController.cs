@@ -17,10 +17,12 @@ namespace MyApiProject.Controllers
         private readonly IModeratorService _moderatorService;
         private readonly IAuthenticationService _authService;
         private readonly IWebHostEnvironment _environment;
+        private readonly MemzyContext _context;
         
 
-        public UserController(IUserService userService, IModeratorService moderatorService, IAuthenticationService authService, IWebHostEnvironment environment)
+        public UserController(IUserService userService, IModeratorService moderatorService, IAuthenticationService authService, IWebHostEnvironment environment, MemzyContext context)
         {
+            _context = context;
             _userService = userService;
             _moderatorService = moderatorService;
             _authService = authService;
@@ -104,22 +106,28 @@ public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto
 {
     try
     {
-        if (string.IsNullOrWhiteSpace(dto.NewPassword))
-            return BadRequest("New password is required.");
-
         var userId = await _authService.GetAuthenticatedUserId();
         var user = await _authService.GetUserByIdAsync(userId);
+        
         if (user == null)
-            return Unauthorized("User not found.");
+            return Unauthorized("User not found");
 
+        // Verify current password
+        if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+            return BadRequest("Current password is incorrect");
+
+        if (string.IsNullOrWhiteSpace(dto.NewPassword) || dto.NewPassword.Length < 6)
+            return BadRequest("New password must be at least 6 characters");
+
+        // Update password
         user.PasswordHash = _authService.HashPassword(dto.NewPassword);
-        await _authService.UpdateUserAsync(user);
+        await _context.SaveChangesAsync();
 
-        return Ok("Password changed successfully.");
+        return Ok(new { Message = "Password changed successfully" });
     }
     catch (Exception ex)
     {
-        return StatusCode(500, $"Password change failed: {ex.Message}");
+        return StatusCode(500, new { Error = "Password change failed", ex.Message });
     }
 }
 
@@ -171,6 +179,7 @@ public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto
     }
     public class ChangePasswordDto
 {
+    public string CurrentPassword { get; set; }
     public string NewPassword { get; set; }
 }
 

@@ -133,9 +133,9 @@ public class UserService : IUserService
         await _context.SaveChangesAsync();
 
         return user.ProfilePictureUrl;
-    }
-public class ChangePasswordDto
+    }public class ChangePasswordDto
 {
+    public string CurrentPassword { get; set; }
     public string NewPassword { get; set; }
 }
 
