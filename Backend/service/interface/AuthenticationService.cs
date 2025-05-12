@@ -16,6 +16,8 @@ using System.Text;
 
 public interface IAuthenticationService
 {
+    Task UpdateUserAsync(User user);
+
     Task<User> GetUserByIdAsync(int id);
     Task<User> CreateUserAsync(User user);
     Task<User> VerifyUserAsync(string email, string password);
@@ -38,6 +40,12 @@ private readonly IConfiguration _configuration;
         _context = context;
         _httpContextAccessor = httpContextAccessor;
     }
+    public async Task UpdateUserAsync(User user)
+{
+    _context.Users.Update(user);
+    await _context.SaveChangesAsync();
+}
+
     public async Task<string> GenerateJwtToken(User user)
     {
         var securityKey = new SymmetricSecurityKey(

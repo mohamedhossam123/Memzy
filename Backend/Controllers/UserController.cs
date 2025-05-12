@@ -98,37 +98,31 @@ public async Task<IActionResult> UploadProfilePicture([FromForm] profilePictureD
 
         
 
-        [HttpPost("UpdatePassword")]
-        [Authorize]
-        public async Task<IActionResult> UpdateUserPassword([FromBody] string newPassword)
-        {
-            try
-            {
-                var userId = await _authService.GetAuthenticatedUserId();
-                var user = await _userService.UpdateUserPassword(userId, newPassword);
-                if (user == null)
-                {
-                    return NotFound("User not found");
-                }
-                return Ok(new { Message = "User password updated successfully" });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
-        }
+        [HttpPost("change-password")]
+[Authorize]
+public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(dto.NewPassword))
+            return BadRequest("New password is required.");
+
+        var userId = await _authService.GetAuthenticatedUserId();
+        var user = await _authService.GetUserByIdAsync(userId);
+        if (user == null)
+            return Unauthorized("User not found.");
+
+        user.PasswordHash = _authService.HashPassword(dto.NewPassword);
+        await _authService.UpdateUserAsync(user);
+
+        return Ok("Password changed successfully.");
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, $"Password change failed: {ex.Message}");
+    }
+}
+
 
         [HttpPost("UpdateUserBio")]
         [Authorize]
@@ -175,6 +169,11 @@ public async Task<IActionResult> UploadProfilePicture([FromForm] profilePictureD
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
     }
+    public class ChangePasswordDto
+{
+    public string NewPassword { get; set; }
+}
+
     public class profilePictureDto
     {
         public IFormFile ProfilePicture { get; set; } = null!;

@@ -90,6 +90,24 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg'))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\12f92495-c181-4e02-a427-1b2971b6342f.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>Memzy_finalist</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/Memzy_finalist</BasePath>
+      <RelativePath>uploads/profile_pictures/12f92495-c181-4e02-a427-1b2971b6342f.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>4g5bcmyeni</Fingerprint>
+      <Integrity>VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\12f92495-c181-4e02-a427-1b2971b6342f.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg'))">
       <SourceType>Package</SourceType>
       <SourceId>Memzy_finalist</SourceId>

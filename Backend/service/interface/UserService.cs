@@ -134,5 +134,9 @@ public class UserService : IUserService
 
         return user.ProfilePictureUrl;
     }
+public class ChangePasswordDto
+{
+    public string NewPassword { get; set; }
+}
 
 }
