@@ -41,7 +41,6 @@ const [friendsList, _setFriendsList] = useState<any[]>([]);
 
 const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>('friends')
 
-
   
   const [humorPreferences, setHumorPreferences] = useState<string[]>([])
   const [newName, setNewName] = useState('')
