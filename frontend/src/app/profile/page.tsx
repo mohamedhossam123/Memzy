@@ -29,7 +29,6 @@ export default function UserProfile() {
   const [isPasswordModalOpen, setPasswordModalOpen] = useState(false)
 
 
-
 const [isFriendsModalOpen, setFriendsModalOpen] = useState(false)
 const friendTabs: ("friends" | "requests")[] = ["friends", "requests"];
 
@@ -91,7 +90,92 @@ const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>
       setIsLoading(false)
     }
   }
+const fetchFriends = async () => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetFriends`,
+      { headers: { Authorization: `Bearer ${user?.token}` } }
+    );
+    if (!response.ok) throw new Error('Failed to fetch friends');
+    const data = await response.json();
+    _setFriendsList(data);
+  } catch (error) {
+    console.error('Error fetching friends:', error);
+  }
+};
 
+const fetchFriendRequests = async () => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/get-received-requests`,
+      { headers: { Authorization: `Bearer ${user?.token}` } }
+    );
+    if (!response.ok) throw new Error('Failed to fetch requests');
+    const data = await response.json();
+    _setFriendRequests(data);
+  } catch (error) {
+    console.error('Error fetching requests:', error);
+  }
+};
+
+// Add useEffect for data fetching
+useEffect(() => {
+  if (isFriendsModalOpen) {
+    if (activeFriendsTab === 'friends') {
+      fetchFriends();
+    } else {
+      fetchFriendRequests();
+    }
+  }
+}, [isFriendsModalOpen, activeFriendsTab]);
+
+// Add request handling functions
+const handleAcceptRequest = async (requestId: number) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/acceptRequest/${requestId}`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${user?.token}` }
+      }
+    );
+    
+    if (!response.ok) throw new Error('Failed to accept request');
+    
+    // Refresh data
+    fetchFriendRequests();
+    fetchUserDetails(); // Update friend count
+  } catch (error) {
+    console.error('Error accepting request:', error);
+  }
+};
+
+const handleRejectRequest = async (requestId: number) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/rejectrequest/${requestId}`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${user?.token}` }
+      }
+    );
+    
+    if (!response.ok) throw new Error('Failed to reject request');
+    
+    fetchFriendRequests();
+  } catch (error) {
+    console.error('Error rejecting request:', error);
+  }
+};
+useEffect(() => {
+  if (isFriendsModalOpen) {
+    if (activeFriendsTab === 'friends') {
+      fetchFriends();
+    } else {
+      fetchFriendRequests();
+    }
+  }
+}, [isFriendsModalOpen, activeFriendsTab, user?.token]);
   const confirmHumorChange = async () => {
     try {
       const res = await fetch(
@@ -236,11 +320,31 @@ const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>
   if (!user) return null
 
   const getProfilePicUrl = (picPath?: string) => {
-    if (!picPath) return null
-    if (picPath.startsWith('http')) return picPath
-    const cleanPath = picPath.replace(/^[\/]/, '')
-    return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/${cleanPath}?t=${Date.now()}`
+  if (!picPath) return '/default-avatar.png'; 
+  if (picPath.startsWith('http')) return picPath;
+  const cleanPath = picPath.replace(/^[\/]/, '');
+  return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/${cleanPath}?t=${Date.now()}`;
+};
+const handleRemoveFriend = async (friendId: number) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/RemoveFriend?friendId=${friendId}`,
+      {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${user?.token}` }
+      }
+    );
+    
+    if (!response.ok) throw new Error('Failed to remove friend');
+    
+    // Refresh friends list
+    fetchFriends();
+    // Update user details for friend count
+    fetchUserDetails();
+  } catch (error) {
+    console.error('Error removing friend:', error);
   }
+};
 
     return (
     <div className="min-h-screen bg-gradient-to-br from-darker to-primary-dark text-light">
@@ -653,11 +757,11 @@ const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>
               <div className="space-y-2">
                 {friendsList.length > 0 ? (
                   friendsList.map(friend => (
-                    <div key={friend.id} className="flex items-center gap-3 p-2 bg-glass/10 rounded-lg">
+                    <div key={friend.userId} className="flex items-center gap-3 p-2 bg-glass/10 rounded-lg">
                       <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                         {friend.profilePic ? (
                           <Image
-                            src={friend.profilePic}
+                            src={getProfilePicUrl(friend.profilePic)}
                             alt={friend.name}
                             width={32}
                             height={32}
@@ -665,11 +769,17 @@ const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>
                           />
                         ) : (
                           <span className="text-white">
-                            {friend.name.charAt(0).toUpperCase()}
+                            {friend.name?.charAt(0).toUpperCase()}
                           </span>
                         )}
                       </div>
                       <span className="text-light/90">{friend.name}</span>
+                      <button
+                        onClick={() => handleRemoveFriend(friend.userId)}
+                        className="ml-auto text-red-400 hover:text-red-300 transition-colors"
+                      >
+                        Remove
+                      </button>
                     </div>
                   ))
                 ) : (
@@ -681,30 +791,36 @@ const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>
               <div className="space-y-2">
                 {friendRequests.length > 0 ? (
                   friendRequests.map(request => (
-                    <div key={request.id} className="flex items-center justify-between p-2 bg-glass/10 rounded-lg">
+                    <div key={request.requestId} className="flex items-center justify-between p-2 bg-glass/10 rounded-lg">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                          {request.profilePic ? (
+                          {request.sender?.profilePic ? (
                             <Image
-                              src={request.profilePic}
-                              alt={request.name}
+                              src={getProfilePicUrl(request.sender.profilePic)}
+                              alt={request.sender.name}
                               width={32}
                               height={32}
                               className="rounded-full"
                             />
                           ) : (
                             <span className="text-white">
-                              {request.name.charAt(0).toUpperCase()}
+                              {request.sender?.name?.charAt(0).toUpperCase()}
                             </span>
                           )}
                         </div>
-                        <span className="text-light/90">{request.name}</span>
+                        <span className="text-light/90">{request.sender?.name}</span>
                       </div>
                       <div className="flex gap-2">
-                        <button className="text-sm px-3 py-1 bg-green-500/20 text-green-400 rounded-lg">
+                        <button 
+                          onClick={() => handleAcceptRequest(request.requestId)}
+                          className="text-sm px-3 py-1 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30"
+                        >
                           Accept
                         </button>
-                        <button className="text-sm px-3 py-1 bg-red-500/20 text-red-400 rounded-lg">
+                        <button 
+                          onClick={() => handleRejectRequest(request.requestId)}
+                          className="text-sm px-3 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"
+                        >
                           Decline
                         </button>
                       </div>
