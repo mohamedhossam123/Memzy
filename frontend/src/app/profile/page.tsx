@@ -118,7 +118,6 @@ const fetchFriendRequests = async () => {
   }
 };
 
-// Add useEffect for data fetching
 useEffect(() => {
   if (isFriendsModalOpen) {
     if (activeFriendsTab === 'friends') {
@@ -129,7 +128,7 @@ useEffect(() => {
   }
 }, [isFriendsModalOpen, activeFriendsTab]);
 
-// Add request handling functions
+
 const handleAcceptRequest = async (requestId: number) => {
   try {
     const response = await fetch(
@@ -142,9 +141,8 @@ const handleAcceptRequest = async (requestId: number) => {
     
     if (!response.ok) throw new Error('Failed to accept request');
     
-    // Refresh data
     fetchFriendRequests();
-    fetchUserDetails(); // Update friend count
+    fetchUserDetails(); 
   } catch (error) {
     console.error('Error accepting request:', error);
   }
@@ -337,9 +335,7 @@ const handleRemoveFriend = async (friendId: number) => {
     
     if (!response.ok) throw new Error('Failed to remove friend');
     
-    // Refresh friends list
     fetchFriends();
-    // Update user details for friend count
     fetchUserDetails();
   } catch (error) {
     console.error('Error removing friend:', error);
