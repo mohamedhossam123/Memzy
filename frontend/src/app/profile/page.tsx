@@ -28,13 +28,28 @@ export default function UserProfile() {
   const [isBioModalOpen, setBioModalOpen] = useState(false)
   const [isPasswordModalOpen, setPasswordModalOpen] = useState(false)
 
+
+
+const [isFriendsModalOpen, setFriendsModalOpen] = useState(false)
+const friendTabs: ("friends" | "requests")[] = ["friends", "requests"];
+
+const [friendRequests, _setFriendRequests] = useState<any[]>([]);
+const [friendsList, _setFriendsList] = useState<any[]>([]);
+
+
+
+const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>('friends')
+
+
+  
   const [humorPreferences, setHumorPreferences] = useState<string[]>([])
   const [newName, setNewName] = useState('')
   const [newBio, setNewBio] = useState('')
   const [newProfilePic, setNewProfilePic] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  
-  // Password change state
+
+
+
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -272,22 +287,26 @@ export default function UserProfile() {
 
         <div className="border-t border-glass/50 w-full mx-auto my-8" />
 
-        {/* Social Connections */}
-        <div className="text-center space-y-6">
+       <div className="text-center space-y-6">
           <h2 className="text-xl font-semibold text-glow">Social Connections</h2>
           <div className="flex justify-center gap-4 flex-wrap">
-            <div className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105">
-              <div className="text-2xl font-bold mb-2">{userData?.friendCount || '0'}</div>
-              <div className="text-light/80 text-sm">Friends</div>
-            </div>
-            <div className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105">
-              <div className="text-2xl font-bold mb-2">{userData?.postCount || '0'}</div>
+            <button
+  onClick={() => setFriendsModalOpen(true)}
+  className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105 flex flex-col items-center"
+>
+  <div className="text-2xl font-bold mb-2">{userData?.friendCount ?? 0}</div>
+  <div className="text-light/80 text-sm">Friends</div>
+</button>
+
+            <div className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105 flex flex-col items-center">
+              <div className="text-2xl font-bold mb-2">{userData?.postCount ?? 0}</div>
               <div className="text-light/80 text-sm">Posts</div>
             </div>
           </div>
-        </div>
 
+        </div>
         <div className="border-t border-glass/50 w-full mx-auto my-8" />
+
 
         {/* Settings */}
         <div className="text-center space-y-6">
@@ -564,7 +583,144 @@ export default function UserProfile() {
           </div>
         </Dialog>
       </Transition>
+      {/* Friends Modal */}
+<Transition appear show={isFriendsModalOpen} as={Fragment}>
+  <Dialog
+    as="div"
+    className="fixed inset-0 z-50 overflow-y-auto"
+    onClose={() => setFriendsModalOpen(false)}
+  >
+    <div className="min-h-screen px-4 text-center">
+      <Transition.Child
+        as={Fragment}
+        enter="ease-out duration-300"
+        enterFrom="opacity-0"
+        enterTo="opacity-50"
+        leave="ease-in duration-200"
+        leaveFrom="opacity-50"
+        leaveTo="opacity-0"
+      >
+        <div className="fixed inset-0 bg-black" aria-hidden="true" />
+      </Transition.Child>
 
+      <span className="inline-block h-screen align-middle" aria-hidden="true">
+        &#8203;
+      </span>
+
+      <Transition.Child
+        as={Fragment}
+        enter="ease-out duration-300"
+        enterFrom="opacity-0 scale-95"
+        enterTo="opacity-100 scale-100"
+        leave="ease-in duration-200"
+        leaveFrom="opacity-100 scale-100"
+        leaveTo="opacity-0 scale-95"
+      >
+        <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl transform transition-all">
+          <div className="flex justify-between items-center mb-4">
+            <Dialog.Title className="text-2xl font-bold text-[#c56cf0]">
+              Friends Management
+            </Dialog.Title>
+            <button
+              onClick={() => setFriendsModalOpen(false)}
+              className="text-light/50 hover:text-light/80 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Tab Buttons */}
+          <div className="flex gap-2 mb-4">
+            {friendTabs.map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveFriendsTab(tab)}
+                className={`px-4 py-2 rounded-lg font-medium transition ${
+                  activeFriendsTab === tab
+                    ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white'
+                    : 'bg-[rgba(255,255,255,0.05)] text-light/80 hover:bg-[rgba(255,255,255,0.1)]'
+                }`}
+              >
+                {tab === 'friends' ? 'Friends' : 'Requests'}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab Content */}
+          <div className="max-h-64 overflow-y-auto space-y-4">
+            {activeFriendsTab === 'friends' ? (
+              // Friends List
+              <div className="space-y-2">
+                {friendsList.length > 0 ? (
+                  friendsList.map(friend => (
+                    <div key={friend.id} className="flex items-center gap-3 p-2 bg-glass/10 rounded-lg">
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                        {friend.profilePic ? (
+                          <Image
+                            src={friend.profilePic}
+                            alt={friend.name}
+                            width={32}
+                            height={32}
+                            className="rounded-full"
+                          />
+                        ) : (
+                          <span className="text-white">
+                            {friend.name.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-light/90">{friend.name}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-light/60">No friends yet</p>
+                )}
+              </div>
+            ) : (
+              // Friend Requests
+              <div className="space-y-2">
+                {friendRequests.length > 0 ? (
+                  friendRequests.map(request => (
+                    <div key={request.id} className="flex items-center justify-between p-2 bg-glass/10 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                          {request.profilePic ? (
+                            <Image
+                              src={request.profilePic}
+                              alt={request.name}
+                              width={32}
+                              height={32}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <span className="text-white">
+                              {request.name.charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-light/90">{request.name}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button className="text-sm px-3 py-1 bg-green-500/20 text-green-400 rounded-lg">
+                          Accept
+                        </button>
+                        <button className="text-sm px-3 py-1 bg-red-500/20 text-red-400 rounded-lg">
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-light/60">No pending requests</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </Transition.Child>
+    </div>
+  </Dialog>
+</Transition>
       {/* Name Change Modal */}
       <Transition appear show={isNameModalOpen} as={Fragment}>
         <Dialog
@@ -641,8 +797,7 @@ export default function UserProfile() {
           </div>
         </Dialog>
       </Transition>
-      
-      {/* Password Change Modal */}
+      {/* Password Modal */}
 <Transition appear show={isPasswordModalOpen} as={Fragment}>
   <Dialog
     as="div"
