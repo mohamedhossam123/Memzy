@@ -1,6 +1,10 @@
 {
   "Files": [
     {
+      "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg",
+      "PackagePath": "staticwebassets\\uploads\\Images\\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg"
+    },
+    {
       "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
       "PackagePath": "staticwebassets\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg"
     },
@@ -43,6 +47,10 @@
     {
       "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg",
       "PackagePath": "staticwebassets\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg"
+    },
+    {
+      "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\78979a82-b581-48ad-bd01-d97ce3510a76.jpg",
+      "PackagePath": "staticwebassets\\uploads\\profile_pictures\\78979a82-b581-48ad-bd01-d97ce3510a76.jpg"
     },
     {
       "Id": "obj\\Debug\\net9.0\\staticwebassets\\msbuild.Memzy_finalist.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",

@@ -1,5 +1,23 @@
 ﻿<Project>
   <ItemGroup>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>Memzy_finalist</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/Memzy_finalist</BasePath>
+      <RelativePath>uploads/Images/30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>qknalsq6kg</Fingerprint>
+      <Integrity>2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg'))">
       <SourceType>Package</SourceType>
       <SourceId>Memzy_finalist</SourceId>
@@ -179,6 +197,24 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\6768b159-0c92-405d-ace9-7203437953de.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\78979a82-b581-48ad-bd01-d97ce3510a76.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>Memzy_finalist</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/Memzy_finalist</BasePath>
+      <RelativePath>uploads/profile_pictures/78979a82-b581-48ad-bd01-d97ce3510a76.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>6ftiu4hpdk</Fingerprint>
+      <Integrity>jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\78979a82-b581-48ad-bd01-d97ce3510a76.jpg'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Videos\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png'))">
       <SourceType>Package</SourceType>
