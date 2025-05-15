@@ -11,15 +11,12 @@ using System.Threading.Tasks;
 
 public interface IModeratorService
 {
-    Task<bool> ApproveimageAsync(int postId, int moderatorId);
     Task DeleteUserAsync(int id);
-    Task<bool> ApproveVideoAsync(int postId, int moderatorId);
-    Task<bool> RejectimageAsync(int postId, int moderatorId);
-    Task<bool> RejectvideoAsync(int postId, int moderatorId);
-    Task<List<Image>> GetPendingImagesAsync();
-    Task<List<Video>> GetPendingVideosAsync();
-    Task<bool> DeleteImageAsync(int postId, int moderatorId);
-    Task<bool> DeleteVideoAsync(int postId, int moderatorId);
+    Task<List<Post>> GetPendingPostsAsync();
+    Task<bool> ApprovePostAsync(int postId, int modId);
+    Task<bool> RejectPostAsync(int postId, int modId);
+    Task<bool> DeletePostAsync(int postId, int modId);
+    
 }
     public class ModeratorService : IModeratorService
 {
@@ -38,87 +35,37 @@ public interface IModeratorService
         return user != null && user.Status == "moderator";
     }
 
-    public async Task<bool> ApproveimageAsync(int postId, int moderatorId)
+
+public async Task<bool> ApprovePostAsync(int postId, int modId)
     {
-        if (!await IsUserModeratorAsync(moderatorId)) return false;
-
-        var image = await _context.Images.FindAsync(postId);
-        if (image == null) return false;
-
-        image.IsApproved = true;
+        if (!await IsUserModeratorAsync(modId)) return false;
+        var post = await _context.Posts.FindAsync(postId);
+        if (post == null) return false;
+        post.IsApproved = true;
         await _context.SaveChangesAsync();
         return true;
     }
 
-    public async Task<bool> ApproveVideoAsync(int postId, int moderatorId)
+    public async Task<bool> RejectPostAsync(int postId, int modId)
     {
-        if (!await IsUserModeratorAsync(moderatorId)) return false;
-
-        var video = await _context.Videos.FindAsync(postId);
-        if (video == null) return false;
-
-        video.IsApproved = true;
+        if (!await IsUserModeratorAsync(modId)) return false;
+        var post = await _context.Posts.FindAsync(postId);
+        if (post == null) return false;
+        post.IsApproved = false;
         await _context.SaveChangesAsync();
         return true;
     }
 
-    public async Task<bool> RejectimageAsync(int postId, int moderatorId)
+    public async Task<bool> DeletePostAsync(int postId, int modId)
     {
-        if (!await IsUserModeratorAsync(moderatorId)) return false;
-
-        var image = await _context.Images.FindAsync(postId);
-        if (image == null) return false;
-
-        image.IsApproved = false;
+        if (!await IsUserModeratorAsync(modId)) return false;
+        var post = await _context.Posts.FindAsync(postId);
+        if (post == null) return false;
+        _context.Posts.Remove(post);
         await _context.SaveChangesAsync();
         return true;
     }
 
-    public async Task<bool> RejectvideoAsync(int postId, int moderatorId)
-    {
-        if (!await IsUserModeratorAsync(moderatorId)) return false;
-
-        var video = await _context.Videos.FindAsync(postId);
-        if (video == null) return false;
-
-        video.IsApproved = false;
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    public async Task<List<Image>> GetPendingImagesAsync()
-    {
-        return await _context.Images.Where(i => !i.IsApproved).ToListAsync();
-    }
-
-    public async Task<List<Video>> GetPendingVideosAsync()
-    {
-        return await _context.Videos.Where(v => !v.IsApproved).ToListAsync();
-    }
-
-    public async Task<bool> DeleteImageAsync(int postId, int moderatorId)
-    {
-        if (!await IsUserModeratorAsync(moderatorId)) return false;
-
-        var image = await _context.Images.FindAsync(postId);
-        if (image == null) return false;
-
-        _context.Images.Remove(image);
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    public async Task<bool> DeleteVideoAsync(int postId, int moderatorId)
-    {
-        if (!await IsUserModeratorAsync(moderatorId)) return false;
-
-        var video = await _context.Videos.FindAsync(postId);
-        if (video == null) return false;
-
-        _context.Videos.Remove(video);
-        await _context.SaveChangesAsync();
-        return true;
-    }
 
     public async Task DeleteUserAsync(int id)
     {
@@ -128,5 +75,12 @@ public interface IModeratorService
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
         }
+    }
+    public async Task<List<Post>> GetPendingPostsAsync()
+    {
+        return await _context.Posts
+                   .Where(p => !p.IsApproved)
+                   .Include(p => p.PostHumors)
+                   .ToListAsync();
     }
 }

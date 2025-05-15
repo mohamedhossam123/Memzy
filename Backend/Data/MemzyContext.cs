@@ -10,12 +10,10 @@ namespace Memzy_finalist.Models
         public virtual DbSet<Friendship> Friendships { get; set; }
         public virtual DbSet<FriendRequest> FriendRequests { get; set; }
         public virtual DbSet<HumorType> HumorTypes { get; set; }
-        public virtual DbSet<Image> Images { get; set; }
+        public DbSet<Post> Posts { get; set; }
+    public DbSet<PostHumor> PostHumors { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<Video> Videos { get; set; }
-        public virtual DbSet<ImageHumor> ImageHumors { get; set; }
-        public virtual DbSet<VideoHumor> VideoHumors { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -24,11 +22,45 @@ namespace Memzy_finalist.Models
             {
                 optionsBuilder.UseSqlServer("data source=DESKTOP-FM1OTR0;initial catalog=Memzy;trusted_connection=true;");
             }
+            
         }
         
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
 {
+    modelBuilder.Entity<Post>(entity =>
+    {
+        entity.HasKey(p => p.PostId);
+
+        entity.Property(p => p.Description)
+              .IsRequired();
+
+        entity.Property(p => p.MediaType)
+              // store enum as string: "Image" / "Video"
+              .HasConversion<string>()
+              .IsRequired();
+
+        entity.HasOne(p => p.User)
+              .WithMany(u => u.Posts)
+              .HasForeignKey(p => p.UserId)
+              .OnDelete(DeleteBehavior.Cascade);
+    });
+
+    // —— NEW: PostHumor join‐table configuration ——
+    modelBuilder.Entity<PostHumor>(entity =>
+    {
+        entity.HasKey(ph => ph.PostHumorId);
+
+        entity.HasOne(ph => ph.Post)
+              .WithMany(p => p.PostHumors)
+              .HasForeignKey(ph => ph.PostId)
+              .OnDelete(DeleteBehavior.Cascade);
+
+        entity.HasOne(ph => ph.HumorType)
+              .WithMany(ht => ht.PostHumors)
+              .HasForeignKey(ph => ph.HumorTypeId)
+              .OnDelete(DeleteBehavior.Cascade);
+    });
    modelBuilder.Entity<FriendRequest>(entity =>
 {
     entity.HasKey(e => e.RequestId);
@@ -85,39 +117,7 @@ namespace Memzy_finalist.Models
     entity.HasIndex(e => new { e.User1Id, e.User2Id }).IsUnique();
 });
 
-    modelBuilder.Entity<Image>(entity =>
-    {
-        entity.HasOne(d => d.User)
-            .WithMany(p => p.Images)
-            .HasForeignKey(d => d.UserId);
-    });
 
-    modelBuilder.Entity<Video>(entity =>
-    {
-        entity.HasOne(d => d.User)
-            .WithMany(p => p.Videos)
-            .HasForeignKey(d => d.UserId);
-    });
-
-    modelBuilder.Entity<ImageHumor>(entity =>
-    {
-        entity.HasOne(ih => ih.Image)
-            .WithMany(i => i.ImageHumors)
-            .HasForeignKey(ih => ih.ImageId);
-        entity.HasOne(ih => ih.HumorType)
-            .WithMany(ht => ht.ImageHumors)
-            .HasForeignKey(ih => ih.HumorTypeId);
-    });
-
-    modelBuilder.Entity<VideoHumor>(entity =>
-    {
-        entity.HasOne(vh => vh.Video)
-            .WithMany(v => v.VideoHumors)
-            .HasForeignKey(vh => vh.VideoId);
-        entity.HasOne(vh => vh.HumorType)
-            .WithMany(ht => ht.VideoHumors)
-            .HasForeignKey(vh => vh.HumorTypeId);
-    });
 
     modelBuilder.Entity<User>()
         .HasIndex(u => u.Email)

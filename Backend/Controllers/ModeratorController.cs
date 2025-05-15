@@ -22,42 +22,42 @@ namespace MyApiProject.Controllers
             await _moderatorService.DeleteUserAsync(id);
             return Ok(new { Message = "User deleted successfully" });
         }
-        [HttpPost("approveImage")]
-        public async Task<IActionResult> ApproveImage(int imageId,int moderatorId)
+        [HttpGet("pendingPosts")]
+        public async Task<IActionResult> GetPendingPosts()
         {
-            var result = await _moderatorService.ApproveimageAsync(imageId,moderatorId);
-            return Ok(result);
+            var pendingPosts = await _moderatorService.GetPendingPostsAsync();
+            return Ok(pendingPosts);
         }
-
-        [HttpPost("approveVideo")]
-        public async Task<IActionResult> ApproveVideo(int videoId,int moderatorId)
+        [HttpPost("approvePost")]
+        public async Task<IActionResult> ApprovePost(int postId, int modId)
         {
-            var result = await _moderatorService.ApproveVideoAsync(videoId,moderatorId);
-            return Ok(result);
+            var result = await _moderatorService.ApprovePostAsync(postId, modId);
+            if (result)
+            {
+                return Ok(new { Message = "Post approved successfully" });
+            }
+            return BadRequest(new { Message = "Failed to approve post" });
         }
-        [HttpPost("rejectImage")]
-        public async Task<IActionResult> RejectImage(int imageId,   int moderatorId)
+        [HttpPost("rejectPost")]
+        public async Task<IActionResult> RejectPost(int postId, int modId)
         {
-            var result = await _moderatorService.RejectimageAsync(imageId,moderatorId);
-            return Ok(result);
+            var result = await _moderatorService.RejectPostAsync(postId, modId);
+            if (result)
+            {
+                return Ok(new { Message = "Post rejected successfully" });
+            }
+            return BadRequest(new { Message = "Failed to reject post" });
         }
-        [HttpPost("rejectVideo")]
-        public async Task<IActionResult> RejectVideo(int videoId,int moderatorId)
+        [HttpDelete("deletePost")]
+        public async Task<IActionResult> DeletePost(int postId, int modId)
         {
-            var result = await _moderatorService.RejectvideoAsync(videoId,moderatorId);
-            return Ok(result);
-        }
-        [HttpGet("GetpendingImages")]
-        public async Task<IActionResult> GetPendingImages()
-        {
-            var result = await _moderatorService.GetPendingImagesAsync();
-            return Ok(result);
-        }
-        [HttpGet("GetpendingVideos")]
-        public async Task<IActionResult> GetPendingVideos()
-        {
-            var result = await _moderatorService.GetPendingVideosAsync();
-            return Ok(result);
-        }
+            var result = await _moderatorService.DeletePostAsync(postId, modId);
+            if (result)
+            {
+                return Ok(new { Message = "Post deleted successfully" });
+            }
+            return BadRequest(new { Message = "Failed to delete post" });
     }
+    
     }
+}

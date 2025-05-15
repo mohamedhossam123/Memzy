@@ -121,12 +121,8 @@ public async Task<int> GetFriendCountAsync(int userId)
 
     public async Task<int> GetPostCountAsync(int userId)
     {
-        var imagesCount = await _context.Images
-        .CountAsync(i => i.UserId == userId && i.IsApproved);
-    var videosCount = await _context.Videos
-        .CountAsync(v => v.UserId == userId && v.IsApproved);
-    
-    return imagesCount + videosCount;
-
+        var PostsCount = await _context.Posts
+            .CountAsync(p => p.UserId == userId);
+        return PostsCount;
     }
 }

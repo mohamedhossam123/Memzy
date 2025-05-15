@@ -1,3 +1,5 @@
+// app/posts/page.tsx
+
 'use client';
 
 import MyPostsContent from './ClientCreatePostsPage'; 

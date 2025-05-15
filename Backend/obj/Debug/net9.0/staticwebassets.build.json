@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "wJaxIgovWl6y8FiAd/nPJxj/insFQs0jxkdVmw8GoCY=",
+  "Hash": "R3oVxltmj+7CZVCCHUSCVCbRU2BVhTN1FcS1KeAxJ1M=",
   "Source": "Memzy_finalist",
   "BasePath": "_content/Memzy_finalist",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "Memzy_finalist\\wwwroot",
       "Source": "Memzy_finalist",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
       "SourceId": "Memzy_finalist",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "RelativePath": "uploads/Images/3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -38,10 +38,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg"
     },
     {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg",
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg",
       "SourceId": "Memzy_finalist",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "RelativePath": "uploads/Images/78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -59,10 +59,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\Images\\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg"
     },
     {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg",
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg",
       "SourceId": "Memzy_finalist",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "RelativePath": "uploads/Images/8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -80,10 +80,31 @@
       "OriginalItemSpec": "wwwroot\\uploads\\Images\\8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg"
     },
     {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg",
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\9df6e3b5-62a4-4e6d-a1fe-e75987f3f7d7_me.jpg",
       "SourceId": "Memzy_finalist",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\",
+      "BasePath": "_content/Memzy_finalist",
+      "RelativePath": "uploads/Images/9df6e3b5-62a4-4e6d-a1fe-e75987f3f7d7_me#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "6ftiu4hpdk",
+      "Integrity": "jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\Images\\9df6e3b5-62a4-4e6d-a1fe-e75987f3f7d7_me.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg",
+      "SourceId": "Memzy_finalist",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "RelativePath": "uploads/Images/b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -101,10 +122,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\Images\\b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg"
     },
     {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg",
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg",
       "SourceId": "Memzy_finalist",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "RelativePath": "uploads/Images/d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -122,10 +143,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\Images\\d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg"
     },
     {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\12f92495-c181-4e02-a427-1b2971b6342f.jpg",
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\profile_pictures\\12f92495-c181-4e02-a427-1b2971b6342f.jpg",
       "SourceId": "Memzy_finalist",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "RelativePath": "uploads/profile_pictures/12f92495-c181-4e02-a427-1b2971b6342f#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -143,10 +164,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\profile_pictures\\12f92495-c181-4e02-a427-1b2971b6342f.jpg"
     },
     {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
       "SourceId": "Memzy_finalist",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "RelativePath": "uploads/profile_pictures/2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -164,10 +185,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg"
     },
     {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg",
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg",
       "SourceId": "Memzy_finalist",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "RelativePath": "uploads/profile_pictures/521dd907-5cf9-4914-8214-69e1bf23e58b#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -185,10 +206,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg"
     },
     {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg",
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg",
       "SourceId": "Memzy_finalist",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "RelativePath": "uploads/profile_pictures/6768b159-0c92-405d-ace9-7203437953de#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
@@ -206,10 +227,10 @@
       "OriginalItemSpec": "wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg"
     },
     {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
+      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
       "SourceId": "Memzy_finalist",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\",
       "BasePath": "_content/Memzy_finalist",
       "RelativePath": "uploads/Videos/4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM#[.{fingerprint}]?.png",
       "AssetKind": "All",
@@ -230,7 +251,7 @@
   "Endpoints": [
     {
       "Route": "uploads/Images/3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.6ftiu4hpdk.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -275,7 +296,7 @@
     },
     {
       "Route": "uploads/Images/3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -312,7 +333,7 @@
     },
     {
       "Route": "uploads/Images/78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.4g5bcmyeni.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -357,7 +378,7 @@
     },
     {
       "Route": "uploads/Images/78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -394,7 +415,7 @@
     },
     {
       "Route": "uploads/Images/8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.4g5bcmyeni.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -439,7 +460,7 @@
     },
     {
       "Route": "uploads/Images/8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\8d837d72-34df-46a5-93d5-3d7fc9383247_memzyicon.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -475,8 +496,90 @@
       ]
     },
     {
+      "Route": "uploads/Images/9df6e3b5-62a4-4e6d-a1fe-e75987f3f7d7_me.6ftiu4hpdk.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\9df6e3b5-62a4-4e6d-a1fe-e75987f3f7d7_me.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "99692"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 15 May 2025 05:47:54 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "6ftiu4hpdk"
+        },
+        {
+          "Name": "label",
+          "Value": "uploads/Images/9df6e3b5-62a4-4e6d-a1fe-e75987f3f7d7_me.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4="
+        }
+      ]
+    },
+    {
+      "Route": "uploads/Images/9df6e3b5-62a4-4e6d-a1fe-e75987f3f7d7_me.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\9df6e3b5-62a4-4e6d-a1fe-e75987f3f7d7_me.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "99692"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 15 May 2025 05:47:54 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4="
+        }
+      ]
+    },
+    {
       "Route": "uploads/Images/b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.4g5bcmyeni.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -521,7 +624,7 @@
     },
     {
       "Route": "uploads/Images/b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -558,7 +661,7 @@
     },
     {
       "Route": "uploads/Images/d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.4g5bcmyeni.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -603,7 +706,7 @@
     },
     {
       "Route": "uploads/Images/d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Images\\d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -640,7 +743,7 @@
     },
     {
       "Route": "uploads/profile_pictures/12f92495-c181-4e02-a427-1b2971b6342f.4g5bcmyeni.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\12f92495-c181-4e02-a427-1b2971b6342f.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\profile_pictures\\12f92495-c181-4e02-a427-1b2971b6342f.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -685,7 +788,7 @@
     },
     {
       "Route": "uploads/profile_pictures/12f92495-c181-4e02-a427-1b2971b6342f.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\12f92495-c181-4e02-a427-1b2971b6342f.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\profile_pictures\\12f92495-c181-4e02-a427-1b2971b6342f.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -722,7 +825,7 @@
     },
     {
       "Route": "uploads/profile_pictures/2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.6ftiu4hpdk.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -767,7 +870,7 @@
     },
     {
       "Route": "uploads/profile_pictures/2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -804,7 +907,7 @@
     },
     {
       "Route": "uploads/profile_pictures/521dd907-5cf9-4914-8214-69e1bf23e58b.6ftiu4hpdk.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -849,7 +952,7 @@
     },
     {
       "Route": "uploads/profile_pictures/521dd907-5cf9-4914-8214-69e1bf23e58b.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -886,7 +989,7 @@
     },
     {
       "Route": "uploads/profile_pictures/6768b159-0c92-405d-ace9-7203437953de.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -923,7 +1026,7 @@
     },
     {
       "Route": "uploads/profile_pictures/6768b159-0c92-405d-ace9-7203437953de.qknalsq6kg.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -968,7 +1071,7 @@
     },
     {
       "Route": "uploads/Videos/4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.hdw5bc5pug.png",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1013,7 +1116,7 @@
     },
     {
       "Route": "uploads/Videos/4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
+      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\BACKEND\\wwwroot\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png",
       "Selectors": [],
       "ResponseHeaders": [
         {

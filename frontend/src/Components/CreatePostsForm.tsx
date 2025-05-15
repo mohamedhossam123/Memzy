@@ -1,8 +1,9 @@
+// Components/CreatePostsForm.tsx
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useRouter } from 'next/navigation'; // Note: using next/navigation instead of next/router
+import { useRouter } from 'next/navigation'; 
 
 interface HumorType {
   id: number;
@@ -24,6 +25,7 @@ export function CreatePostForm({ humorTypes }: CreatePostFormProps) {
     filePreview: '',
   });
 
+  // Handle file dropping functionality
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
@@ -35,6 +37,7 @@ export function CreatePostForm({ humorTypes }: CreatePostFormProps) {
     }
   }, []);
 
+  // Setup drag and drop functionality with react-dropzone
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -44,6 +47,7 @@ export function CreatePostForm({ humorTypes }: CreatePostFormProps) {
     maxFiles: 1
   });
 
+  // Handle humor type checkbox changes
   const handleHumorTypeChange = (id: number) => {
     setFormData(prev => ({
       ...prev,
@@ -53,24 +57,31 @@ export function CreatePostForm({ humorTypes }: CreatePostFormProps) {
     }));
   };
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
 
+    // Validate form inputs
     if (!formData.file || formData.humorTypeIds.length === 0) {
       setError('Please select a file and at least one humor type');
       setIsSubmitting(false);
       return;
     }
 
+    // Prepare form data for submission
     const formPayload = new FormData();
     formPayload.append('Description', formData.description);
     formData.humorTypeIds.forEach(id => formPayload.append('HumorTypeIds', id.toString()));
-    formPayload.append(formData.file.type.startsWith('image') ? 'ImageFile' : 'VideoFile', formData.file);
+    
+    // Determine if it's an image or video and add appropriate file
+    const isImage = formData.file.type.startsWith('image');
+    formPayload.append(isImage ? 'ImageFile' : 'VideoFile', formData.file);
 
     try {
-      const response = await fetch(`/api/posting/${formData.file.type.startsWith('image') ? 'image' : 'video'}`, {
+      // Send to the appropriate API endpoint based on file type
+      const response = await fetch(`/api/posting/${isImage ? 'image' : 'video'}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -84,7 +95,10 @@ export function CreatePostForm({ humorTypes }: CreatePostFormProps) {
       }
 
       const result = await response.json();
-      router.push(`/posts/${formData.file?.type.startsWith('image') ? 'images' : 'videos'}/${result.imageId || result.videoId}`);
+      
+      // Redirect to the post detail page
+      const id = isImage ? result.imageId : result.videoId;
+      router.push(`/posts/${isImage ? 'images' : 'videos'}/${id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
@@ -92,6 +106,7 @@ export function CreatePostForm({ humorTypes }: CreatePostFormProps) {
     }
   };
 
+  // Clean up object URLs when the component unmounts
   useEffect(() => {
     return () => {
       if (formData.filePreview) {
@@ -100,11 +115,26 @@ export function CreatePostForm({ humorTypes }: CreatePostFormProps) {
     };
   }, [formData.filePreview]);
 
+  // Handle navigation to my posts page
+  const handleViewMyPosts = () => {
+    router.push('/posts/my-posts');
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-glow">Create New Post</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-glow">Create New Post</h1>
+        <button
+          type="button"
+          onClick={handleViewMyPosts}
+          className="px-4 py-2 rounded-lg bg-glass hover:bg-glass/80 transition-colors"
+        >
+          View My Posts
+        </button>
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* File drop zone for uploading images/videos */}
         <div
           {...getRootProps()}
           className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors
@@ -135,6 +165,7 @@ export function CreatePostForm({ humorTypes }: CreatePostFormProps) {
           )}
         </div>
 
+        {/* Description textarea */}
         <div>
           <label className="block text-light/80 mb-2">Description</label>
           <textarea
@@ -143,9 +174,11 @@ export function CreatePostForm({ humorTypes }: CreatePostFormProps) {
             className="w-full px-4 py-2 bg-glass rounded-lg focus:ring-2 focus:ring-accent outline-none"
             rows={3}
             maxLength={500}
+            placeholder="Add a description for your post"
           />
         </div>
 
+        {/* Humor types selection */}
         <div>
           <label className="block text-light/80 mb-2">Select Humor Types</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -169,8 +202,10 @@ export function CreatePostForm({ humorTypes }: CreatePostFormProps) {
           </div>
         </div>
 
+        {/* Error message display */}
         {error && <p className="text-red-400">{error}</p>}
 
+        {/* Submit button */}
         <button
           type="submit"
           disabled={isSubmitting}

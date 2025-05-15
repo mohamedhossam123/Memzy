@@ -1,8 +1,10 @@
 using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MoreLinq.Experimental;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -13,10 +15,14 @@ using System.Threading.Tasks;
 public interface ICreatingPostsService
 {
     Task<FileUploadResult> SaveFileAsync(IFormFile file, string containerName);
-    Task<Image> PostImageAsync(IFormFile imageFile, List<int> humorTypeIds, string description, int userId);
-    Task<Video> PostVideoAsync(IFormFile videoFile, List<int> humorTypeIds, string description, int userId);
+    Task<Post> PostMediaAsync(
+        IFormFile file,
+        List<int> humorTypeIds,
+        string description,
+        int userId,
+        MediaType mediaType
+    );
 }
-
 public class CreatingPostsService : ICreatingPostsService
 {
     private readonly MemzyContext _context;
@@ -32,7 +38,51 @@ public class CreatingPostsService : ICreatingPostsService
         _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
+public async Task<Post> PostMediaAsync(
+        IFormFile file,
+        List<int> humorTypeIds,
+        string description,
+        int userId,
+        MediaType mediaType
+    )
+    {
+        if (file == null || humorTypeIds == null || !humorTypeIds.Any())
+            throw new ArgumentException("File + at least one humor type required");
 
+        var user = await _context.Users.FindAsync(userId)
+                   ?? throw new KeyNotFoundException($"User {userId} not found");
+
+        var container = mediaType == MediaType.Image ? "images" : "videos";
+        var upload = await SaveFileAsync(file, container);
+
+        var post = new Post
+        {
+            UserId         = userId,
+            MediaType      = mediaType,
+            Description    = description ?? "",
+            FileName       = upload.FileName,
+            FilePath       = upload.FilePath,
+            ContentType    = file.ContentType,
+            FileSize       = file.Length,
+            CreatedAt      = DateTime.UtcNow,
+            LikeCounter    = 0,
+            IsApproved     = false,     
+            PostHumors     = new List<PostHumor>()
+        };
+
+        foreach (var htId in humorTypeIds.Distinct())
+        {
+            if (await _context.HumorTypes.AnyAsync(ht => ht.HumorTypeId == htId))
+                post.PostHumors.Add(new PostHumor { HumorTypeId = htId });
+        }
+
+        if (!post.PostHumors.Any())
+            throw new InvalidOperationException("No valid humor types found");
+
+        _context.Posts.Add(post);
+        await _context.SaveChangesAsync();
+        return post;
+    }
     public async Task<FileUploadResult> SaveFileAsync(IFormFile file, string containerName)
     {
         if (file == null || file.Length == 0)
@@ -89,126 +139,6 @@ public class CreatingPostsService : ICreatingPostsService
             _logger.LogError(ex, $"Failed to save file to: {filePath}");
             throw new IOException($"Failed to save file: {ex.Message}", ex);
         }
-    }
-
-    public async Task<Image> PostImageAsync(IFormFile imageFile, List<int> humorTypeIds, string description, int userId)
-    {
-        if (imageFile == null)
-        {
-            _logger.LogError("ImageFile is null");
-            throw new ArgumentNullException(nameof(imageFile));
-        }
-
-        if (humorTypeIds == null || !humorTypeIds.Any())
-        {
-            _logger.LogError("HumorTypeIds is null or empty");
-            throw new ArgumentException("At least one humor type is required", nameof(humorTypeIds));
-        }
-
-        var user = await _context.Users.FindAsync(userId) 
-            ?? throw new KeyNotFoundException($"User with ID {userId} not found");
-
-        _logger.LogInformation($"Starting image upload for user {userId}");
-        var uploadResult = await SaveFileAsync(imageFile, "images");
-        
-        var image = new Image 
-        {
-            UserId = userId,
-            Description = description ?? string.Empty,
-            FileName = uploadResult.FileName,
-            FilePath = uploadResult.FilePath,
-            ContentType = imageFile.ContentType,
-            FileSize = imageFile.Length,
-            CreatedAt = DateTime.UtcNow,
-            ImageLikeCounter = 0,
-            ImageHumors = new List<ImageHumor>()
-        };
-
-        foreach (var humorTypeId in humorTypeIds.Distinct())
-        {
-            var humorType = await _context.HumorTypes.FindAsync(humorTypeId);
-            if (humorType != null)
-            {
-                image.ImageHumors.Add(new ImageHumor { HumorTypeId = humorTypeId });
-                _logger.LogInformation($"Added humor type {humorTypeId} to image");
-            }
-            else
-            {
-                _logger.LogWarning($"Humor type with ID {humorTypeId} not found");
-            }
-        }
-
-        if (!image.ImageHumors.Any())
-        {
-            _logger.LogError("No valid humor types found");
-            throw new InvalidOperationException("No valid humor types were found");
-        }
-
-        _context.Images.Add(image);
-        await _context.SaveChangesAsync();
-        _logger.LogInformation($"Successfully saved image with ID {image.ImageId}");
-
-        return image;
-    }
-
-    public async Task<Video> PostVideoAsync(IFormFile videoFile, List<int> humorTypeIds, string description, int userId)
-    {
-        if (videoFile == null)
-        {
-            _logger.LogError("VideoFile is null");
-            throw new ArgumentNullException(nameof(videoFile));
-        }
-
-        if (humorTypeIds == null || !humorTypeIds.Any())
-        {
-            _logger.LogError("HumorTypeIds is null or empty");
-            throw new ArgumentException("At least one humor type is required", nameof(humorTypeIds));
-        }
-
-        var user = await _context.Users.FindAsync(userId) 
-            ?? throw new KeyNotFoundException($"User with ID {userId} not found");
-
-        _logger.LogInformation($"Starting video upload for user {userId}");
-        var uploadResult = await SaveFileAsync(videoFile, "videos");
-        
-        var video = new Video 
-        {
-            UserId = userId,
-            Description = description ?? string.Empty,
-            FileName = uploadResult.FileName,
-            FilePath = uploadResult.FilePath,
-            ContentType = videoFile.ContentType,
-            FileSize = videoFile.Length,
-            CreatedAt = DateTime.UtcNow,
-            VideoLikeCounter = 0,
-            VideoHumors = new List<VideoHumor>()
-        };
-
-        foreach (var humorTypeId in humorTypeIds.Distinct())
-        {
-            var humorType = await _context.HumorTypes.FindAsync(humorTypeId);
-            if (humorType != null)
-            {
-                video.VideoHumors.Add(new VideoHumor { HumorTypeId = humorTypeId });
-                _logger.LogInformation($"Added humor type {humorTypeId} to video");
-            }
-            else
-            {
-                _logger.LogWarning($"Humor type with ID {humorTypeId} not found");
-            }
-        }
-
-        if (!video.VideoHumors.Any())
-        {
-            _logger.LogError("No valid humor types found");
-            throw new InvalidOperationException("No valid humor types were found");
-        }
-
-        _context.Videos.Add(video);
-        await _context.SaveChangesAsync();
-        _logger.LogInformation($"Successfully saved video with ID {video.VideoId}");
-
-        return video;
     }
 }
 

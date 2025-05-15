@@ -5,6 +5,7 @@ using Memzy_finalist.Models;
 using Memzy_finalist.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -16,10 +17,15 @@ namespace Memzy_finalist.Controllers
     public class HumorController : ControllerBase
     {
         private readonly IHumorService _humorService;
+        private readonly MemzyContext _context;
         private readonly IAuthenticationService _authService;
+        private readonly ILogger _logger;
 
-        public HumorController(IHumorService humorService, IAuthenticationService authService)
+        public HumorController(IHumorService humorService, IAuthenticationService authService, ILogger<HumorController> logger, MemzyContext context)
         {
+            _context = context;
+        
+            _logger = logger;
             _humorService = humorService;
             _authService = authService;
         }
@@ -72,7 +78,28 @@ public async Task<IActionResult> ChangeHumor([FromBody] HumorPreferenceDto humor
         return StatusCode(500, $"An error occurred: {ex.Message}");
     }
 }
+        [HttpGet("GetHumorTypes")]
+        public async Task<IActionResult> GetHumorTypes()
+        {
+            try
+            {
+                _logger.LogInformation("Fetching all humor types");
+                var humorTypes = await _context.HumorTypes
+                    .Select(ht => new
+                    {
+                        id = ht.HumorTypeId,
+                        name = ht.HumorTypeName
+                    })
+                    .ToListAsync();
 
+                return Ok(humorTypes);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching humor types");
+                return StatusCode(500, "An error occurred while fetching humor types");
+            }
+        }
 
         [HttpDelete("RemoveHumor")]
         [Authorize]

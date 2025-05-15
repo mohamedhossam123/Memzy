@@ -1,119 +1,63 @@
 using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MyApiProject.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class PostingController : ControllerBase
+    [Route("api/user")]
+    [Authorize] // Ensures all endpoints require authentication
+    public class UserPostsController : ControllerBase
     {
-        private readonly ICreatingPostsService _postingService;
-        private readonly IAuthenticationService _authService;
+        private readonly MemzyContext _ctx;
+        private readonly IAuthenticationService _auth;
 
-        public PostingController(ICreatingPostsService postingService, IAuthenticationService authService)
+        public UserPostsController(MemzyContext context, IAuthenticationService authService)
         {
-            _authService = authService;
-            _postingService = postingService;
+            _ctx = context;
+            _auth = authService;
         }
 
-        [HttpPost("image")]
-        [Authorize]
-        public async Task<IActionResult> CreatePostingImage([FromForm] ImageUploadDto dto)
-        {
-            try
-            {
-                var userid = await _authService.GetAuthenticatedUserId();
-                if (dto.ImageFile == null || dto.ImageFile.Length == 0)
-                    return BadRequest("Image file is required");
-                    
-                var result = await _postingService.PostImageAsync(
-                    dto.ImageFile, 
-                    dto.HumorTypeIds ?? new List<int>(),
-                    dto.Description ?? string.Empty, 
-                    userid);
-
-                return Ok(new
-                {
-                    ImageId = result.ImageId,
-                    FilePath = result.FilePath,
-                    Message = "Image posted successfully,Waiting for admin approval"
-                });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (System.Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
-        }
-
-        [HttpPost("video")]
-        [Authorize]
-        public async Task<IActionResult> CreatePostVideo([FromForm] VideoUploadDto dto)
-        {
-            try
-            {
-                var UserId = await _authService.GetAuthenticatedUserId();
-                if (dto.VideoFile == null || dto.VideoFile.Length == 0)
-                    return BadRequest("Video file is required");
-
-                var result = await _postingService.PostVideoAsync(
-                    dto.VideoFile, 
-                    dto.HumorTypeIds ?? new List<int>(),
-                    dto.Description ?? string.Empty, 
-                    UserId);
-
-                return Ok(new
-                {
-                    VideoId = result.VideoId,
-                    FilePath = result.FilePath,
-                    Message = "Video posted successfully,Waiting for admin approval"
-                });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (System.Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
-        }
-    }
-
-    public class ImageUploadDto
+        [HttpGet]
+    public async Task<IActionResult> GetMyPosts([FromQuery] MediaType? mediaType = null)
     {
-        public IFormFile ImageFile { get; set; } = null!;
-        public string Description { get; set; }
-        public List<int> HumorTypeIds { get; set; }
+        var uid = await _auth.GetAuthenticatedUserId();
+
+        var q = _ctx.Posts
+            .Where(p => p.UserId == uid)
+            .Include(p => p.PostHumors)
+               .ThenInclude(ph => ph.HumorType)
+            .OrderByDescending(p => p.CreatedAt)
+            .AsQueryable();
+
+        if (mediaType != null)
+            q = q.Where(p => p.MediaType == mediaType);
+
+        var list = await q.ToListAsync();
+        return Ok(list);
     }
 
-    public class VideoUploadDto
+    // GET api/user/posts/stats
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetStats()
     {
-        public IFormFile VideoFile { get; set; } = null!;
-        public string Description { get; set; }
-        public List<int> HumorTypeIds { get; set; }
+        var uid = await _auth.GetAuthenticatedUserId();
+        var all   = _ctx.Posts.Where(p => p.UserId == uid);
+        var total = await all.CountAsync();
+        var approved = await all.CountAsync(p => p.IsApproved);
+        var pending  = total - approved;
+        var likes    = await all.SumAsync(p => p.LikeCounter);
+
+        return Ok(new {
+            TotalPosts    = total,
+            ApprovedPosts = approved,
+            PendingPosts  = pending,
+            TotalLikes    = likes
+        });
     }
+}
 }
