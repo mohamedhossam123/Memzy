@@ -344,7 +344,7 @@ const handleRemoveFriend = async (friendId: number) => {
 };
 
     return (
-    <div className="min-h-screen bg-gradient-to-br from-darker to-primary-dark text-light">
+    <div className="min-h-screen bg-gradient-to-br from-darker to-primary-dark text-light"> 
       <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 md:p-8">
         {/* Centered Profile Section */}
         <div className="flex flex-col items-center text-center space-y-6">
@@ -391,22 +391,25 @@ const handleRemoveFriend = async (friendId: number) => {
        <div className="text-center space-y-6">
           <h2 className="text-xl font-semibold text-glow">Social Connections</h2>
           <div className="flex justify-center gap-4 flex-wrap">
-            <button
-  onClick={() => setFriendsModalOpen(true)}
-  className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105 flex flex-col items-center"
->
-  <div className="text-2xl font-bold mb-2">{userData?.friendCount ?? 0}</div>
-  <div className="text-light/80 text-sm">Friends</div>
-</button>
+  <button
+    onClick={() => setFriendsModalOpen(true)}
+    className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105 flex flex-col items-center"
+  >
+    <div className="text-2xl font-bold mb-2">{userData?.friendCount ?? 0}</div>
+    <div className="text-light/80 text-sm">Friends</div>
+  </button>
 
-            <div className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105 flex flex-col items-center">
-              <div className="text-2xl font-bold mb-2">{userData?.postCount ?? 0}</div>
-              <div className="text-light/80 text-sm">Posts</div>
-            </div>
-          </div>
+  <button
+    onClick={() => router.push('/posts')}
+    className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105 flex flex-col items-center"
+  >
+    <div className="text-2xl font-bold mb-2">{userData?.postCount ?? 0}</div>
+    <div className="text-light/80 text-sm">Posts</div>
+  </button>
+</div>
+</div>
+<div className="border-t border-glass/50 w-full mx-auto my-8" />
 
-        </div>
-        <div className="border-t border-glass/50 w-full mx-auto my-8" />
 
 
         {/* Settings */}
@@ -1020,5 +1023,7 @@ const handleRemoveFriend = async (friendId: number) => {
   </Dialog>
 </Transition>
     </div>
+
   )
+
 }
