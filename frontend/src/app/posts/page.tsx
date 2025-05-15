@@ -1,13 +1,13 @@
-// app/posts/page.tsx
+// import PostForm from '@/Components/PostsFormComponent';
+import PostFeed from '@/Components/PostFeedComponent';
 
-'use client';
-
-import MyPostsContent from './ClientCreatePostsPage'; 
-
-export default function MyPostsPage() {
+export default function PostsPage() {
   return (
-    <div className="p-4 sm:p-6 md:p-8 overflow-y-auto">
-      <MyPostsContent />
+    <div className="max-w-2xl mx-auto py-10 px-4">
+      <h1 className="text-2xl font-bold mb-4">Create a Post</h1>
+      {/* <PostForm /> */}
+      <h2 className="text-xl font-semibold mt-10 mb-4">Latest Posts</h2>
+      <PostFeed />
     </div>
   );
 }
