@@ -15,12 +15,15 @@ namespace MyApiProject.Controllers
     {
         private readonly MemzyContext _ctx;
         private readonly IAuthenticationService _auth;
+        private readonly ICreatingPostsService _creatingPostsService;
 
-        public UserPostsController(MemzyContext context, IAuthenticationService authService)
+        public UserPostsController(MemzyContext context, IAuthenticationService authService, ICreatingPostsService creatingPostsService)
         {
             _ctx = context;
             _auth = authService;
+            _creatingPostsService = creatingPostsService;
         }
+        
 
         [HttpGet]
     public async Task<IActionResult> GetMyPosts([FromQuery] MediaType? mediaType = null)
@@ -41,7 +44,21 @@ namespace MyApiProject.Controllers
         return Ok(list);
     }
 
-    // GET api/user/posts/stats
+    [HttpPost("CreatePost")]
+[Authorize]
+public async Task<IActionResult> CreatePost([FromForm] CreatePostRequest request)
+{
+    var uid = await _auth.GetAuthenticatedUserId();
+    var post = await _creatingPostsService.PostMediaAsync(
+        request.File,
+        request.HumorTypeIds,
+        request.Description,
+        uid,
+        request.MediaType
+    );
+    return CreatedAtAction(nameof(GetMyPosts), new { id = post.PostId }, post);
+}
+
     [HttpGet("stats")]
     public async Task<IActionResult> GetStats()
     {
@@ -59,5 +76,7 @@ namespace MyApiProject.Controllers
             TotalLikes    = likes
         });
     }
+    
 }
+
 }

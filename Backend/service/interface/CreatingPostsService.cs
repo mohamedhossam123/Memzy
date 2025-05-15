@@ -22,6 +22,7 @@ public interface ICreatingPostsService
         int userId,
         MediaType mediaType
     );
+    
 }
 public class CreatingPostsService : ICreatingPostsService
 {
@@ -141,6 +142,20 @@ public async Task<Post> PostMediaAsync(
         }
     }
 }
+public class CreatePostRequest
+{
+    [Required]
+    public IFormFile File { get; set; }
+
+    [Required]
+    public List<int> HumorTypeIds { get; set; }
+
+    public string Description { get; set; }
+
+    [Required]
+    public MediaType MediaType { get; set; }
+}
+
 
 public class FileUploadResult
 {
