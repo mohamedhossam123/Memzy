@@ -25,7 +25,7 @@ export default function PostsPage() {
 
         {/* Posts Feed Header */}
         <div className="mb-16 text-center">
-          <h2 className="text-3xl font-bold text-glow">Community Posts</h2>
+          <h2 className="text-3xl font-bold text-glow">My Posts</h2>
           <div className="border-t border-glass/50 w-1/3 mx-auto my-6" />
         </div>
 

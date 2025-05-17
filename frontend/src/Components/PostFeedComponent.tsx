@@ -32,14 +32,11 @@ export default function PostFeed() {
       try {
         setLoading(true)
         console.log('Attempting to fetch posts...')
-        
-        // Check if user and token exist
         if (!user || !user.token) {
           console.error('No authenticated user or token found in context')
           setError('Authentication required. Please login.')
           setLoading(false)
           
-          // Redirect to login page after a short delay
           setTimeout(() => {
             router.push('/login')
           }, 2000)
@@ -49,7 +46,7 @@ export default function PostFeed() {
         
         console.log('User authenticated, sending request to API...')
         
-        // Make the API request with the token from context
+        
         const response = await fetch('/api/user', {
           method: 'GET',
           headers: {
@@ -57,26 +54,22 @@ export default function PostFeed() {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
-          credentials: 'include' // Include cookies in the request
+          credentials: 'include' 
         })
         
         console.log('Response status:', response.status)
         
         if (!response.ok) {
-          // Try to get more details about the error
           let errorMessage = `Server responded with status: ${response.status}`
           try {
             const errorData = await response.json()
             console.error('Error details:', errorData)
             errorMessage = errorData.message || errorData.title || errorMessage
             
-            // If we get a 401 Unauthorized, the token might be invalid/expired
             if (response.status === 401) {
               console.log('Unauthorized - token may be invalid or expired')
-              // Could trigger a token refresh here if your app supports it
             }
           } catch (e) {
-            // If we can't parse the error as JSON, just use the status code
           }
           
           throw new Error(errorMessage)
@@ -142,32 +135,55 @@ export default function PostFeed() {
           key={post.postId}
           className="relative bg-[rgba(30,30,30,0.9)] backdrop-blur-md rounded-xl p-4 shadow-xl border border-[rgba(255,255,255,0.1)] hover:border-[#c56cf0] transition-all"
         >
-          {/* Media Container */}
-          <div className="relative aspect-square rounded-lg overflow-hidden mb-4">
-  {mediaErrors.has(post.postId) ? (
-    <div className="w-full h-full bg-gray-800 flex items-center justify-center">
-      <span className="text-light/60">Failed to load media</span>
-    </div>
-  ) : post.mediaUrl?.endsWith('.mp4') ? (
-    <video 
-      className="w-full h-full object-cover" 
-      controls
-      onError={() => setMediaErrors(prev => new Set(prev).add(post.postId))}
-    >
-      <source src={post.mediaUrl} />
-      Your browser does not support the video tag.
-    </video>
-  ) : (
-    post.mediaUrl && (
-      <Image
-        src={post.mediaUrl}
-        alt="Post content"
-        fill
-        className="object-cover"
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          <div className="relative aspect-square rounded-lg overflow-hidden mb-4 bg-gray-800">
+  {post.mediaUrl ? (
+    post.mediaUrl.endsWith('.mp4') ? (
+      <video 
+        className="w-full h-full object-cover" 
+        controls
         onError={() => setMediaErrors(prev => new Set(prev).add(post.postId))}
-      />
+      >
+        <source src={post.mediaUrl} />
+        Your browser does not support the video tag.
+      </video>
+    ) : (
+      <div className="relative w-full h-full">
+        <Image
+          src={post.mediaUrl}
+          alt="Post content"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          onError={() => setMediaErrors(prev => new Set(prev).add(post.postId))}
+          placeholder="blur"
+          blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMmEyYTJhIi8+PC9zdmc+"
+        />
+      </div>
     )
+  ) : (
+    <div className="w-full h-full flex items-center justify-center">
+      <span className="text-light/60">No media available</span>
+    </div>
+  )}
+  
+  {mediaErrors.has(post.postId) && (
+    <div className="absolute inset-0 bg-gray-800 bg-opacity-80 flex items-center justify-center">
+      <div className="text-center">
+        <span className="text-light/60 block mb-2">Failed to load media</span>
+        <button 
+          className="px-3 py-1 text-xs bg-[#8e2de233] text-[#c56cf0] rounded-full hover:bg-[#8e2de266]"
+          onClick={() => {
+            setMediaErrors(prev => {
+              const newErrors = new Set(prev);
+              newErrors.delete(post.postId);
+              return newErrors;
+            });
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    </div>
   )}
 </div>
 

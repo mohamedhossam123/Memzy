@@ -18,7 +18,6 @@ export function Sidebar() {
     }
   }
 
-  // Helper function to check active route
   const isActive = (path: string) => pathname === path
   
   return (
