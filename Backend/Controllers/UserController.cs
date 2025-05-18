@@ -1,14 +1,6 @@
-// DONE
-
-
 using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace MyApiProject.Controllers
 {
@@ -98,7 +90,7 @@ public async Task<IActionResult> GetProfilePicture()
         }
 [HttpPost("UpdateProfilePicture")]
 [Authorize]
-public async Task<IActionResult> UploadProfilePicture([FromForm] profilePictureDto dto)
+public async Task<IActionResult> UploadProfilePicture([FromForm] ProfilePictureDto dto)
 {
     try
     {
@@ -129,15 +121,11 @@ public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto
         
         if (user == null)
             return Unauthorized("User not found");
-
-        // Verify current password
         if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
             return BadRequest("Current password is incorrect");
 
         if (string.IsNullOrWhiteSpace(dto.NewPassword) || dto.NewPassword.Length < 6)
             return BadRequest("New password must be at least 6 characters");
-
-        // Update password
         user.PasswordHash = _authService.HashPassword(dto.NewPassword);
         await _context.SaveChangesAsync();
 
@@ -182,28 +170,4 @@ public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto
             }
         }
     }
-
-    public class UserCreateDto
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
-
-    public class LoginDto
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
-    public class ChangePasswordDto
-{
-    public string CurrentPassword { get; set; }
-    public string NewPassword { get; set; }
-}
-
-    public class profilePictureDto
-    {
-        public IFormFile ProfilePicture { get; set; } = null!;
-    }
-
 }

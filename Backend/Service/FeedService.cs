@@ -1,33 +1,9 @@
 using Memzy_finalist.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Memzy_finalist.Services
 
 {
-    public class PostDto
-{
-    public int         PostId      { get; set; }
-    public MediaType   MediaType   { get; set; }
-    public string      Description { get; set; } = "";
-    public string      FilePath    { get; set; } = "";
-    public DateTime    CreatedAt   { get; set; }
-    public int         LikeCounter { get; set; }
-    public bool        IsApproved  { get; set; }
-    public List<int>   HumorTypeIds  { get; set; } = new();
-}
-    public class FeedResult
-{
-    public List<PostDto> Posts { get; set; } = new List<PostDto>();
-}
-    public interface IFeedService
-    {
-        Task<FeedResult> FeedGeneratorBasedOnHumor(int userId);
-        Task<FeedResult> FeedGeneratorEverythingGoes();
-    }
-
     public class FeedService : IFeedService
     {
         private readonly MemzyContext _ctx;
@@ -53,7 +29,7 @@ namespace Memzy_finalist.Services
             }).ToList();
         }
 
-        public async Task<FeedResult> FeedGeneratorBasedOnHumor(int userId)
+        public async Task<FeedResultDTO> FeedGeneratorBasedOnHumor(int userId)
         {
             var prefs = await _ctx.UserHumorTypes
                 .Where(u => u.UserId == userId)
@@ -72,10 +48,10 @@ namespace Memzy_finalist.Services
             var topPostsQuery = baseQuery.Take(6);
 
             var dtos = await FetchPostsAsync(topPostsQuery);
-            return new FeedResult { Posts = dtos };
+            return new FeedResultDTO { Posts = dtos };
         }
 
-        public async Task<FeedResult> FeedGeneratorEverythingGoes()
+        public async Task<FeedResultDTO> FeedGeneratorEverythingGoes()
         {
             var topPostsQuery = _ctx.Posts
                 .Where(p => p.IsApproved)
@@ -83,7 +59,7 @@ namespace Memzy_finalist.Services
                 .Take(6);
 
             var dtos = await FetchPostsAsync(topPostsQuery);
-            return new FeedResult { Posts = dtos };
+            return new FeedResultDTO { Posts = dtos };
         }
     }
 }

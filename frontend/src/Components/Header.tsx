@@ -96,13 +96,16 @@ export function Header() {
                 )}
                 {user.ProfilePictureUrl && !profileImageError ? (
                   <Image
-                    src={user.ProfilePictureUrl}
-                    width={40}
-                    height={40}
-                    alt={user.name || 'User'}
-                    className="rounded-full object-cover"
-                    onError={() => setProfileImageError(true)}
-                  />
+  src={user?.ProfilePictureUrl || '/default-profile.png'}
+  width={100}
+  height={100}
+  alt="Profile"
+  onError={(e) => {
+    console.error('Failed to load:', e.currentTarget.src);
+    e.currentTarget.src = '/default-profile.png';
+  }}
+  unoptimized={true} 
+/>
                 ) : (
                   <Image
                     src="https://i.ibb.co/XYZ/default-profile.png"

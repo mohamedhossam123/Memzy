@@ -1,23 +1,7 @@
-
 using Memzy_finalist.Models;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
-public interface IModeratorService
-{
-    Task DeleteUserAsync(int id);
-    Task<List<Post>> GetPendingPostsAsync();
-    Task<bool> ApprovePostAsync(int postId, int modId);
-    Task<bool> RejectPostAsync(int postId, int modId);
-    Task<bool> DeletePostAsync(int postId, int modId);
-    
-}
+
     public class ModeratorService : IModeratorService
 {
     private readonly MemzyContext _context;

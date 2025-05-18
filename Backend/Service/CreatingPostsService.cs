@@ -1,29 +1,8 @@
 using Memzy_finalist.Models;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using MoreLinq.Experimental;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
-public interface ICreatingPostsService
-{
-    Task<FileUploadResult> SaveFileAsync(IFormFile file, string containerName);
-    Task<Post> PostMediaAsync(
-        IFormFile file,
-        List<int> humorTypeIds,
-        string description,
-        int userId,
-        MediaType mediaType
-    );
-    
-}
+
 public class CreatingPostsService : ICreatingPostsService
 {
     private readonly MemzyContext _context;

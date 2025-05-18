@@ -1,8 +1,5 @@
-using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Memzy_finalist.Services;
 
 namespace MyApiProject.Controllers
 {

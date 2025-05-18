@@ -1,15 +1,7 @@
 using Memzy_finalist.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 
-public interface ISearchService
-{
-    Task<List<User>> SearchUsersAsync(string searchTerm);
-}
 public class SearchService : ISearchService
 {
     private readonly MemzyContext _context;

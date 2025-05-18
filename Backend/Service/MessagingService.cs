@@ -1,23 +1,8 @@
 using Memzy_finalist.Models;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MyApiProject.Services
 {
-    public interface IMessagingService
-    {
-        Task<int> SendMessageAsync(int senderId, int receiverId, string messageContent);
-        Task<List<MessageResponseDto>> GetMessagesAsync(int userId, int contactId, int page, int pageSize);
-        Task<bool> DeleteMessageAsync(int messageId, int userId);
-    }
 
     public class MessagingService : IMessagingService
     {
@@ -109,23 +94,9 @@ namespace MyApiProject.Services
                                      (m.SenderId == userId || m.ReceiverId == userId));
 
             if (message == null) return false;
-
-            // Uncomment if soft delete is used:
-            // message.IsDeleted = true;
-            // await _context.SaveChangesAsync();
-
-            _context.Messages.Remove(message); // Hard delete
+            _context.Messages.Remove(message); 
             await _context.SaveChangesAsync();
             return true;
         }
-    }
-
-    public class MessageResponseDto
-    {
-        public int MessageId { get; set; }
-        public string Content { get; set; }
-        public DateTime Timestamp { get; set; }
-        public int SenderId { get; set; }
-        public int ReceiverId { get; set; }
     }
 }

@@ -1,8 +1,6 @@
 using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Memzy_finalist.Services;
 
 namespace MyApiProject.Controllers
 {
@@ -181,9 +179,4 @@ public async Task<IActionResult> GetFriends()
             return Ok(result);
         }
     }
-    public class FriendRequestDto
-{
-    public int RequestId { get; set; } 
-    public int? ReceiverId { get; set; } 
-}
 }

@@ -29,7 +29,6 @@ builder.Services.AddScoped<IFeedService, FeedService>();
 builder.Services.AddScoped<ICreatingPostsService, CreatingPostsService>();
 builder.Services.AddScoped<IFriendsService, FriendsService>();
 builder.Services.AddScoped<IMessagingService, MessagingService>();
-
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -110,12 +109,13 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddCors(options => {
     options.AddPolicy("NextJsFrontend", policy => {
         policy.WithOrigins(
-                "http://localhost:3000",  
-                "http://localhost:5001"  
+                "http://localhost:3000",
+                "http://localhost:5001"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials();
+            .AllowCredentials()
+            .WithExposedHeaders("*"); 
     });
 });
 builder.Logging.ClearProviders();

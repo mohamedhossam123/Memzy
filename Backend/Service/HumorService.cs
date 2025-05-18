@@ -1,19 +1,9 @@
 using Memzy_finalist.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Memzy_finalist.Services
 {
-    public interface IHumorService
-{
-   Task<User> ChangeHumorAsync(int userId, List<string> humorTypes);
-    Task<User> AddHumorAsync(int userId, List<string> humorTypes);
-    Task RemoveHumorAsync(int userId);
-}
+    
 
 
     public class HumorService : IHumorService

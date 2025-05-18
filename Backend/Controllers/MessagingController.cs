@@ -1,13 +1,6 @@
-using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Memzy_finalist.Services;
-using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using MyApiProject.Services;
 
 namespace MyApiProject.Controllers
 {
@@ -130,12 +123,4 @@ namespace MyApiProject.Controllers
             ErrorMessage = "Message must be between 1 and 1000 characters")]
         public string Content { get; set; }
     }
-    public class MessageResponseDto
-{
-    public int MessageId { get; set; }
-    public string Content { get; set; }
-    public DateTime Timestamp { get; set; }
-    public int SenderId { get; set; }
-    public int ReceiverId { get; set; }
-}
 }

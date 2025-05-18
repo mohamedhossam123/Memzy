@@ -1,23 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace Memzy_finalist.Models
 {
-    public interface IFriendsService
-{
-    Task<IEnumerable<FriendRequest>> GetAllReceivedRequests(int userId);
-Task<IEnumerable<FriendRequest>> GetAllSentRequests(int userId);
-    Task<FriendRequest> SendFriendRequest(int senderId, int receiverId);
-    Task<Friendship> AcceptFriendRequest(int requestId, int userId);
-    Task<FriendRequest> RejectFriendRequest(int requestId, int userId);
-    Task<bool> CancelFriendRequest(int requestId, int userId);
-    Task<bool> RemoveFriend(int userId, int friendId);
-Task<IEnumerable<User>> GetFriends(int userId);
-    Task<IEnumerable<FriendRequest>> GetPendingFriendRequests(int userId);
-}
     public class FriendsService: IFriendsService
     {
         private readonly MemzyContext _context;
@@ -183,18 +168,5 @@ public async Task<IEnumerable<FriendRequest>> GetAllSentRequests(int userId)
         .OrderByDescending(fr => fr.CreatedAt)
         .ToListAsync();
 }
-
-
         }
-        public class FriendRequestDto
-{
-    public int RequestId { get; set; } 
-    public int? ReceiverId { get; set; } 
-    public string Message { get; set; }
-}
-
-public class FriendIdDto
-{
-    public int FriendId { get; set; }
-}
     }

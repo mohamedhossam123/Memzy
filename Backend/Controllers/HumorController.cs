@@ -1,15 +1,7 @@
-// DONE
-
-
 using Memzy_finalist.Models;
-using Memzy_finalist.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Security.Claims;
-using System.Threading.Tasks;
-
 namespace Memzy_finalist.Controllers
 {
     [ApiController]

@@ -1,32 +1,10 @@
 using Memzy_finalist.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.HttpResults;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
-using System.Linq;
-
-
 using System.Text;
 
-public interface IAuthenticationService
-{
-    Task UpdateUserAsync(User user);
-
-    Task<User> GetUserByIdAsync(int id);
-    Task<User> CreateUserAsync(User user);
-    Task<User> VerifyUserAsync(string email, string password);
-    Task<int> GetAuthenticatedUserId();  
-    Task <string> GenerateJwtToken(User user);
-    string HashPassword(string password);
-    Task<int> GetFriendCountAsync(int userId);
-    Task<int> GetPostCountAsync(int userId);
-}
 
 public class AuthenticationService : IAuthenticationService
 {
