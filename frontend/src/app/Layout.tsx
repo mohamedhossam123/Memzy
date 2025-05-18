@@ -4,6 +4,7 @@ import './globals.css'
 import { AuthProvider } from '@/Context/AuthContext'
 import { AuthLayout } from '@/Components/Authlayout'
 import { SearchProvider } from '@/Context/SearchContext'
+import { SidebarProvider } from '@/Context/SidebarContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -24,7 +25,9 @@ export default function RootLayout({
       <body className={`${inter.className} bg-gradient-to-br from-darker to-primary-dark text-light min-h-screen leading-relaxed overflow-x-hidden`}>
         <AuthProvider>
           <SearchProvider>
-            <AuthLayout>{children}</AuthLayout>
+            <SidebarProvider>
+              <AuthLayout>{children}</AuthLayout>
+            </SidebarProvider>
           </SearchProvider>
         </AuthProvider>
       </body>
