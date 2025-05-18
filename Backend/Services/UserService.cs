@@ -113,8 +113,7 @@ public class UserService : IUserService
 
         using var client = new HttpClient();
         using var content = new MultipartFormDataContent();
-        var apiKey = _configuration["ImgBB:ApiKey"]; // Add to appsettings.json
-
+        var apiKey = _configuration["ImgBB:ApiKey"];
         using var ms = new MemoryStream();
         await file.CopyToAsync(ms);
         var fileBytes = ms.ToArray();

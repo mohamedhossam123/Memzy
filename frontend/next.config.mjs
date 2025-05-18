@@ -3,18 +3,11 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['localhost', 'i.ibb.co'],
     remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '5001',
-        pathname: '/uploads/profile_pictures/**',
-      },
       {
         protocol: 'https',
         hostname: 'i.ibb.co',
-        pathname: '/**',
+        pathname: '/**', 
       },
     ],
   },

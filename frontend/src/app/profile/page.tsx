@@ -352,7 +352,7 @@ const handleRemoveFriend = async (friendId: number) => {
           <div className="relative w-40 h-40 rounded-full border-4 border-accent overflow-hidden shadow-glow">
             {userData?.profilePic ? (
               <Image
-                src={getProfilePicUrl(userData.profilePic) || ''}
+                src={user?.ProfilePictureUrl || 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'}
                 alt="Profile"
                 width={160}
                 height={160}

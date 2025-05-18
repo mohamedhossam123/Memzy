@@ -96,20 +96,23 @@ export function Header() {
                 )}
                 {user.ProfilePictureUrl && !profileImageError ? (
                   <Image
-  src={user?.ProfilePictureUrl || '/default-profile.png'}
+  src={user?.ProfilePictureUrl || 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'}
   width={100}
   height={100}
-  alt="Profile"
-  onError={(e) => {
-    console.error('Failed to load:', e.currentTarget.src);
-    e.currentTarget.src = '/default-profile.png';
-  }}
-  unoptimized={true} 
+  alt={user.name || 'User'}
+  
+  unoptimized={true}
+   onError={(e) => {
+      console.error('Image load failed:', user.ProfilePictureUrl);
+      setProfileImageError(true);
+      e.currentTarget.src = 'https://i.ibb.co/0pJ97CcF/default-profile.jpg';
+    }}
 />
                 ) : (
                   <Image
-                    src="https://i.ibb.co/XYZ/default-profile.png"
+                    src={user?.ProfilePictureUrl || 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'}
                     width={40}
+                    unoptimized={true}
                     height={40}
                     alt={user.name || 'User'}
                     className="rounded-full object-cover"
