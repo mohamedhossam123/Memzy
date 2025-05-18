@@ -17,6 +17,7 @@ export function Header() {
   const [showResults, setShowResults] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   const [profileImageError, setProfileImageError] = useState(false)
+  const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({})
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -28,6 +29,23 @@ export function Header() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('ProfilePicture', file);
+
+  try {
+    const response = await fetch('/api/UpdateProfilePicture', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include'
+    });
+  } catch (error) {
+    console.error('Upload failed:', error);
+  }
+};
 
   const handleSearchChange = (value: string) => {
     setQuery(value)
@@ -61,14 +79,13 @@ export function Header() {
             <div className="w-10 h-10 rounded-full bg-[#a569bd] grid place-items-center overflow-hidden border-2 border-[#f5f5f5]">
               {user.ProfilePictureUrl && !profileImageError ? (
                 <Image
-                  src={getProfileImageUrl(user.ProfilePictureUrl)}
-                  alt="Profile"
-                  width={40}
-                  height={40}
-                  className="object-cover w-full h-full"
-                  onError={() => setProfileImageError(true)}
-                  unoptimized
-                />
+  src={user.ProfilePictureUrl}
+  alt="Profile"
+  width={40}
+  height={40}
+  className="object-cover w-full h-full"
+  onError={() => setProfileImageError(true)}
+/>
               ) : (
                 <Image
                   src={getProfileImageUrl('/uploads/profile-pictures/default-profile.png')}

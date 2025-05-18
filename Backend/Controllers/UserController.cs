@@ -103,15 +103,11 @@ public async Task<IActionResult> UploadProfilePicture([FromForm] profilePictureD
     try
     {
         var userId = await _authService.GetAuthenticatedUserId();
-        var result = await _userService.UploadProfilePictureAsync(
-            dto.ProfilePicture, 
-            userId, 
-            _environment.WebRootPath
-        );
-
+        var result = await _userService.UploadProfilePictureAsync(dto.ProfilePicture, userId);
+        
         return Ok(new { 
             Message = "Profile picture uploaded successfully",
-            Path = result 
+            Url = result 
         });
     }
     catch (Exception ex)

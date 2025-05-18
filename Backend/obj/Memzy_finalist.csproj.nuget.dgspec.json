@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\Memzy_finalist.csproj": {}
+    "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\Memzy_finalist.csproj": {}
   },
   "projects": {
-    "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\Memzy_finalist.csproj": {
+    "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\Memzy_finalist.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\Memzy_finalist.csproj",
+        "projectUniqueName": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\Memzy_finalist.csproj",
         "projectName": "Memzy_finalist",
-        "projectPath": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\Memzy_finalist.csproj",
+        "projectPath": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\Memzy_finalist.csproj",
         "packagesPath": "C:\\Users\\dell\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\obj\\",
+        "outputPath": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\Backend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -92,6 +92,10 @@
               "target": "Package",
               "version": "[4.4.0, )"
             },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[8.1.1, )"
@@ -103,6 +107,10 @@
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
               "version": "[8.9.0, )"
+            },
+            "System.Net.Http": {
+              "target": "Package",
+              "version": "[4.3.4, )"
             }
           },
           "imports": [

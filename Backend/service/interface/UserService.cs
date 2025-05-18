@@ -2,6 +2,8 @@ using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
 using MyApiProject.Controllers;
 using System;
 using System.Collections.Generic;
@@ -18,7 +20,7 @@ public interface IUserService
 
     Task<User> ForgotPasswordAsync(string email);
     Task<User> ResetPasswordAsync(User user, string newPassword);
-    Task<string> UploadProfilePictureAsync(IFormFile file,int userId, string webRootPath);
+    Task<string> UploadProfilePictureAsync(IFormFile file, int userId);
 }
 
 public class UserService : IUserService
@@ -31,11 +33,14 @@ public class UserService : IUserService
         "FriendlyHumor" 
     };
 
-    public UserService(MemzyContext context, IWebHostEnvironment environment)
-    {
-        _environment = environment ?? throw new ArgumentNullException(nameof(environment));
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-    }
+    private readonly IConfiguration _configuration;
+
+public UserService(MemzyContext context, IWebHostEnvironment environment, IConfiguration configuration)
+{
+    _environment = environment ?? throw new ArgumentNullException(nameof(environment));
+    _context = context ?? throw new ArgumentNullException(nameof(context));
+    _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+}
 
     public async Task<User> CreateUserAsync(User user)
     {
@@ -113,48 +118,56 @@ public class UserService : IUserService
         return await UpdateUserPassword(user.UserId, newPassword);
     }
 
-    
-    public async Task<string> UploadProfilePictureAsync(IFormFile file, int userId, string webRootPath)
+public async Task<string> UploadProfilePictureAsync(IFormFile file, int userId)
 {
     if (file == null || file.Length == 0)
         throw new ArgumentException("No file uploaded");
-    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-    var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-    if (string.IsNullOrEmpty(extension) || !allowedExtensions.Contains(extension))
-        throw new ArgumentException("Invalid file type. Only images are allowed");
+
+    // Use ImgBB's validation parameters
     if (file.Length > 5 * 1024 * 1024)
         throw new ArgumentException("File size too large. Max 5MB allowed");
 
     var user = await _context.Users.FindAsync(userId) 
         ?? throw new KeyNotFoundException("User not found");
-    if (!string.IsNullOrEmpty(user.ProfilePictureUrl))
-    {
-        var oldPath = Path.Combine(webRootPath, user.ProfilePictureUrl.TrimStart('/'));
-        if (System.IO.File.Exists(oldPath))
-        {
-            System.IO.File.Delete(oldPath);
-        }
-    }
-    var uploadsFolder = Path.Combine(webRootPath, "uploads", "profile-pictures");
-    if (!Directory.Exists(uploadsFolder))
-    {
-        Directory.CreateDirectory(uploadsFolder);
-    }
-    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-    using (var stream = new FileStream(filePath, FileMode.Create))
-    {
-        await file.CopyToAsync(stream);
-    }
-    user.ProfilePictureUrl = $"/uploads/profile-pictures/{uniqueFileName}";
+
+    using var client = new HttpClient();
+    using var content = new MultipartFormDataContent();
+    var apiKey = _configuration["ImgBB:ApiKey"]; // Add to appsettings.json
+
+    using var ms = new MemoryStream();
+    await file.CopyToAsync(ms);
+    var fileBytes = ms.ToArray();
+
+    content.Add(new ByteArrayContent(fileBytes), "image", file.FileName);
+    
+    var response = await client.PostAsync($"https://api.imgbb.com/1/upload?key={apiKey}", content);
+    var responseString = await response.Content.ReadAsStringAsync();
+
+    if (!response.IsSuccessStatusCode)
+        throw new Exception("Image upload failed");
+
+    var imgbbResponse = JsonConvert.DeserializeObject<ImgBBResponse>(responseString);
+    
+    // Update user with new URL
+    user.ProfilePictureUrl = imgbbResponse.Data.Url;
     await _context.SaveChangesAsync();
 
     return user.ProfilePictureUrl;
+}
+
+// Add this class
+public class ImgBBResponse
+{
+    public DataObject Data { get; set; }
+    
+    public class DataObject
+    {
+        public string Url { get; set; }
+    }
 }
     public class ChangePasswordDto
     {
         public string CurrentPassword { get; set; }
         public string NewPassword { get; set; }
     }
-
 }
