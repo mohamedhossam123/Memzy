@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "Qa4oR1VdsRTyjLewTWicRziapZpwddta8aCAaN5eFCA=",
+  "Hash": "5mFNqOveR4AXPS8dWVr9Cs6/gcCtRUeYBwizMrgQSTM=",
   "Source": "Memzy_finalist",
   "BasePath": "_content/Memzy_finalist",
   "Mode": "Default",
@@ -16,27 +16,6 @@
     }
   ],
   "Assets": [
-    {
-      "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg",
-      "SourceId": "Memzy_finalist",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\",
-      "BasePath": "_content/Memzy_finalist",
-      "RelativePath": "uploads/Images/30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC#[.{fingerprint}]?.jpg",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "Fingerprint": "qknalsq6kg",
-      "Integrity": "2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM=",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\uploads\\Images\\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg"
-    },
     {
       "Identity": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
       "SourceId": "Memzy_finalist",
@@ -291,88 +270,6 @@
     }
   ],
   "Endpoints": [
-    {
-      "Route": "uploads/Images/30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "159788"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/jpeg"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Thu, 15 May 2025 19:37:58 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=3600, must-revalidate"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "sha256-2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM="
-        }
-      ]
-    },
-    {
-      "Route": "uploads/Images/30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.qknalsq6kg.jpg",
-      "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "159788"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "image/jpeg"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Thu, 15 May 2025 19:37:58 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "qknalsq6kg"
-        },
-        {
-          "Name": "label",
-          "Value": "uploads/Images/30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM="
-        }
-      ]
-    },
     {
       "Route": "uploads/Images/3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.6ftiu4hpdk.jpg",
       "AssetFile": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",

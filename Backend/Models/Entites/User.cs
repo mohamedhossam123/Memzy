@@ -11,14 +11,14 @@ namespace Memzy_finalist.Models
     {
         public User()
         {
-            FriendRequestsSent       = new HashSet<FriendRequest>();
-            FriendRequestsReceived   = new HashSet<FriendRequest>();
-            FriendsAsUser1           = new HashSet<Friendship>();
-            FriendsAsUser2           = new HashSet<Friendship>();
-            MessagesSent             = new HashSet<Message>();
-            MessagesReceived         = new HashSet<Message>();
-            UserHumorTypes           = new HashSet<UserHumorType>();
-            Posts                    = new HashSet<Post>();         // ← new
+            FriendRequestsSent= new HashSet<FriendRequest>();
+            FriendRequestsReceived= new HashSet<FriendRequest>();
+            FriendsAsUser1= new HashSet<Friendship>();
+            FriendsAsUser2= new HashSet<Friendship>();
+            MessagesSent= new HashSet<Message>();
+            MessagesReceived= new HashSet<Message>();
+            UserHumorTypes= new HashSet<UserHumorType>();
+            Posts= new HashSet<Post>();
         }
 
         [Key]
@@ -46,15 +46,14 @@ namespace Memzy_finalist.Models
         public DateTime? LastActive { get; set; }
         public bool IsOnline { get; set; } = false;
 
-        // --- NAVIGATION PROPERTIES ---
-        public virtual ICollection<UserHumorType> UserHumorTypes { get; set; }
-        public virtual ICollection<FriendRequest>    FriendRequestsSent   { get; set; }
-        public virtual ICollection<FriendRequest>    FriendRequestsReceived { get; set; }
-        public virtual ICollection<Friendship>       FriendsAsUser1       { get; set; }
-        public virtual ICollection<Friendship>       FriendsAsUser2       { get; set; }
-        public virtual ICollection<Message>          MessagesSent         { get; set; }
-        public virtual ICollection<Message>          MessagesReceived     { get; set; }
-        public virtual ICollection<Post>             Posts                { get; set; }  // ← new
+        public virtual ICollection<UserHumorType>UserHumorTypes{ get; set; }
+        public virtual ICollection<FriendRequest>FriendRequestsSent{ get; set; }
+        public virtual ICollection<FriendRequest>FriendRequestsReceived{ get; set; }
+        public virtual ICollection<Friendship>FriendsAsUser1{ get; set; }
+        public virtual ICollection<Friendship>FriendsAsUser2{ get; set; }
+        public virtual ICollection<Message>MessagesSent{ get; set; }
+        public virtual ICollection<Message>MessagesReceived{ get; set; }
+        public virtual ICollection<Post>Posts{ get; set; } 
 
         [NotMapped]
         public IEnumerable<User> Friends =>

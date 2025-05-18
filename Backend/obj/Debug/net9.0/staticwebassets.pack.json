@@ -1,10 +1,6 @@
 {
   "Files": [
     {
-      "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg",
-      "PackagePath": "staticwebassets\\uploads\\Images\\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg"
-    },
-    {
       "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg",
       "PackagePath": "staticwebassets\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg"
     },

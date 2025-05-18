@@ -10,7 +10,7 @@ namespace MyApiProject.Controllers
 {
     [ApiController]
     [Route("api/user")]
-    [Authorize] // Ensures all endpoints require authentication
+    [Authorize]
     public class UserPostsController : ControllerBase
     {
         private readonly MemzyContext _ctx;

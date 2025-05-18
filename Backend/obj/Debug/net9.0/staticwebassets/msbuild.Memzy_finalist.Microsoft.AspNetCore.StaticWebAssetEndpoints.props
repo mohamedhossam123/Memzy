@@ -1,17 +1,5 @@
 ﻿<Project>
   <ItemGroup>
-    <StaticWebAssetEndpoint Include="_content/Memzy_finalist/uploads/Images/30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg">
-      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg'))</AssetFile>
-      <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=3600, must-revalidate"},{"Name":"Content-Length","Value":"159788"},{"Name":"Content-Type","Value":"image/jpeg"},{"Name":"ETag","Value":"\u00222to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM=\u0022"},{"Name":"Last-Modified","Value":"Thu, 15 May 2025 19:37:58 GMT"}]]]></ResponseHeaders>
-    </StaticWebAssetEndpoint>
-    <StaticWebAssetEndpoint Include="_content/Memzy_finalist/uploads/Images/30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.qknalsq6kg.jpg">
-      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg'))</AssetFile>
-      <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"qknalsq6kg"},{"Name":"integrity","Value":"sha256-2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM="},{"Name":"label","Value":"_content/Memzy_finalist/uploads/Images/30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"159788"},{"Name":"Content-Type","Value":"image/jpeg"},{"Name":"ETag","Value":"\u00222to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM=\u0022"},{"Name":"Last-Modified","Value":"Thu, 15 May 2025 19:37:58 GMT"}]]]></ResponseHeaders>
-    </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/Memzy_finalist/uploads/Images/3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.6ftiu4hpdk.jpg">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>

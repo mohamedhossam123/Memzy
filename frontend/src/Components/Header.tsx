@@ -38,10 +38,14 @@ export function Header() {
     setShowResults(false)
   }
   const getProfilePicUrl = (picPath?: string) => {
-    if (!picPath) return null
-    const normalizedPath = picPath.replace(/\\/g, '/').replace('uploads/profile_pictures/', '')
-    return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/uploads/profile_pictures/${normalizedPath}`
-  }
+    if (!picPath) return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/default-profile.png`;
+    return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}${picPath}`;
+  };
+
+  const handleProfilePictureError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.target as HTMLImageElement;
+    target.src = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/default-profile.png`;
+  };
 
   return (
     <header className="col-span-full flex justify-between items-center py-5 px-8 bg-[rgba(10,10,10,0.7)] backdrop-blur-sm border-b border-[rgba(255,255,255,0.1)] z-[100] shadow-[0_4px_30px_rgba(0,0,0,0.1)]">

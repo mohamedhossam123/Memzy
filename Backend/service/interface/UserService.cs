@@ -114,29 +114,47 @@ public class UserService : IUserService
     }
 
     
-    public async Task<string> UploadProfilePictureAsync(IFormFile file,int userId, string webRootPath)
-    {
-        var user = await _context.Users.FindAsync(userId);
-
-        var directoryPath = Path.Combine(webRootPath, "uploads", "profile_pictures");
-        if (!Directory.Exists(directoryPath))
-        {
-            Directory.CreateDirectory(directoryPath);
-        }
-        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-        var filePath = Path.Combine(directoryPath, fileName);
-        using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await file.CopyToAsync(stream);
-        }
-        user.ProfilePictureUrl = Path.Combine("uploads", "profile_pictures", fileName);
-        await _context.SaveChangesAsync();
-
-        return user.ProfilePictureUrl;
-    }public class ChangePasswordDto
+    public async Task<string> UploadProfilePictureAsync(IFormFile file, int userId, string webRootPath)
 {
-    public string CurrentPassword { get; set; }
-    public string NewPassword { get; set; }
+    if (file == null || file.Length == 0)
+        throw new ArgumentException("No file uploaded");
+    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+    var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+    if (string.IsNullOrEmpty(extension) || !allowedExtensions.Contains(extension))
+        throw new ArgumentException("Invalid file type. Only images are allowed");
+    if (file.Length > 5 * 1024 * 1024)
+        throw new ArgumentException("File size too large. Max 5MB allowed");
+
+    var user = await _context.Users.FindAsync(userId) 
+        ?? throw new KeyNotFoundException("User not found");
+    if (!string.IsNullOrEmpty(user.ProfilePictureUrl))
+    {
+        var oldPath = Path.Combine(webRootPath, user.ProfilePictureUrl.TrimStart('/'));
+        if (System.IO.File.Exists(oldPath))
+        {
+            System.IO.File.Delete(oldPath);
+        }
+    }
+    var uploadsFolder = Path.Combine(webRootPath, "uploads", "profile-pictures");
+    if (!Directory.Exists(uploadsFolder))
+    {
+        Directory.CreateDirectory(uploadsFolder);
+    }
+    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+    using (var stream = new FileStream(filePath, FileMode.Create))
+    {
+        await file.CopyToAsync(stream);
+    }
+    user.ProfilePictureUrl = $"/uploads/profile-pictures/{uniqueFileName}";
+    await _context.SaveChangesAsync();
+
+    return user.ProfilePictureUrl;
 }
+    public class ChangePasswordDto
+    {
+        public string CurrentPassword { get; set; }
+        public string NewPassword { get; set; }
+    }
 
 }

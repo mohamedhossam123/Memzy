@@ -1,23 +1,5 @@
 ﻿<Project>
   <ItemGroup>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg'))">
-      <SourceType>Package</SourceType>
-      <SourceId>Memzy_finalist</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/Memzy_finalist</BasePath>
-      <RelativePath>uploads/Images/30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>qknalsq6kg</Fingerprint>
-      <Integrity>2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\30078329-9aff-4951-a4bd-38c3f73ebe85_ICPC.jpg'))</OriginalItemSpec>
-    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg'))">
       <SourceType>Package</SourceType>
       <SourceId>Memzy_finalist</SourceId>

@@ -62,7 +62,26 @@ namespace MyApiProject.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+        [HttpGet("profile-picture")]
+[Authorize]
+public async Task<IActionResult> GetProfilePicture()
+{
+    try
+    {
+        var userId = await _authService.GetAuthenticatedUserId();
+        var user = await _context.Users.FindAsync(userId);
         
+        if (user == null || string.IsNullOrEmpty(user.ProfilePictureUrl))
+        {
+            return NotFound("Profile picture not found");
+        }
+        return Ok(new { ProfilePictureUrl = user.ProfilePictureUrl });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, $"Internal server error: {ex.Message}");
+    }
+}
         [HttpDelete("DeleteUser")]
         [Authorize] 
         public async Task<IActionResult> DeleteUser(int id)
