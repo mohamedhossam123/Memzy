@@ -1,16 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Memzy_finalist.Models;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using Swashbuckle.AspNetCore.Filters;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Memzy_finalist.Services;
-using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 using MyApiProject.Services;
 using System.Text.Json;
