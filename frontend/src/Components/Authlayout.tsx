@@ -6,9 +6,11 @@ import { useAuth } from '@/Context/AuthContext'
 import { Header } from '@/Components/Header'
 import { Sidebar } from '@/Components/Sidebar'
 import { motion } from 'framer-motion'
+import { useSidebar } from '@/Context/SidebarContext'
 
 export function AuthLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
+  const { isCollapsed } = useSidebar()
   
   if (loading) {
     return (
@@ -43,10 +45,13 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
       </div>
       
       {user ? (
-        <div className="grid grid-cols-[280px_1fr] grid-rows-[auto_1fr] h-screen relative z-10">
+        <div
+          className="grid grid-rows-[auto_1fr] h-screen relative z-10 transition-all duration-300"
+          style={{ gridTemplateColumns: `${isCollapsed ? 80 : 280}px 1fr` }}
+        >
           <Header />
           <Sidebar />
-          <main className="row-start-2 overflow-y-auto p-6">
+          <main className="row-start-2 overflow-y-auto ">
             {children}
           </main>
         </div>

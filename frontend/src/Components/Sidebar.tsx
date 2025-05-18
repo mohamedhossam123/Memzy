@@ -1,3 +1,4 @@
+// Component: Sidebar
 'use client'
 
 import Link from 'next/link'
@@ -31,7 +32,7 @@ export function Sidebar() {
       <div className="flex justify-end mb-6">
         <button 
           onClick={toggleSidebar} 
-          className="text-[#e9ecef] hover:text-[#f5f5f5] transition-colors p-1"
+          className="text-[#e9ecef] hover:text-[#f5f5f5] transition-colors "
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <div className="flex flex-col gap-1.5 items-center justify-center w-5 h-5">
