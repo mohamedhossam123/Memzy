@@ -1,9 +1,14 @@
-// 
 'use client'
 import React, { useState, useEffect, useRef } from 'react'
 import { useSearch } from '../Context/SearchContext'
 import { useAuth } from '../Context/AuthContext'
 import Image from 'next/image'
+
+interface SearchResult {
+  id: string | number;
+  name: string;
+  profilePictureUrl?: string;
+}
 
 export function Header() {
   const { user } = useAuth()
@@ -11,6 +16,7 @@ export function Header() {
   const [query, setQuery] = useState('')
   const [showResults, setShowResults] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+  const [profileImageError, setProfileImageError] = useState(false)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -37,15 +43,15 @@ export function Header() {
     setQuery(userName)
     setShowResults(false)
   }
-  const getProfilePicUrl = (picPath?: string) => {
-    if (!picPath) return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/default-profile.png`;
-    return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}${picPath}`;
-  };
 
-  const handleProfilePictureError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const target = e.target as HTMLImageElement;
-    target.src = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/default-profile.png`;
-  };
+  // Function to get the correct image URL
+  const getProfileImageUrl = (url: string | undefined): string => {
+    if (!url) return '/uploads/profile-pictures/default-profile.png'
+    // If URL already starts with http or https, it's a full URL
+    if (url.startsWith('http')) return url
+    // Otherwise, prepend the backend API URL
+    return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}${url}`
+  }
 
   return (
     <header className="col-span-full flex justify-between items-center py-5 px-8 bg-[rgba(10,10,10,0.7)] backdrop-blur-sm border-b border-[rgba(255,255,255,0.1)] z-[100] shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
@@ -53,21 +59,25 @@ export function Header() {
         {user ? (
           <div className="flex items-center gap-3 cursor-pointer">
             <div className="w-10 h-10 rounded-full bg-[#a569bd] grid place-items-center overflow-hidden border-2 border-[#f5f5f5]">
-              {user.profilePic ? (
+              {user.ProfilePictureUrl && !profileImageError ? (
                 <Image
-                  src={getProfilePicUrl(user.profilePic) || ''}
+                  src={getProfileImageUrl(user.ProfilePictureUrl)}
                   alt="Profile"
                   width={40}
                   height={40}
-                  className="object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none'
-                  }}
+                  className="object-cover w-full h-full"
+                  onError={() => setProfileImageError(true)}
+                  unoptimized
                 />
               ) : (
-                <span className="text-white font-bold">
-                  {user.name?.charAt(0).toUpperCase() ?? '?'}
-                </span>
+                <Image
+                  src={getProfileImageUrl('/uploads/profile-pictures/default-profile.png')}
+                  alt="Profile"
+                  width={40}
+                  height={40}
+                  className="object-cover w-full h-full"
+                  unoptimized
+                />
               )}
             </div>
             <span className="text-[#f5f5f5] font-semibold">{user.name}</span> 
@@ -77,7 +87,7 @@ export function Header() {
         )}
       </div>
 
-      {/* Center - Search bar (moved slightly right) */}
+      {/* Search bar*/}
       <div ref={searchRef} className="relative ml-6">
         <div className="flex max-w-[320px] w-[320px] items-center justify-between gap-2 bg-[#2f3640] rounded-[50px] relative">
           <button
@@ -98,28 +108,27 @@ export function Header() {
         {/* Search results dropdown */}
         {showResults && results.length > 0 && (
           <div className="absolute top-full mt-2 w-full bg-[#2d1b3a] rounded-lg shadow-lg border border-[rgba(255,255,255,0.1)] max-h-60 overflow-auto z-50">
-            {results.map((result) => (
+            {results.map((result: SearchResult) => (
               <div
                 key={result.id}
                 className="p-3 hover:bg-[#3a2449] cursor-pointer flex items-center gap-3"
                 onClick={() => handleResultClick(result.name)}
               >
-                {result.profilePic ? (
-                  <Image
-                    src={result.profilePic}
-                    width={32}
-                    height={32}
-                    alt={result.name}
-                    className="rounded-full"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none'
-                    }}
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-[#3a2449] flex items-center justify-center">
-                    {result.name.charAt(0)}
-                  </div>
-                )}
+                <Image
+                  src={getProfileImageUrl(result.profilePictureUrl)}
+                  width={32}
+                  height={32}
+                  alt={result.name}
+                  className="rounded-full object-cover"
+                  onError={() => {
+                    const imgElement = document.getElementById(`result-img-${result.id}`) as HTMLImageElement;
+                    if (imgElement) {
+                      imgElement.src = getProfileImageUrl('/uploads/profile-pictures/default-profile.png');
+                    }
+                  }}
+                  id={`result-img-${result.id}`}
+                  unoptimized
+                />
                 <span>{result.name}</span>
               </div>
             ))}

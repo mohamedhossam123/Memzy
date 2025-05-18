@@ -5,6 +5,10 @@
       "PackagePath": "staticwebassets\\uploads\\Images\\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg"
     },
     {
+      "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\479a88cb_myfaceForgit.jpg",
+      "PackagePath": "staticwebassets\\uploads\\Images\\479a88cb_myfaceForgit.jpg"
+    },
+    {
       "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg",
       "PackagePath": "staticwebassets\\uploads\\Images\\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg"
     },
@@ -15,6 +19,10 @@
     {
       "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\9df6e3b5-62a4-4e6d-a1fe-e75987f3f7d7_me.jpg",
       "PackagePath": "staticwebassets\\uploads\\Images\\9df6e3b5-62a4-4e6d-a1fe-e75987f3f7d7_me.jpg"
+    },
+    {
+      "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\a272b0e1_myfaceForgit.jpg",
+      "PackagePath": "staticwebassets\\uploads\\Images\\a272b0e1_myfaceForgit.jpg"
     },
     {
       "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\Images\\b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg",
@@ -29,24 +37,12 @@
       "PackagePath": "staticwebassets\\uploads\\Videos\\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png"
     },
     {
-      "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\12f92495-c181-4e02-a427-1b2971b6342f.jpg",
-      "PackagePath": "staticwebassets\\uploads\\profile_pictures\\12f92495-c181-4e02-a427-1b2971b6342f.jpg"
+      "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile-pictures\\6d6009a5-4e73-4905-bc62-c5475633c17b.jpg",
+      "PackagePath": "staticwebassets\\uploads\\profile-pictures\\6d6009a5-4e73-4905-bc62-c5475633c17b.jpg"
     },
     {
-      "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg",
-      "PackagePath": "staticwebassets\\uploads\\profile_pictures\\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg"
-    },
-    {
-      "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg",
-      "PackagePath": "staticwebassets\\uploads\\profile_pictures\\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg"
-    },
-    {
-      "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg",
-      "PackagePath": "staticwebassets\\uploads\\profile_pictures\\6768b159-0c92-405d-ace9-7203437953de.jpg"
-    },
-    {
-      "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile_pictures\\78979a82-b581-48ad-bd01-d97ce3510a76.jpg",
-      "PackagePath": "staticwebassets\\uploads\\profile_pictures\\78979a82-b581-48ad-bd01-d97ce3510a76.jpg"
+      "Id": "C:\\Users\\dell\\OneDrive\\Desktop\\.vs\\Memzy_finalist\\backend\\wwwroot\\uploads\\profile-pictures\\default-profile.jpg",
+      "PackagePath": "staticwebassets\\uploads\\profile-pictures\\default-profile.jpg"
     },
     {
       "Id": "obj\\Debug\\net9.0\\staticwebassets\\msbuild.Memzy_finalist.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",

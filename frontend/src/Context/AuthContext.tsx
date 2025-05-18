@@ -10,6 +10,7 @@ type User = {
   token: string
   bio?: string
   humorTypeId?: number
+  ProfilePictureUrl?: string
   createdAt?: string
 }
 

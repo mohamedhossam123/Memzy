@@ -7,6 +7,7 @@ type SearchResult = {
   id: string
   name: string
   profilePic?: string
+  profilePictureUrl?: string
   bio?: string
 }
 

@@ -18,6 +18,24 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\3fdd0db2-076a-4007-b2f2-b5ee1b6807df_me.jpg'))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\479a88cb_myfaceForgit.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>Memzy_finalist</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/Memzy_finalist</BasePath>
+      <RelativePath>uploads/Images/479a88cb_myfaceForgit.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>6ftiu4hpdk</Fingerprint>
+      <Integrity>jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\479a88cb_myfaceForgit.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\78053a21-2555-4dff-b3f0-b016f2a3b299_memzyicon.jpg'))">
       <SourceType>Package</SourceType>
       <SourceId>Memzy_finalist</SourceId>
@@ -72,6 +90,24 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\9df6e3b5-62a4-4e6d-a1fe-e75987f3f7d7_me.jpg'))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\a272b0e1_myfaceForgit.jpg'))">
+      <SourceType>Package</SourceType>
+      <SourceId>Memzy_finalist</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/Memzy_finalist</BasePath>
+      <RelativePath>uploads/Images/a272b0e1_myfaceForgit.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>6ftiu4hpdk</Fingerprint>
+      <Integrity>jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\a272b0e1_myfaceForgit.jpg'))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\b3a6f8d1-94e5-4021-9702-0660be5625cf_memzyicon.jpg'))">
       <SourceType>Package</SourceType>
       <SourceId>Memzy_finalist</SourceId>
@@ -108,66 +144,12 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Images\d0ba5108-b92a-4fc7-87ac-77588ba04ac5_memzyicon.jpg'))</OriginalItemSpec>
     </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\12f92495-c181-4e02-a427-1b2971b6342f.jpg'))">
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile-pictures\6d6009a5-4e73-4905-bc62-c5475633c17b.jpg'))">
       <SourceType>Package</SourceType>
       <SourceId>Memzy_finalist</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
       <BasePath>_content/Memzy_finalist</BasePath>
-      <RelativePath>uploads/profile_pictures/12f92495-c181-4e02-a427-1b2971b6342f.jpg</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>4g5bcmyeni</Fingerprint>
-      <Integrity>VDTsZdj8Ikl+w4Gc1b78lVILWuCN7c55ENpMLawlaQ0=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\12f92495-c181-4e02-a427-1b2971b6342f.jpg'))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg'))">
-      <SourceType>Package</SourceType>
-      <SourceId>Memzy_finalist</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/Memzy_finalist</BasePath>
-      <RelativePath>uploads/profile_pictures/2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>6ftiu4hpdk</Fingerprint>
-      <Integrity>jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\2fcc93df-f2cc-43a2-9f12-e16d42dc1a5f.jpg'))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg'))">
-      <SourceType>Package</SourceType>
-      <SourceId>Memzy_finalist</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/Memzy_finalist</BasePath>
-      <RelativePath>uploads/profile_pictures/521dd907-5cf9-4914-8214-69e1bf23e58b.jpg</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>6ftiu4hpdk</Fingerprint>
-      <Integrity>jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\521dd907-5cf9-4914-8214-69e1bf23e58b.jpg'))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\6768b159-0c92-405d-ace9-7203437953de.jpg'))">
-      <SourceType>Package</SourceType>
-      <SourceId>Memzy_finalist</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/Memzy_finalist</BasePath>
-      <RelativePath>uploads/profile_pictures/6768b159-0c92-405d-ace9-7203437953de.jpg</RelativePath>
+      <RelativePath>uploads/profile-pictures/6d6009a5-4e73-4905-bc62-c5475633c17b.jpg</RelativePath>
       <AssetKind>All</AssetKind>
       <AssetMode>All</AssetMode>
       <AssetRole>Primary</AssetRole>
@@ -178,25 +160,25 @@
       <Integrity>2to8BdKc3Bl4sQ5bIC3WUa54Sr/UsYh01ofiT3dj1FM=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\6768b159-0c92-405d-ace9-7203437953de.jpg'))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile-pictures\6d6009a5-4e73-4905-bc62-c5475633c17b.jpg'))</OriginalItemSpec>
     </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\78979a82-b581-48ad-bd01-d97ce3510a76.jpg'))">
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile-pictures\default-profile.jpg'))">
       <SourceType>Package</SourceType>
       <SourceId>Memzy_finalist</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
       <BasePath>_content/Memzy_finalist</BasePath>
-      <RelativePath>uploads/profile_pictures/78979a82-b581-48ad-bd01-d97ce3510a76.jpg</RelativePath>
+      <RelativePath>uploads/profile-pictures/default-profile.jpg</RelativePath>
       <AssetKind>All</AssetKind>
       <AssetMode>All</AssetMode>
       <AssetRole>Primary</AssetRole>
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>6ftiu4hpdk</Fingerprint>
-      <Integrity>jtwFM/9NbNT4Mh5EWbXlfaezSL7GlHDhts+4nn/3FI4=</Integrity>
+      <Fingerprint>hx1sy1dte3</Fingerprint>
+      <Integrity>O/GOLoVA7Ju9YPgqeRVlY6282tp5QtsnMyWax9DTjh8=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile_pictures\78979a82-b581-48ad-bd01-d97ce3510a76.jpg'))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\profile-pictures\default-profile.jpg'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\uploads\Videos\4015c274-885a-4371-a592-39cfaa3baeb9_Formative Exam (page 13 of 14) _ Nile - Google Chrome 28-Mar-25 8_17_44 PM.png'))">
       <SourceType>Package</SourceType>
