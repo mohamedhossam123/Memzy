@@ -23,14 +23,16 @@ export async function GET(req: NextRequest) {
         { status: resp.status }
       )
     }
-
-    const user = await resp.json()
+const user = await resp.json()
+if (!user || Object.keys(user).length === 0) {
+  return NextResponse.json({ authenticated: false, user: null }, { status: 401 })
+}
 return NextResponse.json({
   authenticated: true,
   user: {
     name: user.Name ?? user.name,
     email: user.Email ?? user.email,
-    profilePic: user.ProfilePictureUrl ?? user.profilePic ?? null,
+    ProfilePictureUrl: user.ProfilePictureUrl ?? user.profilePic ?? null,
     bio: user.Bio ?? null,
     humorTypeId: user.HumorTypeId ?? null,
     createdAt: user.CreatedAt ?? null,

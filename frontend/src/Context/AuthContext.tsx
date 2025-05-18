@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               name: u.name,
               email: u.email,
               token: u.token,
-              profilePic: u.ProfilePictureUrl,
+              ProfilePictureUrl: u.ProfilePictureUrl,
               bio: u.bio,
               humorTypeId: u.humorTypeId,
               createdAt: u.createdAt,

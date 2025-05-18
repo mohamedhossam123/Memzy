@@ -94,30 +94,14 @@ export function Header() {
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   </div>
                 )}
-                {user.ProfilePictureUrl && !profileImageError ? (
-                  <Image
-  src={user?.ProfilePictureUrl || 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'}
-  width={100}
-  height={100}
+                <img
+  src={profileImageError || !user.ProfilePictureUrl
+    ? 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
+    : user.ProfilePictureUrl}
   alt={user.name || 'User'}
-  
-  unoptimized={true}
-   onError={(e) => {
-      console.error('Image load failed:', user.ProfilePictureUrl);
-      setProfileImageError(true);
-      e.currentTarget.src = 'https://i.ibb.co/0pJ97CcF/default-profile.jpg';
-    }}
+  onError={() => setProfileImageError(true)}
+  className="w-10 h-10 rounded-full object-cover"
 />
-                ) : (
-                  <Image
-                    src={user?.ProfilePictureUrl || 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'}
-                    width={40}
-                    unoptimized={true}
-                    height={40}
-                    alt={user.name || 'User'}
-                    className="rounded-full object-cover"
-                  />
-                )}
               </div>
               <span className="text-[#f5f5f5] font-semibold">{user.name}</span>
             </div>

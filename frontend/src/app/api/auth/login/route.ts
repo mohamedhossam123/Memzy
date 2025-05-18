@@ -42,11 +42,15 @@ export async function POST(req: NextRequest) {
     }
   
     const responsePayload = {
-      name: userData.Name ?? userData.name,
-      email: userData.Email ?? userData.email,
-      profilePic: userData.ProfilePictureUrl ?? userData.profilePictureUrl,
-      token,
-    }
+  name: userData.Name ?? userData.name,
+  email: userData.Email ?? userData.email,
+  ProfilePictureUrl: userData.ProfilePictureUrl ?? userData.profilePictureUrl,
+  bio: userData.Bio ?? userData.bio ?? null,
+  humorTypeId: userData.HumorTypeId ?? userData.humorTypeId ?? null,
+  createdAt: userData.CreatedAt ?? userData.createdAt ?? null,
+  token,
+}
+
   
     const responseObj = NextResponse.json(responsePayload)
     responseObj.cookies.set({
