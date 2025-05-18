@@ -19,14 +19,13 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<void>
   logout: () => void
   loading: boolean
+    updateUser: (user: User | null) => void
+
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-function normalizePicPath(path: string) {
-  const withSlashes = path.replace(/\\/g, '/')
-  return withSlashes.startsWith('/') ? withSlashes : '/' + withSlashes
-}
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -44,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               name: u.name,
               email: u.email,
               token: u.token,
-              profilePic: u.profilePic ? normalizePicPath(u.profilePic) : undefined,
+              profilePic: u.ProfilePictureUrl,
               bio: u.bio,
               humorTypeId: u.humorTypeId,
               createdAt: u.createdAt,
@@ -80,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: userData.name,
         email: userData.email,
         token: userData.token,
-        profilePic: userData.profilePic ? normalizePicPath(userData.profilePic) : undefined,
+        profilePic: userData.ProfilePictureUrl,
         bio: userData.bio,
         humorTypeId: userData.humorTypeId,
         createdAt: userData.createdAt,
@@ -117,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     loading,
+      updateUser: setUser,
   }
 
   return (
@@ -133,3 +133,4 @@ export function useAuth() {
   }
   return context
 }
+export type { User }

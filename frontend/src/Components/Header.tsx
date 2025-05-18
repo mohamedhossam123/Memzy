@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react'
 import { useSearch } from '../Context/SearchContext'
-import { useAuth } from '../Context/AuthContext'
+import { useAuth} from '../Context/AuthContext'
 import Image from 'next/image'
 
 interface SearchResult {
@@ -11,13 +11,13 @@ interface SearchResult {
 }
 
 export function Header() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const { results, search } = useSearch()
   const [query, setQuery] = useState('')
   const [showResults, setShowResults] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   const [profileImageError, setProfileImageError] = useState(false)
-  const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({})
+  const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -29,23 +29,36 @@ export function Header() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
-  const formData = new FormData();
-  formData.append('ProfilePicture', file);
+    setIsUploading(true)
+    const formData = new FormData()
+    formData.append('ProfilePicture', file)
 
-  try {
-    const response = await fetch('/api/UpdateProfilePicture', {
-      method: 'POST',
-      body: formData,
-      credentials: 'include'
-    });
-  } catch (error) {
-    console.error('Upload failed:', error);
+    try {
+      const response = await fetch('/api/UpdateProfilePicture', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      })
+      
+      if (!response.ok) throw new Error('Upload failed')
+      
+      const data = await response.json()
+      if (data.Url && user) {
+        setProfileImageError(false)
+        updateUser({ ...user, ProfilePictureUrl: data.Url })
+      }
+    } catch (error) {
+      console.error('Upload failed:', error)
+      setProfileImageError(true)
+    } finally {
+      setIsUploading(false)
+    }
   }
-};
 
   const handleSearchChange = (value: string) => {
     setQuery(value)
@@ -62,54 +75,56 @@ export function Header() {
     setShowResults(false)
   }
 
-  // Function to get the correct image URL
-  const getProfileImageUrl = (url: string | undefined): string => {
-    if (!url) return '/uploads/profile-pictures/default-profile.png'
-    // If URL already starts with http or https, it's a full URL
-    if (url.startsWith('http')) return url
-    // Otherwise, prepend the backend API URL
-    return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}${url}`
-  }
-
   return (
     <header className="col-span-full flex justify-between items-center py-5 px-8 bg-[rgba(10,10,10,0.7)] backdrop-blur-sm border-b border-[rgba(255,255,255,0.1)] z-[100] shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
       <div className="flex items-center gap-6">
         {user ? (
-          <div className="flex items-center gap-3 cursor-pointer">
-            <div className="w-10 h-10 rounded-full bg-[#a569bd] grid place-items-center overflow-hidden border-2 border-[#f5f5f5]">
-              {user.ProfilePictureUrl && !profileImageError ? (
-                <Image
-  src={user.ProfilePictureUrl}
-  alt="Profile"
-  width={40}
-  height={40}
-  className="object-cover w-full h-full"
-  onError={() => setProfileImageError(true)}
-/>
-              ) : (
-                <Image
-                  src={getProfileImageUrl('/uploads/profile-pictures/default-profile.png')}
-                  alt="Profile"
-                  width={40}
-                  height={40}
-                  className="object-cover w-full h-full"
-                  unoptimized
-                />
-              )}
+          <label className="cursor-pointer">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+              disabled={isUploading}
+            />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#a569bd] grid place-items-center overflow-hidden border-2 border-[#f5f5f5] relative">
+                {isUploading && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  </div>
+                )}
+                {user.ProfilePictureUrl && !profileImageError ? (
+                  <Image
+                    src={user.ProfilePictureUrl}
+                    width={40}
+                    height={40}
+                    alt={user.name || 'User'}
+                    className="rounded-full object-cover"
+                    onError={() => setProfileImageError(true)}
+                  />
+                ) : (
+                  <Image
+                    src="https://i.ibb.co/XYZ/default-profile.png"
+                    width={40}
+                    height={40}
+                    alt={user.name || 'User'}
+                    className="rounded-full object-cover"
+                  />
+                )}
+              </div>
+              <span className="text-[#f5f5f5] font-semibold">{user.name}</span>
             </div>
-            <span className="text-[#f5f5f5] font-semibold">{user.name}</span> 
-          </div>
+          </label>
         ) : (
           <div className="text-[#f5f5f5]">Please log in</div>
         )}
       </div>
 
-      {/* Search bar*/}
+      {/* Search bar */}
       <div ref={searchRef} className="relative ml-6">
         <div className="flex max-w-[320px] w-[320px] items-center justify-between gap-2 bg-[#2f3640] rounded-[50px] relative">
-          <button
-            className="text-white absolute right-2 w-[42px] h-[42px] rounded-full bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] border-0 inline-block transition-all duration-300 ease-[cubic-bezier(.23,1,0.32,1)] hover:text-white hover:bg-[#1A1A1A] hover:shadow-[0_10px_20px_rgba(0,0,0,0.5)] hover:-translate-y-[3px] active:shadow-none active:translate-y-0"
-          >
+          <button className="text-white absolute right-2 w-[42px] h-[42px] rounded-full bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] border-0 inline-block transition-all duration-300 ease-[cubic-bezier(.23,1,0.32,1)] hover:text-white hover:bg-[#1A1A1A] hover:shadow-[0_10px_20px_rgba(0,0,0,0.5)] hover:-translate-y-[3px] active:shadow-none active:translate-y-0">
             🔍
           </button>
           <input
@@ -132,19 +147,14 @@ export function Header() {
                 onClick={() => handleResultClick(result.name)}
               >
                 <Image
-                  src={getProfileImageUrl(result.profilePictureUrl)}
+                  src={result.profilePictureUrl || 'https://i.ibb.co/XYZ/default-profile.png'}
                   width={32}
                   height={32}
                   alt={result.name}
                   className="rounded-full object-cover"
-                  onError={() => {
-                    const imgElement = document.getElementById(`result-img-${result.id}`) as HTMLImageElement;
-                    if (imgElement) {
-                      imgElement.src = getProfileImageUrl('/uploads/profile-pictures/default-profile.png');
-                    }
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://i.ibb.co/XYZ/default-profile.png'
                   }}
-                  id={`result-img-${result.id}`}
-                  unoptimized
                 />
                 <span>{result.name}</span>
               </div>
