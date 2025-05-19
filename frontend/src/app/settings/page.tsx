@@ -191,7 +191,7 @@ export default function SettingsPage() {
           })
         }
       )
-      if (!res.ok) {
+    if (!res.ok) {
         const err = await res.json()
         throw new Error(err.error || 'Password update failed')
       }
