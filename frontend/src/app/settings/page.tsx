@@ -19,9 +19,6 @@ import {
   ProfilePictureModal
 } from '@/Components/SettingsModals/ProfilePictureModal'
 
-
-
-
 interface FullUser {
   profilePic?: string
   name?: string
@@ -163,7 +160,7 @@ export default function SettingsPage() {
   }
 
   if (isLoading) return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-darker to-primary-dark">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
     </div>
   )
@@ -171,41 +168,121 @@ export default function SettingsPage() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-darker to-primary-dark text-light"> 
-      <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 md:p-8">
-        <div className="text-center space-y-6">
-          <h1 className="text-4xl font-bold text-glow">Account Settings</h1>
-          <div className="border-t border-glass/50 w-full mx-auto my-8" />
+    <div className="min-h-screen bg-gradient-to-br from-darker to-primary-dark text-light pl-4 pr-4 md:pl-8 md:pr-8">
+      <div className="max-w-5xl mx-auto py-8 relative z-10">
+        {/* Profile Summary Card */}
+        <div className="bg-glass/20 backdrop-blur-md rounded-2xl p-6 mb-8 shadow-lg border border-glass/30">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="relative">
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-purple-400/50 shadow-inner">
+                {userData?.profilePic ? (
+                  <img 
+                    src={userData.profilePic} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-primary-dark flex items-center justify-center text-4xl">
+                    {userData?.name?.[0]?.toUpperCase() || '?'}
+                  </div>
+                )}
+                <button 
+                  onClick={() => setActiveModal('profilePic')}
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white shadow-lg hover:bg-primary-light transition-colors"
+                >
+                  <span>📷</span>
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex-1 text-center sm:text-left">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <h2 className="text-2xl md:text-3xl font-bold text-white">
+                  {userData?.name || 'User'}
+                </h2>
+                <button 
+                  onClick={() => setActiveModal('name')}
+                  className="text-xs text-purple-300 hover:text-purple-200 transition-colors inline-flex items-center"
+                >
+                  <span className="text-sm">✏️</span>
+                  <span className="ml-1">Edit</span>
+                </button>
+              </div>
+              <div className="mt-2 max-w-lg">
+                <p className="text-gray-300 line-clamp-2">
+                  {userData?.bio || 'No bio yet. Add something about yourself!'}
+                </p>
+                <button 
+                  onClick={() => setActiveModal('bio')}
+                  className="text-xs text-purple-300 hover:text-purple-200 transition-colors mt-1 inline-flex items-center"
+                >
+                  <span className="text-sm">📝</span>
+                  <span className="ml-1">Edit bio</span>
+                </button>
+              </div>
+              
+              {userData?.humorTypes && userData.humorTypes.length > 0 && (
+                <div className="mt-3">
+                  <div className="flex flex-wrap gap-2">
+                    {userData.humorTypes.map((humor, index) => (
+                      <span 
+                        key={index} 
+                        className="px-2 py-1 text-xs bg-purple-900/40 text-purple-200 rounded-full"
+                      >
+                        {humor.humorTypeName}
+                      </span>
+                    ))}
+                    <button 
+                      onClick={() => setActiveModal('humor')}
+                      className="px-2 py-1 text-xs bg-purple-900/20 text-purple-300 rounded-full hover:bg-purple-900/40 transition"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="text-center space-y-6">
-          <div className="flex flex-wrap justify-center gap-4">
-            <SettingsButton
-              icon="🖼️"
-              label="Change Profile Picture"
-              onClick={() => setActiveModal('profilePic')}
-            />
-            <SettingsButton
-              icon="😄"
-              label="Change Humor"
-              onClick={() => setActiveModal('humor')}
-            />
-            <SettingsButton
-              icon="📝"
-              label="Change Bio"
-              onClick={() => setActiveModal('bio')}
-            />
-            <SettingsButton
-              icon="✏️"
-              label="Change Name"
-              onClick={() => setActiveModal('name')}
-            />
-            <SettingsButton
-              icon="🔒"
-              label="Change Password"
-              onClick={() => setActiveModal('password')}
-            />
-          </div>
+        <h2 className="text-xl font-semibold text-purple-100 mb-6">Account Settings</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <SettingsCard
+            icon="🖼️"
+            title="Profile Picture"
+            description="Update your profile image"
+            onClick={() => setActiveModal('profilePic')}
+          />
+          
+          <SettingsCard
+            icon="😄"
+            title="Humor Preferences"
+            description="Set your humor style"
+            onClick={() => setActiveModal('humor')}
+          />
+          
+          <SettingsCard
+            icon="📝"
+            title="Bio Information"
+            description="Update your personal bio"
+            onClick={() => setActiveModal('bio')}
+          />
+          
+          <SettingsCard
+            icon="✏️"
+            title="Display Name"
+            description="Change how your name appears"
+            onClick={() => setActiveModal('name')}
+          />
+          
+          <SettingsCard
+            icon="🔒"
+            title="Password"
+            description="Update your security credentials"
+            onClick={() => setActiveModal('password')}
+            className="md:col-span-2"
+          />
         </div>
       </div>
 
@@ -248,20 +325,29 @@ export default function SettingsPage() {
   )
 }
 
-const SettingsButton = ({ 
+const SettingsCard = ({ 
   icon, 
-  label, 
-  onClick 
+  title,
+  description,
+  onClick,
+  className = ""
 }: { 
   icon: string
-  label: string
-  onClick: () => void 
+  title: string
+  description: string
+  onClick: () => void
+  className?: string
 }) => (
   <button
     onClick={onClick}
-    className="bg-glass rounded-xl p-4 px-8 transition hover:scale-105 hover:bg-glass/80 flex items-center gap-2"
+    className={`bg-glass/30 backdrop-blur-sm hover:bg-glass/40 rounded-xl p-6 transition-all transform hover:scale-[1.02] shadow-md border border-glass/20 text-left flex items-center gap-4 relative z-10 ${className}`}
   >
-    <span className="text-xl">{icon}</span>
-    <span className="text-light/90">{label}</span>
+    <div className="w-12 h-12 bg-primary/30 rounded-full flex items-center justify-center text-2xl">
+      {icon}
+    </div>
+    <div>
+      <h3 className="text-lg font-medium text-white">{title}</h3>
+      <p className="text-sm text-gray-300">{description}</p>
+    </div>
   </button>
 )
