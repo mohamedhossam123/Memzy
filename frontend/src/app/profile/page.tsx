@@ -1,12 +1,24 @@
-// profile/page.tsx
-
 'use client'
 
 import { useAuth } from '@/Context/AuthContext'
 import { useRouter } from 'next/navigation'
-import { Dialog, Transition } from '@headlessui/react'
-import { useEffect, useState, Fragment } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import { 
+  HumorModal,} from '@/Components/SettingsModals/HumorModal'
+import {
+  ProfilePictureModal,
+} from '@/Components/SettingsModals/ProfilePictureModal'
+import {
+  NameModal,
+} from '@/Components/SettingsModals/NameModal'
+import {
+  BioModal,
+} from '@/Components/SettingsModals/BioModal'
+import {
+  PasswordModal,
+} from '@/Components/SettingsModals/PasswordModal'
+
 
 export default function UserProfile() {
   const { user } = useAuth()
@@ -24,36 +36,15 @@ export default function UserProfile() {
   }
 
   const [userData, setUserData] = useState<FullUser | null>(null)
-  const [isHumorModalOpen, setHumorModalOpen] = useState(false)
-  const [isProfilePicModalOpen, setProfilePicModalOpen] = useState(false)
-  const [isNameModalOpen, setNameModalOpen] = useState(false)
-  const [isBioModalOpen, setBioModalOpen] = useState(false)
-  const [isPasswordModalOpen, setPasswordModalOpen] = useState(false)
-
-
-const [isFriendsModalOpen, setFriendsModalOpen] = useState(false)
-const friendTabs: ("friends" | "requests")[] = ["friends", "requests"];
-
-const [friendRequests, _setFriendRequests] = useState<any[]>([]);
-const [friendsList, _setFriendsList] = useState<any[]>([]);
-
-
-
-const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>('friends')
-
-  
-  const [humorPreferences, setHumorPreferences] = useState<string[]>([])
-  const [newName, setNewName] = useState('')
-  const [newBio, setNewBio] = useState('')
-  const [newProfilePic, setNewProfilePic] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-
-
-
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
+  const [activeModal, setActiveModal] = useState<
+    'humor' | 'profilePic' | 'name' | 'bio' | 'password' | 'friends' | null
+  >(null)
   const [passwordError, setPasswordError] = useState('')
+
+  const friendTabs = ["friends", "requests"] as const
+  const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>('friends')
+  const [friendRequests, setFriendRequests] = useState<any[]>([])
+  const [friendsList, setFriendsList] = useState<any[]>([])
 
   useEffect(() => {
     if (!user) {
@@ -62,14 +53,6 @@ const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>
       fetchUserDetails()
     }
   }, [user, router])
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl)
-      }
-    }
-  }, [previewUrl])
 
   const fetchUserDetails = async () => {
     try {
@@ -80,8 +63,6 @@ const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>
       if (!response.ok) throw new Error('Failed to fetch')
       const data = await response.json()
       setUserData(data)
-      setNewName(data.name || '')
-      setNewBio(data.bio || '')
       if (data.humorTypes?.length) {
         setHumorPreferences(data.humorTypes.map((ht: any) => ht.humorTypeName))
       }
@@ -91,91 +72,96 @@ const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>
       setIsLoading(false)
     }
   }
-const fetchFriends = async () => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetFriends`,
-      { headers: { Authorization: `Bearer ${user?.token}` } }
-    );
-    if (!response.ok) throw new Error('Failed to fetch friends');
-    const data = await response.json();
-    _setFriendsList(data);
-  } catch (error) {
-    console.error('Error fetching friends:', error);
-  }
-};
 
-const fetchFriendRequests = async () => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/get-received-requests`,
-      { headers: { Authorization: `Bearer ${user?.token}` } }
-    );
-    if (!response.ok) throw new Error('Failed to fetch requests');
-    const data = await response.json();
-    _setFriendRequests(data);
-  } catch (error) {
-    console.error('Error fetching requests:', error);
-  }
-};
-
-useEffect(() => {
-  if (isFriendsModalOpen) {
-    if (activeFriendsTab === 'friends') {
-      fetchFriends();
-    } else {
-      fetchFriendRequests();
+  const fetchFriends = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetFriends`,
+        { headers: { Authorization: `Bearer ${user?.token}` } }
+      )
+      if (!response.ok) throw new Error('Failed to fetch friends')
+      const data = await response.json()
+      setFriendsList(data)
+    } catch (error) {
+      console.error('Error fetching friends:', error)
     }
   }
-}, [isFriendsModalOpen, activeFriendsTab]);
 
-
-const handleAcceptRequest = async (requestId: number) => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/acceptRequest/${requestId}`,
-      {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${user?.token}` }
-      }
-    );
-    
-    if (!response.ok) throw new Error('Failed to accept request');
-    
-    fetchFriendRequests();
-    fetchUserDetails(); 
-  } catch (error) {
-    console.error('Error accepting request:', error);
-  }
-};
-
-const handleRejectRequest = async (requestId: number) => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/rejectrequest/${requestId}`,
-      {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${user?.token}` }
-      }
-    );
-    
-    if (!response.ok) throw new Error('Failed to reject request');
-    
-    fetchFriendRequests();
-  } catch (error) {
-    console.error('Error rejecting request:', error);
-  }
-};
-useEffect(() => {
-  if (isFriendsModalOpen) {
-    if (activeFriendsTab === 'friends') {
-      fetchFriends();
-    } else {
-      fetchFriendRequests();
+  const fetchFriendRequests = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/get-received-requests`,
+        { headers: { Authorization: `Bearer ${user?.token}` } }
+      )
+      if (!response.ok) throw new Error('Failed to fetch requests')
+      const data = await response.json()
+      setFriendRequests(data)
+    } catch (error) {
+      console.error('Error fetching requests:', error)
     }
   }
-}, [isFriendsModalOpen, activeFriendsTab, user?.token]);
-  const confirmHumorChange = async () => {
+
+  useEffect(() => {
+    if (activeModal === 'friends') {
+      if (activeFriendsTab === 'friends') {
+        fetchFriends()
+      } else {
+        fetchFriendRequests()
+      }
+    }
+  }, [activeModal, activeFriendsTab])
+
+  const handleAcceptRequest = async (requestId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/acceptRequest/${requestId}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${user?.token}` }
+        }
+      )
+      if (!response.ok) throw new Error('Failed to accept request')
+      fetchFriendRequests()
+      fetchUserDetails()
+    } catch (error) {
+      console.error('Error accepting request:', error)
+    }
+  }
+
+  const handleRejectRequest = async (requestId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/rejectrequest/${requestId}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${user?.token}` }
+        }
+      )
+      if (!response.ok) throw new Error('Failed to reject request')
+      fetchFriendRequests()
+    } catch (error) {
+      console.error('Error rejecting request:', error)
+    }
+  }
+
+  const handleRemoveFriend = async (friendId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/RemoveFriend?friendId=${friendId}`,
+        {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${user?.token}` }
+        }
+      )
+      if (!response.ok) throw new Error('Failed to remove friend')
+      fetchFriends()
+      fetchUserDetails()
+    } catch (error) {
+      console.error('Error removing friend:', error)
+    }
+  }
+
+  const handleHumorUpdate = async (selectedHumor: string[]) => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Humor/ChangeHumor`, {
@@ -184,18 +170,17 @@ useEffect(() => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${user?.token}`
           },
-          body: JSON.stringify({ humorTypes: humorPreferences })
+          body: JSON.stringify({ humorTypes: selectedHumor })
         }
       )
       if (!res.ok) throw new Error('Failed to update humor preferences')
       await fetchUserDetails()
-      setHumorModalOpen(false)
     } catch (err) {
       console.error(err)
     }
   }
 
-  const confirmNameChange = async () => {
+  const handleNameUpdate = async (newName: string) => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateUsername`, {
@@ -209,26 +194,15 @@ useEffect(() => {
       )
       if (!res.ok) throw new Error('Failed to update name')
       await fetchUserDetails()
-      setNameModalOpen(false)
     } catch (err) {
       console.error(err)
     }
   }
 
-  const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setNewProfilePic(file)
-      previewUrl && URL.revokeObjectURL(previewUrl)
-      setPreviewUrl(URL.createObjectURL(file))
-    }
-  }
-
-  const confirmProfilePicChange = async () => {
-    if (!newProfilePic) return
+  const handleProfilePicUpdate = async (file: File) => {
     try {
       const formData = new FormData()
-      formData.append('ProfilePicture', newProfilePic)
+      formData.append('ProfilePicture', file)
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateProfilePicture`, {
           method: 'POST',
@@ -238,16 +212,12 @@ useEffect(() => {
       )
       if (!res.ok) throw new Error('Failed to update profile picture')
       await fetchUserDetails()
-      setProfilePicModalOpen(false)
-      setNewProfilePic(null)
-      previewUrl && URL.revokeObjectURL(previewUrl)
-      setPreviewUrl(null)
     } catch (err) {
       console.error(err)
     }
   }
 
-  const updateBio = async () => {
+  const handleBioUpdate = async (newBio: string) => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateUserBio`, {
@@ -259,27 +229,15 @@ useEffect(() => {
           body: JSON.stringify(newBio)
         }
       )
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.message || 'Failed to update bio')
-      }
+      if (!res.ok) throw new Error('Failed to update bio')
       await fetchUserDetails()
-      setBioModalOpen(false)
     } catch (err) {
       console.error(err)
     }
   }
 
-  const changePassword = async () => {
+  const handlePasswordChange = async (currentPassword: string, newPassword: string) => {
     setPasswordError('')
-    if (newPassword !== confirmPassword) {
-      setPasswordError("Passwords don't match")
-      return
-    }
-    if (newPassword.length < 6) {
-      setPasswordError('Password must be at least 6 characters')
-      return
-    }
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/change-password`, {
@@ -289,61 +247,40 @@ useEffect(() => {
             Authorization: `Bearer ${user?.token}`
           },
           body: JSON.stringify({ 
-          currentPassword: currentPassword,  
-          newPassword: newPassword
-        })
+            currentPassword,  
+            newPassword
+          })
         }
       )
       if (!res.ok) {
         const err = await res.json()
         throw new Error(err.error || 'Password update failed')
       }
-    setCurrentPassword('')
-      setNewPassword('')
-      setConfirmPassword('')
-      setPasswordModalOpen(false)
       alert('Password changed successfully')
+      return true
     } catch (err: any) {
       console.error(err)
       setPasswordError(err.message)
+      return false
     }
   }
 
-  const toggleHumorType = (type: string) => {
-    setHumorPreferences(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])
+  const getProfilePicUrl = (picPath?: string) => {
+    if (!picPath) return '/default-avatar.png'
+    if (picPath.startsWith('http')) return picPath
+    const cleanPath = picPath.replace(/^[\/]/, '')
+    return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/${cleanPath}?t=${Date.now()}`
   }
 
-  if (isLoading) return <div className="flex items-center justify-center h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-  </div>
+  if (isLoading) return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+    </div>
+  )
+
   if (!user) return null
 
-  const getProfilePicUrl = (picPath?: string) => {
-  if (!picPath) return '/default-avatar.png'; 
-  if (picPath.startsWith('http')) return picPath;
-  const cleanPath = picPath.replace(/^[\/]/, '');
-  return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/${cleanPath}?t=${Date.now()}`;
-};
-const handleRemoveFriend = async (friendId: number) => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/RemoveFriend?friendId=${friendId}`,
-      {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${user?.token}` }
-      }
-    );
-    
-    if (!response.ok) throw new Error('Failed to remove friend');
-    
-    fetchFriends();
-    fetchUserDetails();
-  } catch (error) {
-    console.error('Error removing friend:', error);
-  }
-};
-
-    return (
+  return (
     <div className="min-h-screen bg-gradient-to-br from-darker to-primary-dark text-light"> 
       <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 md:p-8">
         {/* Centered Profile Section */}
@@ -352,11 +289,11 @@ const handleRemoveFriend = async (friendId: number) => {
           <div className="relative w-40 h-40 rounded-full border-4 border-accent overflow-hidden shadow-glow">
             {userData?.profilePic ? (
               <Image
-                src={user?.ProfilePictureUrl || 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'}
+                src={getProfilePicUrl(userData.profilePic)}
                 alt="Profile"
                 width={160}
                 height={160}
-                className="object-cover rounded-full"
+                className="object-cover w-full h-full"
                 priority
                 unoptimized={process.env.NODE_ENV !== 'production'}
               />
@@ -374,13 +311,13 @@ const handleRemoveFriend = async (friendId: number) => {
             <h1 className="text-3xl font-bold text-glow">{user.name}</h1>
             <p className="text-light/80 text-lg">@{user.name}</p>
             <div className="text-lg font-semibold text-light/90">
-              {humorPreferences.length > 0
-                ? `Humor Types: ${humorPreferences.join(', ')}`
-                : 'Humor Type: Not Set'}
-            </div>
+  {userData?.humorTypes?.length
+    ? `Humor Types: ${userData.humorTypes.map(ht => ht?.humorTypeName ?? 'Unknown').join(', ')}`
+    : 'Humor Type: Not Set'}
+</div>
             <div className="py-4 max-w-2xl mx-auto">
               <p className="text-light/90 text-base italic">
-                {userData?.bio || user?.bio || 'No bio yet. Tell us about yourself!'}
+                {userData?.bio || 'No bio yet. Tell us about yourself!'}
               </p>
             </div>
           </div>
@@ -388,642 +325,243 @@ const handleRemoveFriend = async (friendId: number) => {
 
         <div className="border-t border-glass/50 w-full mx-auto my-8" />
 
-       <div className="text-center space-y-6">
+        {/* Social Connections */}
+        <div className="text-center space-y-6">
           <h2 className="text-xl font-semibold text-glow">Social Connections</h2>
           <div className="flex justify-center gap-4 flex-wrap">
-  <button
-    onClick={() => setFriendsModalOpen(true)}
-    className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105 flex flex-col items-center"
-  >
-    <div className="text-2xl font-bold mb-2">{userData?.friendCount ?? 0}</div>
-    <div className="text-light/80 text-sm">Friends</div>
-  </button>
+            <button
+              onClick={() => setActiveModal('friends')}
+              className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105 flex flex-col items-center"
+            >
+              <div className="text-2xl font-bold mb-2">{userData?.friendCount ?? 0}</div>
+              <div className="text-light/80 text-sm">Friends</div>
+            </button>
 
-  <button
-    onClick={() => router.push('/posts')}
-    className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105 flex flex-col items-center"
-  >
-    <div className="text-2xl font-bold mb-2">{userData?.postCount ?? 0}</div>
-    <div className="text-light/80 text-sm">Posts</div>
-  </button>
-</div>
-</div>
-<div className="border-t border-glass/50 w-full mx-auto my-8" />
+            <button
+              onClick={() => router.push('/posts')}
+              className="bg-glass rounded-xl p-4 min-w-[160px] transition hover:scale-105 flex flex-col items-center"
+            >
+              <div className="text-2xl font-bold mb-2">{userData?.postCount ?? 0}</div>
+              <div className="text-light/80 text-sm">Posts</div>
+            </button>
+          </div>
+        </div>
 
-
+        <div className="border-t border-glass/50 w-full mx-auto my-8" />
 
         {/* Settings */}
         <div className="text-center space-y-6">
-          <h2 className="text-xl font-semibold text-glow">Account Settings</h2>
+          <h2 className="text-xl font-semibold text-glow">Profile Settings</h2>
           <div className="flex flex-wrap justify-center gap-4">
-            <button
-              onClick={() => setProfilePicModalOpen(true)}
-              className="bg-glass rounded-xl p-4 px-8 transition hover:scale-105 hover:bg-glass/80 flex items-center gap-2"
-            >
-              <span className="text-xl">🖼️</span>
-              <span className="text-light/90">Change Profile Picture</span>
-            </button>
-            <button
-              onClick={() => setHumorModalOpen(true)}
-              className="bg-glass rounded-xl p-4 px-8 transition hover:scale-105 hover:bg-glass/80 flex items-center gap-2"
-            >
-              <span className="text-xl">😄</span>
-              <span className="text-light/90">Change Humor</span>
-            </button>
-            <button
-              onClick={() => setBioModalOpen(true)}
-              className="bg-glass rounded-xl p-4 px-8 transition hover:scale-105 hover:bg-glass/80 flex items-center gap-2"
-            >
-              <span className="text-xl">📝</span>
-              <span className="text-light/90">Change Bio</span>
-            </button>
-            <button
-              onClick={() => setNameModalOpen(true)}
-              className="bg-glass rounded-xl p-4 px-8 transition hover:scale-105 hover:bg-glass/80 flex items-center gap-2"
-            >
-              <span className="text-xl">✏️</span>
-              <span className="text-light/90">Change Name</span>
-            </button>
-            <button
-              onClick={() => setPasswordModalOpen(true)}
-              className="bg-glass rounded-xl p-4 px-8 transition hover:scale-105 hover:bg-glass/80 flex items-center gap-2"
-            >
-              <span className="text-xl">🔒</span>
-              <span className="text-light/90">Change Password</span>
-            </button>
+            <SettingsButton
+              icon="🖼️"
+              label="Change Profile Picture"
+              onClick={() => setActiveModal('profilePic')}
+            />
+            <SettingsButton
+              icon="😄"
+              label="Change Humor"
+              onClick={() => setActiveModal('humor')}
+            />
+            <SettingsButton
+              icon="📝"
+              label="Change Bio"
+              onClick={() => setActiveModal('bio')}
+            />
+            <SettingsButton
+              icon="✏️"
+              label="Change Name"
+              onClick={() => setActiveModal('name')}
+            />
+            <SettingsButton
+              icon="🔒"
+              label="Change Password"
+              onClick={() => setActiveModal('password')}
+            />
           </div>
         </div>
       </div>
 
+      {/* Modals */}
+      <HumorModal
+        isOpen={activeModal === 'humor'}
+        onClose={() => setActiveModal(null)}
+        initialHumorTypes={userData?.humorTypes?.map(ht => ht.humorTypeName) || []}
+        onConfirm={handleHumorUpdate}
+      />
 
+      <ProfilePictureModal
+        isOpen={activeModal === 'profilePic'}
+        onClose={() => setActiveModal(null)}
+        currentProfilePic={userData?.profilePic}
+        onConfirm={handleProfilePicUpdate}
+      />
 
-      {/* Humor Modal */}
-      <Transition appear show={isHumorModalOpen} as={Fragment}>
-        <Dialog
-          as="div"
-          className="fixed inset-0 z-50 overflow-y-auto"
-          onClose={() => setHumorModalOpen(false)}
-        >
-          <div className="min-h-screen px-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-50"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-50"
-              leaveTo="opacity-0"
-            >
-              <div
-                className="fixed inset-0 bg-black"
-                aria-hidden="true"
-              />
-            </Transition.Child>
-            <span className="inline-block h-screen align-middle" aria-hidden="true">
-              &#8203;
-            </span>
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle
-                              bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl
-                              transform transition-all">
-                <Dialog.Title className="text-2xl font-bold mb-4 text-[#c56cf0]">
-                  Select Your Humor Type
-                </Dialog.Title>
+      <NameModal
+        isOpen={activeModal === 'name'}
+        onClose={() => setActiveModal(null)}
+        currentName={userData?.name || ''}
+        onConfirm={handleNameUpdate}
+      />
 
-                <div className="flex flex-col gap-3">
-                  {['Dark Humor', 'Friendly Humor'].map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => toggleHumorType(type)}
-                      className={`
-                        w-full text-left px-4 py-2 rounded-lg font-medium transition
-                        ${humorPreferences.includes(type)
-                          ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white shadow-lg'
-                          : 'bg-[rgba(255,255,255,0.05)] text-light/80 hover:bg-[rgba(255,255,255,0.1)]'}`
-                      }
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
+      <BioModal
+        isOpen={activeModal === 'bio'}
+        onClose={() => setActiveModal(null)}
+        bio={userData?.bio || ''}
+        onSave={handleBioUpdate}
+      />
 
-                <button
-                  onClick={confirmHumorChange}
-                  className="mt-6 w-full bg-gradient-to-r from-[#8e2de2] to-[#4a00e0]
-                             text-white py-2 rounded-xl font-semibold hover:from-[#9e44f0]
-                             hover:to-[#5a10e0] transition-all shadow-lg"
-                >
-                  Confirm
-                </button>
-              </div>
-            </Transition.Child>
-          </div>
-        </Dialog>
-      </Transition>
-      {/* Change Bio Modal */}
-<Transition appear show={isBioModalOpen} as={Fragment}>
-        <Dialog
-          as="div"
-          className="fixed inset-0 z-50 overflow-y-auto"
-          onClose={() => setBioModalOpen(false)}
-        >
-          <div className="min-h-screen px-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-50"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-50"
-              leaveTo="opacity-0"
-            >
-              <div className="fixed inset-0 bg-black" aria-hidden="true" />
-            </Transition.Child>
-
-            <span className="inline-block h-screen align-middle" aria-hidden="true">
-              &#8203;
-            </span>
-
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl transform transition-all">
-                <div className="flex justify-between items-center">
-                  <Dialog.Title className="text-2xl font-bold text-[#c56cf0]">
-                    Change Your Bio
-                  </Dialog.Title>
-                  <button
-                    onClick={() => setBioModalOpen(false)}
-                    className="text-light/50 hover:text-light/80 transition-colors"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <textarea
-                  value={newBio}
-                  onChange={(e) => setNewBio(e.target.value)}
-                  rows={4}
-                  className="w-full px-4 py-2 mt-4 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] focus:border-[#c56cf0] outline-none rounded-lg text-light/90 resize-none"
-                  placeholder="Write something about yourself..."
-                />
-
-                <button
-  onClick={(e) => {
-    e.preventDefault();
-    e.stopPropagation(); 
-    updateBio();
+      <PasswordModal
+  isOpen={activeModal === 'password'}
+  onClose={() => setActiveModal(null)}
+  onConfirm={async (current, next) => {
+    await handlePasswordChange(current, next); 
   }}
-  disabled={!newBio.trim()}
-  type="button" 
-  className={`mt-6 w-full py-2 rounded-xl font-semibold transition-all shadow-lg ${
-    newBio.trim()
-      ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white hover:from-[#9e44f0] hover:to-[#5a10e0]'
-      : 'bg-gray-600 text-gray-300 cursor-not-allowed'
-  }`}
->
-  Save Bio
-</button>
-              </div>
-            </Transition.Child>
-          </div>
-        </Dialog>
-      </Transition>
-      {/* Profile Picture Modal */}
-      <Transition appear show={isProfilePicModalOpen} as={Fragment}>
-        <Dialog
-          as="div"
-          className="fixed inset-0 z-50 overflow-y-auto"
-          onClose={() => setProfilePicModalOpen(false)}
-        >
-          <div className="min-h-screen px-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-50"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-50"
-              leaveTo="opacity-0"
-            >
-              <div className="fixed inset-0 bg-black" aria-hidden="true" />
-            </Transition.Child>
+  error={passwordError}
+/>
 
+      {/* Friends Modal */}
+      {activeModal === 'friends' && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="min-h-screen px-4 text-center">
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" 
+              aria-hidden="true"
+              onClick={() => setActiveModal(null)}
+            />
+            
             <span className="inline-block h-screen align-middle" aria-hidden="true">
               &#8203;
             </span>
 
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl transform transition-all">
-                <div className="flex justify-between items-center">
-                  <Dialog.Title className="text-2xl font-bold text-[#c56cf0]">
-                    Change Profile Picture
-                  </Dialog.Title>
-                  <button
-                    onClick={() => setProfilePicModalOpen(false)}
-                    className="text-light/50 hover:text-light/80 transition-colors"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <div className="flex flex-col items-center gap-4 mt-4">
-                  {previewUrl && (
-                    <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-[#c56cf0] mb-2">
-                      <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  
-                  <label className="w-full flex flex-col items-center px-4 py-6 bg-[rgba(255,255,255,0.05)] text-light/80 rounded-lg cursor-pointer hover:bg-[rgba(255,255,255,0.1)]">
-                    <input 
-                      type="file" 
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleProfilePicChange} 
-                    />
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    <span className="mt-2 text-base">Select a file</span>
-                  </label>
-                </div>
-
+            <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl transform transition-all">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-2xl font-bold text-[#c56cf0]">
+                  Friends Management
+                </h3>
                 <button
-                  onClick={confirmProfilePicChange}
-                  disabled={!newProfilePic}
-                  type="button"
-                  className={`mt-6 w-full py-2 rounded-xl font-semibold transition-all shadow-lg ${
-                    newProfilePic 
-                      ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white hover:from-[#9e44f0] hover:to-[#5a10e0]' 
-                      : 'bg-gray-600 text-gray-300 cursor-not-allowed'
-                  }`}
+                  onClick={() => setActiveModal(null)}
+                  className="text-light/50 hover:text-light/80 transition-colors"
                 >
-                  Confirm
+                  ✕
                 </button>
               </div>
-            </Transition.Child>
-          </div>
-        </Dialog>
-      </Transition>
-      {/* Friends Modal */}
-<Transition appear show={isFriendsModalOpen} as={Fragment}>
-  <Dialog
-    as="div"
-    className="fixed inset-0 z-50 overflow-y-auto"
-    onClose={() => setFriendsModalOpen(false)}
-  >
-    <div className="min-h-screen px-4 text-center">
-      <Transition.Child
-        as={Fragment}
-        enter="ease-out duration-300"
-        enterFrom="opacity-0"
-        enterTo="opacity-50"
-        leave="ease-in duration-200"
-        leaveFrom="opacity-50"
-        leaveTo="opacity-0"
-      >
-        <div className="fixed inset-0 bg-black" aria-hidden="true" />
-      </Transition.Child>
 
-      <span className="inline-block h-screen align-middle" aria-hidden="true">
-        &#8203;
-      </span>
-
-      <Transition.Child
-        as={Fragment}
-        enter="ease-out duration-300"
-        enterFrom="opacity-0 scale-95"
-        enterTo="opacity-100 scale-100"
-        leave="ease-in duration-200"
-        leaveFrom="opacity-100 scale-100"
-        leaveTo="opacity-0 scale-95"
-      >
-        <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl transform transition-all">
-          <div className="flex justify-between items-center mb-4">
-            <Dialog.Title className="text-2xl font-bold text-[#c56cf0]">
-              Friends Management
-            </Dialog.Title>
-            <button
-              onClick={() => setFriendsModalOpen(false)}
-              className="text-light/50 hover:text-light/80 transition-colors"
-            >
-              ✕
-            </button>
-          </div>
-
-          {/* Tab Buttons */}
-          <div className="flex gap-2 mb-4">
-            {friendTabs.map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveFriendsTab(tab)}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  activeFriendsTab === tab
-                    ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white'
-                    : 'bg-[rgba(255,255,255,0.05)] text-light/80 hover:bg-[rgba(255,255,255,0.1)]'
-                }`}
-              >
-                {tab === 'friends' ? 'Friends' : 'Requests'}
-              </button>
-            ))}
-          </div>
-
-          {/* Tab Content */}
-          <div className="max-h-64 overflow-y-auto space-y-4">
-            {activeFriendsTab === 'friends' ? (
-              // Friends List
-              <div className="space-y-2">
-                {friendsList.length > 0 ? (
-                  friendsList.map(friend => (
-                    <div key={friend.userId} className="flex items-center gap-3 p-2 bg-glass/10 rounded-lg">
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                        {friend.profilePic ? (
-                          <Image
-                            src={getProfilePicUrl(friend.profilePic)}
-                            alt={friend.name}
-                            width={32}
-                            height={32}
-                            className="rounded-full"
-                          />
-                        ) : (
-                          <span className="text-white">
-                            {friend.name?.charAt(0).toUpperCase()}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-light/90">{friend.name}</span>
-                      <button
-                        onClick={() => handleRemoveFriend(friend.userId)}
-                        className="ml-auto text-red-400 hover:text-red-300 transition-colors"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-light/60">No friends yet</p>
-                )}
+              {/* Tab Buttons */}
+              <div className="flex gap-2 mb-4">
+                {friendTabs.map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveFriendsTab(tab)}
+                    className={`px-4 py-2 rounded-lg font-medium transition ${
+                      activeFriendsTab === tab
+                        ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white'
+                        : 'bg-[rgba(255,255,255,0.05)] text-light/80 hover:bg-[rgba(255,255,255,0.1)]'
+                    }`}
+                  >
+                    {tab === 'friends' ? 'Friends' : 'Requests'}
+                  </button>
+                ))}
               </div>
-            ) : (
-              // Friend Requests
-              <div className="space-y-2">
-                {friendRequests.length > 0 ? (
-                  friendRequests.map(request => (
-                    <div key={request.requestId} className="flex items-center justify-between p-2 bg-glass/10 rounded-lg">
-                      <div className="flex items-center gap-3">
+
+              {/* Tab Content */}
+              <div className="max-h-64 overflow-y-auto space-y-4">
+                {activeFriendsTab === 'friends' ? (
+                  friendsList.length > 0 ? (
+                    friendsList.map(friend => (
+                      <div key={friend.userId} className="flex items-center gap-3 p-2 bg-glass/10 rounded-lg">
                         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                          {request.sender?.profilePic ? (
+                          {friend.profilePic ? (
                             <Image
-                              src={getProfilePicUrl(request.sender.profilePic)}
-                              alt={request.sender.name}
+                              src={getProfilePicUrl(friend.profilePic)}
+                              alt={friend.name}
                               width={32}
                               height={32}
                               className="rounded-full"
                             />
                           ) : (
                             <span className="text-white">
-                              {request.sender?.name?.charAt(0).toUpperCase()}
+                              {friend.name?.charAt(0).toUpperCase()}
                             </span>
                           )}
                         </div>
-                        <span className="text-light/90">{request.sender?.name}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={() => handleAcceptRequest(request.requestId)}
-                          className="text-sm px-3 py-1 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30"
+                        <span className="text-light/90">{friend.name}</span>
+                        <button
+                          onClick={() => handleRemoveFriend(friend.userId)}
+                          className="ml-auto text-red-400 hover:text-red-300 transition-colors"
                         >
-                          Accept
-                        </button>
-                        <button 
-                          onClick={() => handleRejectRequest(request.requestId)}
-                          className="text-sm px-3 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"
-                        >
-                          Decline
+                          Remove
                         </button>
                       </div>
-                    </div>
-                  ))
+                    ))
+                  ) : (
+                    <p className="text-center text-light/60">No friends yet</p>
+                  )
                 ) : (
-                  <p className="text-center text-light/60">No pending requests</p>
+                  friendRequests.length > 0 ? (
+                    friendRequests.map(request => (
+                      <div key={request.requestId} className="flex items-center justify-between p-2 bg-glass/10 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                            {request.sender?.profilePic ? (
+                              <Image
+                                src={getProfilePicUrl(request.sender.profilePic)}
+                                alt={request.sender.name}
+                                width={32}
+                                height={32}
+                                className="rounded-full"
+                              />
+                            ) : (
+                              <span className="text-white">
+                                {request.sender?.name?.charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-light/90">{request.sender?.name}</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => handleAcceptRequest(request.requestId)}
+                            className="text-sm px-3 py-1 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30"
+                          >
+                            Accept
+                          </button>
+                          <button 
+                            onClick={() => handleRejectRequest(request.requestId)}
+                            className="text-sm px-3 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-light/60">No pending requests</p>
+                  )
                 )}
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </Transition.Child>
+      )}
     </div>
-  </Dialog>
-</Transition>
-      {/* Name Change Modal */}
-      <Transition appear show={isNameModalOpen} as={Fragment}>
-        <Dialog
-          as="div"
-          className="fixed inset-0 z-50 overflow-y-auto"
-          onClose={() => setNameModalOpen(false)}
-        >
-          <div className="min-h-screen px-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-50"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-50"
-              leaveTo="opacity-0"
-            >
-              <div
-                className="fixed inset-0 bg-black"
-                aria-hidden="true"
-              />
-            </Transition.Child>
-            <span className="inline-block h-screen align-middle" aria-hidden="true">
-              &#8203;
-            </span>
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle
-                              bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl
-                              transform transition-all">
-                <Dialog.Title className="text-2xl font-bold mb-4 text-[#c56cf0]">
-                  Change Your Name
-                </Dialog.Title>
-
-                <div className="mt-4">
-                  <label htmlFor="name" className="block text-sm font-medium text-light/80 mb-2">
-                    New Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    className="w-full px-4 py-2 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)]
-                               focus:border-[#c56cf0] outline-none rounded-lg text-light/90"
-                    placeholder="Enter your new name"
-                  />
-                </div>
-
-                <button
-                  onClick={(e) => {
-                    e.preventDefault(); 
-                    e.stopPropagation();
-                    confirmNameChange();
-                  }}
-                  disabled={!newName.trim()}
-                  type="button"
-                  className={`mt-6 w-full py-2 rounded-xl font-semibold transition-all shadow-lg
-                             ${newName.trim() 
-                               ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white hover:from-[#9e44f0] hover:to-[#5a10e0]' 
-                               : 'bg-gray-600 text-gray-300 cursor-not-allowed'}`}
-                >
-                  Confirm
-                </button>
-              </div>
-            </Transition.Child>
-          </div>
-        </Dialog>
-      </Transition>
-      {/* Password Modal */}
-<Transition appear show={isPasswordModalOpen} as={Fragment}>
-  <Dialog
-    as="div"
-    className="fixed inset-0 z-50 overflow-y-auto"
-    onClose={() => setPasswordModalOpen(false)}
-  >
-    <div className="min-h-screen px-4 text-center">
-      <Transition.Child
-        as={Fragment}
-        enter="ease-out duration-300"
-        enterFrom="opacity-0"
-        enterTo="opacity-50"
-        leave="ease-in duration-200"
-        leaveFrom="opacity-50"
-        leaveTo="opacity-0"
-      >
-        <div className="fixed inset-0 bg-black" aria-hidden="true" />
-      </Transition.Child>
-
-      <span className="inline-block h-screen align-middle" aria-hidden="true">
-        &#8203;
-      </span>
-
-      <Transition.Child
-        as={Fragment}
-        enter="ease-out duration-300"
-        enterFrom="opacity-0 scale-95"
-        enterTo="opacity-100 scale-100"
-        leave="ease-in duration-200"
-        leaveFrom="opacity-100 scale-100"
-        leaveTo="opacity-0 scale-95"
-      >
-        <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl transform transition-all">
-          <div className="flex justify-between items-center mb-4">
-            <Dialog.Title className="text-2xl font-bold text-[#c56cf0]">
-              Change Password
-            </Dialog.Title>
-            <button
-              onClick={() => setPasswordModalOpen(false)}
-              className="text-light/50 hover:text-light/80 transition-colors"
-            >
-              ✕
-            </button>
-          </div>
-
-          {passwordError && (
-            <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-2 rounded-lg mb-4">
-              {passwordError}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-light/80 mb-2">
-                Current Password
-              </label>
-              <input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] focus:border-[#c56cf0] outline-none rounded-lg text-light/90"
-                placeholder="Enter current password"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-light/80 mb-2">
-                New Password
-              </label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] focus:border-[#c56cf0] outline-none rounded-lg text-light/90"
-                placeholder="Enter new password (min 6 characters)"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-light/80 mb-2">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] focus:border-[#c56cf0] outline-none rounded-lg text-light/90"
-                placeholder="Confirm new password"
-              />
-            </div>
-
-            <button
-              onClick={changePassword}
-              disabled={!currentPassword || !newPassword || !confirmPassword}
-              className={`w-full py-2 rounded-xl font-semibold transition-all shadow-lg ${
-                currentPassword && newPassword && confirmPassword
-                  ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white hover:from-[#9e44f0] hover:to-[#5a10e0]'
-                  : 'bg-gray-600 text-gray-300 cursor-not-allowed'
-              }`}
-            >
-              Change Password
-            </button>
-          </div>
-        </div>
-      </Transition.Child>
-    </div>
-  </Dialog>
-</Transition>
-    </div>
-
   )
-
 }
+
+const SettingsButton = ({ 
+  icon, 
+  label, 
+  onClick 
+}: { 
+  icon: string
+  label: string
+  onClick: () => void 
+}) => (
+  <button
+    onClick={onClick}
+    className="bg-glass rounded-xl p-4 px-8 transition hover:scale-105 hover:bg-glass/80 flex items-center gap-2"
+  >
+    <span className="text-xl">{icon}</span>
+    <span className="text-light/90">{label}</span>
+  </button>
+)
