@@ -222,9 +222,7 @@ export default function SettingsPage() {
         <div className="text-center space-y-6">
           <h1 className="text-4xl font-bold text-glow">Account Settings</h1>
         </div>
-
         <div className="border-t border-glass/50 w-full mx-auto my-8" />
-
         {/* Settings Options */}
         <div className="text-center space-y-6">
           <div className="flex flex-wrap justify-center gap-4">
