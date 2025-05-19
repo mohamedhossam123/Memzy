@@ -38,7 +38,7 @@
     "**/*.js",
     "**/*.jsx",
     ".next/types/**/*.ts"
-, "next.config.mjs"  ],
+, "next.config.mjs", "src/Components/SettingsModals"  ],
   "exclude": [
     "node_modules",
     "**/*.spec.ts",
