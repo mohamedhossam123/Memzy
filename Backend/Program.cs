@@ -128,13 +128,12 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("http://localhost:3000", "http://localhost:5001")
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials(); // Keep this for now as it doesn't hurt
+            .AllowCredentials(); 
     });
 });
 
 var app = builder.Build();
 
-/*** Middleware Pipeline ***/
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();

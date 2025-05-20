@@ -72,9 +72,6 @@ namespace MyApiProject.Controllers
                     return Unauthorized("Invalid credentials");
 
                 var token = await _authService.GenerateJwtToken(user);
-                
-                // No more cookie setting
-                
                 return Ok(new {
                     Token = token, 
                     User = new {
@@ -131,7 +128,6 @@ namespace MyApiProject.Controllers
         [Authorize]
         public IActionResult Logout()
         {
-            // No more cookie deletion needed
             return Ok("Logged out successfully");
         }
 
