@@ -54,9 +54,21 @@
               "target": "Package",
               "version": "[4.0.3, )"
             },
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.27.5, )"
+            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[9.0.4, )"
+            },
+            "Microsoft.AspNetCore.DataProtection": {
+              "target": "Package",
+              "version": "[9.0.5, )"
+            },
+            "Microsoft.AspNetCore.DataProtection.Extensions": {
+              "target": "Package",
+              "version": "[9.0.5, )"
             },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",

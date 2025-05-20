@@ -1,47 +1,48 @@
 // app/api/auth/check/route.ts
+
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(req: NextRequest) {
-  const token = req.cookies.get('auth_token')?.value
-
-  if (!token) {
-    return NextResponse.json(
-      { authenticated: false, user: null },
-      { status: 401 }
-    )
-  }
-
+export async function GET(_req: NextRequest) {
   try {
-    const resp = await fetch('http://localhost:5001/api/Auth/getCurrentUser', {
-      headers: { Authorization: `Bearer ${token}` },
+    const backendResponse = await fetch('http://localhost:5001/api/Auth/check', {
+      credentials: 'include'
     })
-    
 
-    if (!resp.ok) {
+    if (!backendResponse.ok) {
       return NextResponse.json(
         { authenticated: false, user: null },
-        { status: resp.status }
+        { status: backendResponse.status }
       )
     }
-const user = await resp.json()
-if (!user || Object.keys(user).length === 0) {
-  return NextResponse.json({ authenticated: false, user: null }, { status: 401 })
-}
-return NextResponse.json({
-  authenticated: true,
-  user: {
-    name: user.Name ?? user.name,
-    email: user.Email ?? user.email,
-    ProfilePictureUrl: user.ProfilePictureUrl ?? user.profilePic ?? null,
-    bio: user.Bio ?? null,
-    humorTypeId: user.HumorTypeId ?? null,
-    createdAt: user.CreatedAt ?? null,
-    token,
-  },
-})
 
+    const data = await backendResponse.json()
+
+    // Validate backend response structure
+    if (
+      typeof data.authenticated !== 'boolean' ||
+      (data.authenticated && !data.user?.UserId)
+    ) {
+      console.error('Invalid check response:', data)
+      return NextResponse.json(
+        { authenticated: false, user: null },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      authenticated: data.authenticated,
+      user: data.authenticated
+        ? {
+            userId: data.user.UserId,
+            name: data.user.Name,
+            email: data.user.Email,
+            profilePictureUrl: data.user.ProfilePictureUrl ?? null,
+            bio: data.user.Bio ?? null,
+          }
+        : null,
+    })
   } catch (error) {
-    console.error('Auth check proxy error:', error)
+    console.error('Auth check error:', error)
     return NextResponse.json(
       { authenticated: false, user: null },
       { status: 500 }

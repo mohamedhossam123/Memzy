@@ -60,7 +60,7 @@ public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
         }
 
 
-        [HttpPost("login")]
+ [HttpPost("login")]
 public async Task<IActionResult> Login([FromBody] LoginDto dto)
 {
     try
@@ -74,8 +74,17 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
 
         var token = await _authService.GenerateJwtToken(user);
         
+        // Set cookie with proper CORS settings
+        Response.Cookies.Append("authToken", token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true, // Use 'false' in development if not using HTTPS
+            SameSite = SameSiteMode.None, // Required for cross-origin
+            Expires = DateTime.UtcNow.AddDays(7)
+        });
+
         return Ok(new {
-            Token = token,
+            Token = token, // Include token in response body
             User = new {
                 UserId = user.UserId,
                 Name = user.Name,
@@ -85,7 +94,7 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
             }
         });
     }
-    catch (Exception )
+    catch (Exception)
     {
         return StatusCode(500, "An error occurred during login");
     }

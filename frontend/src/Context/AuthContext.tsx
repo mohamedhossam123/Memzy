@@ -4,13 +4,13 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useRouter } from 'next/navigation'
 
 type User = {
+  userId?: number
   name: string
   email: string
-  profilePic?: string
-  token: string
+  profilePictureUrl?: string
   bio?: string
   humorTypeId?: number
-  ProfilePictureUrl?: string
+  token: string
   createdAt?: string
 }
 
@@ -19,78 +19,79 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<void>
   logout: () => void
   loading: boolean
-    updateUser: (user: User | null) => void
-
+  updateUser: (user: User | null) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const res = await fetch('/api/auth/check', { credentials: 'include' })
-        if (res.ok) {
-          const { authenticated, user: u } = await res.json()
-          if (authenticated) {
-            setUser({
-              name: u.name,
-              email: u.email,
-              token: u.token,
-              ProfilePictureUrl: u.ProfilePictureUrl,
-              bio: u.bio,
-              humorTypeId: u.humorTypeId,
-              createdAt: u.createdAt,
-            })
-          }
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error)
-      } finally {
-        setLoading(false)
+  try {
+    const res = await fetch('/api/auth/check', {
+      credentials: 'include', 
+    });
+    if (res.ok) {
+      const { authenticated, user: serverUser } = await res.json();
+      if (authenticated && serverUser) {
+        setUser({
+          userId: serverUser.UserId,
+          name: serverUser.Name,
+          email: serverUser.Email,
+          token: serverUser.Token,
+          profilePictureUrl: serverUser.ProfilePictureUrl || undefined,
+          bio: serverUser.Bio || undefined,
+          humorTypeId: serverUser.HumorTypeId || undefined,
+          createdAt: serverUser.CreatedAt || undefined,
+        });
       }
     }
+  } catch (error) {
+    console.error('Auth check failed:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
     checkAuth()
   }, [])
 
   const login = async (email: string, password: string) => {
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      })
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password }),
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || 'Login failed')
-      }
-
-      const userData = await response.json()
-      setUser({
-        name: userData.name,
-        email: userData.email,
-        token: userData.token,
-        profilePic: userData.ProfilePictureUrl,
-        bio: userData.bio,
-        humorTypeId: userData.humorTypeId,
-        createdAt: userData.createdAt,
-      })
-
-      router.push('/')
-    } catch (error) {
-      console.error('Login error:', error)
-      throw error instanceof Error ? error : new Error('Login failed')
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Login failed');
     }
+
+    const { user } = await response.json();
+    
+    setUser({
+      userId: user.userId,
+      name: user.name,
+      email: user.email,
+      profilePictureUrl: user.profilePictureUrl,
+      bio: user.bio,
+      token: '', // Will come from cookie
+    });
+
+    router.push('/');
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error instanceof Error ? error : new Error('Login failed');
   }
+};
 
   const logout = async () => {
     setLoading(true)
@@ -116,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     loading,
-      updateUser: setUser,
+    updateUser: setUser,
   }
 
   return (

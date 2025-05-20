@@ -1,73 +1,70 @@
 // app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function POST(req: NextRequest) {
-  const { email, password } = await req.json()
-  if (!email || !password) {
-    return NextResponse.json(
-      { message: 'Email and password are required' },
-      { status: 400 }
-    )
-  }
-
+export async function POST(_req: NextRequest) {
   try {
-    const resp = await fetch(
-      `http://localhost:5001/api/Auth/login`,
+    const { email, password } = await _req.json()
+    if (!email?.trim() || !password?.trim()) {
+      return NextResponse.json(
+        { message: 'Email and password are required' },
+        { status: 400 }
+      )
+    }
+
+    // Call ASP.NET Core backend:
+    const backendResponse = await fetch(
+      'http://localhost:5001/api/Auth/login',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ Email: email, Password: password }),
+        credentials: 'include',
       }
     )
 
-    const payload = await resp.json().catch(() => ({}))
-    console.log('Login proxy payload:', payload)
-
-    if (!resp.ok) {
+    if (!backendResponse.ok) {
+      const errorData = await backendResponse.json().catch(() => ({}))
       return NextResponse.json(
-        { message: payload.message || 'Authentication failed' },
-        { status: resp.status }
+        { message: errorData.message || 'Authentication failed' },
+        { status: backendResponse.status }
       )
     }
 
-    const token = payload.Token ?? payload.token
-    const userData = payload.User ?? payload.user
-
-    if (!token || !userData) {
-      console.error('Missing token or user in payload', payload)
+    const responseData = await backendResponse.json()
+    // ──────────────── IMPORTANT ─────────────────
+    // The backend serializes with camelCase. So check `responseData.token` (lowercase),
+    // and `responseData.user.userId` (lowercase).
+    if (!responseData.token || !responseData.user?.userId) {
+      console.error('Invalid backend response:', responseData)
       return NextResponse.json(
-        { message: 'Invalid login response shape' },
-        { status: 502 }
+        { message: 'Invalid server response format' },
+        { status: 500 }
       )
     }
-  
-    const responsePayload = {
-  name: userData.Name ?? userData.name,
-  email: userData.Email ?? userData.email,
-  ProfilePictureUrl: userData.ProfilePictureUrl ?? userData.profilePictureUrl,
-  bio: userData.Bio ?? userData.bio ?? null,
-  humorTypeId: userData.HumorTypeId ?? userData.humorTypeId ?? null,
-  createdAt: userData.CreatedAt ?? userData.createdAt ?? null,
-  token,
-}
 
-  
-    const responseObj = NextResponse.json(responsePayload)
-    responseObj.cookies.set({
-      name: 'auth_token',
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24,
+    // Create the response JSON for the frontend:
+    const frontendResponse = NextResponse.json({
+      user: {
+        userId: responseData.user.userId,
+        name: responseData.user.name,
+        email: responseData.user.email,
+        profilePictureUrl: responseData.user.profilePictureUrl ?? null,
+        bio: responseData.user.bio ?? null,
+      },
     })
 
-    return responseObj
+    // Copy any Set-Cookie header from the backend (so JWT cookie is forwarded):
+    const setCookieHeader = backendResponse.headers.get('set-cookie')
+    if (setCookieHeader) {
+      frontendResponse.headers.set('set-cookie', setCookieHeader)
+    }
+
+    return frontendResponse
   } catch (error) {
-    console.error('Login proxy error', error)
+    console.error('Login error:', error)
     return NextResponse.json(
-      { message: 'Service unavailable. Check backend.' },
-      { status: 503 }
+      { message: 'Internal server error' },
+      { status: 500 }
     )
   }
 }

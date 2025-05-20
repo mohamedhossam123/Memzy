@@ -98,9 +98,17 @@ public async Task<IActionResult> UploadProfilePicture([FromForm] ProfilePictureD
         var result = await _userService.UploadProfilePictureAsync(dto.ProfilePicture, userId);
         
         return Ok(new { 
-            Message = "Profile picture uploaded successfully",
+            Message = "Profile picture updated successfully",
             Url = result 
         });
+    }
+    catch (ArgumentException ex)
+    {
+        return BadRequest(ex.Message);
+    }
+    catch (KeyNotFoundException ex)
+    {
+        return NotFound(ex.Message);
     }
     catch (Exception ex)
     {

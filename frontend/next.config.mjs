@@ -3,13 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'i.ibb.co',
-        pathname: '/**', 
-      },
-    ],
+    domains: ['res.cloudinary.com'],
   },
   async rewrites() {
     return [

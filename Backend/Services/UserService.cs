@@ -2,11 +2,14 @@ using Memzy_finalist.Models;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 
 
 public class UserService : IUserService
 {
     private readonly MemzyContext _context;
+    private readonly Cloudinary _cloudinary;
     private readonly IWebHostEnvironment _environment;
     private static readonly List<string> AllowedHumorTypes = new List<string>
     {
@@ -16,8 +19,13 @@ public class UserService : IUserService
 
     private readonly IConfiguration _configuration;
 
-    public UserService(MemzyContext context, IWebHostEnvironment environment, IConfiguration configuration)
-    {
+    public UserService(MemzyContext context, IWebHostEnvironment environment, IConfiguration configuration){
+        var cloudinaryAccount = new Account(
+            configuration["Cloudinary:CloudName"],
+            configuration["Cloudinary:ApiKey"],
+            configuration["Cloudinary:ApiSecret"]
+        );
+        _cloudinary = new Cloudinary(cloudinaryAccount);
         _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -55,6 +63,7 @@ public class UserService : IUserService
         }
         return existingUser;
     }
+    
 
     public async Task<User> UpdateUserProfilePicture(User user)
     {
@@ -104,35 +113,31 @@ public class UserService : IUserService
         if (file == null || file.Length == 0)
             throw new ArgumentException("No file uploaded");
 
-        // Use ImgBB's validation parameters
-        if (file.Length > 5 * 1024 * 1024)
-            throw new ArgumentException("File size too large. Max 5MB allowed");
+        // Validate file size (up to 20MB)
+        if (file.Length > 20 * 1024 * 1024)
+            throw new ArgumentException("File size too large. Max 20MB allowed");
 
         var user = await _context.Users.FindAsync(userId)
             ?? throw new KeyNotFoundException("User not found");
 
-        using var client = new HttpClient();
-        using var content = new MultipartFormDataContent();
-        var apiKey = _configuration["ImgBB:ApiKey"];
-        using var ms = new MemoryStream();
-        await file.CopyToAsync(ms);
-        var fileBytes = ms.ToArray();
+        var uploadParams = new ImageUploadParams() 
+        {
+            File = new FileDescription(file.FileName, file.OpenReadStream()),
+            PublicId = $"memzy/profile/{userId}_{Guid.NewGuid()}",
+            Transformation = new Transformation()
+                .Width(500).Height(500).Crop("fill").Quality("auto")
+        };
 
-        content.Add(new ByteArrayContent(fileBytes), "image", file.FileName);
+        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
-        var response = await client.PostAsync($"https://api.imgbb.com/1/upload?key={apiKey}", content);
-        var responseString = await response.Content.ReadAsStringAsync();
+        if (uploadResult.Error != null)
+            throw new Exception($"Cloudinary upload failed: {uploadResult.Error.Message}");
 
-        if (!response.IsSuccessStatusCode)
-            throw new Exception("Image upload failed");
-
-        var imgbbResponse = JsonConvert.DeserializeObject<ImgBBResponse>(responseString);
-        user.ProfilePictureUrl = imgbbResponse.Data.Url;
+        user.ProfilePictureUrl = uploadResult.SecureUrl.ToString();
         await _context.SaveChangesAsync();
 
         return user.ProfilePictureUrl;
     }
-
 
 
 }
