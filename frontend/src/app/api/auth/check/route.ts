@@ -5,7 +5,6 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
   try {
-    // Get the token from the request
     const token = req.headers.get('authorization')?.split(' ')[1] || '';
     
     if (!token) {

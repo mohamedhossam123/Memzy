@@ -29,8 +29,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       )
     }
-
-    // Call ASP.NET Core backend:
     const backendResponse = await fetch(
       'http://localhost:5001/api/Auth/login',
       {
@@ -49,8 +47,7 @@ export async function POST(req: NextRequest) {
     }
 
     const responseData = await backendResponse.json()
-    
-    // Get token from response data
+
     const token = responseData.token || responseData.Token
 
     if (!token || !responseData.user?.userId) {
@@ -61,7 +58,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Create the response JSON for the frontend:
     const frontendResponse = NextResponse.json({
       token,
       user: {

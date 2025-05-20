@@ -20,7 +20,7 @@ import {
 } from '@/Components/SettingsModals/PasswordModal'
 
 export default function UserProfile() {
-  const { user, token } = useAuth() // Using token from AuthContext
+  const { user, token } = useAuth() 
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   
