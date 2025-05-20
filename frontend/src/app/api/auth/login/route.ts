@@ -1,9 +1,28 @@
 // app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function POST(_req: NextRequest) {
+interface BackendLoginResponse {
+  Token?: string
+  token?: string
+  User?: {
+    UserId?: number
+    Name?: string
+    Email?: string
+    ProfilePictureUrl?: string
+    Bio?: string
+  }
+  user?: {
+    userId?: number
+    name?: string
+    email?: string
+    profilePictureUrl?: string
+    bio?: string
+  }
+}
+
+export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await _req.json()
+    const { email, password } = await req.json()
     if (!email?.trim() || !password?.trim()) {
       return NextResponse.json(
         { message: 'Email and password are required' },
@@ -18,7 +37,6 @@ export async function POST(_req: NextRequest) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ Email: email, Password: password }),
-        credentials: 'include',
       }
     )
 
@@ -31,10 +49,11 @@ export async function POST(_req: NextRequest) {
     }
 
     const responseData = await backendResponse.json()
-    // ──────────────── IMPORTANT ─────────────────
-    // The backend serializes with camelCase. So check `responseData.token` (lowercase),
-    // and `responseData.user.userId` (lowercase).
-    if (!responseData.token || !responseData.user?.userId) {
+    
+    // Get token from response data
+    const token = responseData.token || responseData.Token
+
+    if (!token || !responseData.user?.userId) {
       console.error('Invalid backend response:', responseData)
       return NextResponse.json(
         { message: 'Invalid server response format' },
@@ -44,6 +63,7 @@ export async function POST(_req: NextRequest) {
 
     // Create the response JSON for the frontend:
     const frontendResponse = NextResponse.json({
+      token,
       user: {
         userId: responseData.user.userId,
         name: responseData.user.name,
@@ -52,12 +72,6 @@ export async function POST(_req: NextRequest) {
         bio: responseData.user.bio ?? null,
       },
     })
-
-    // Copy any Set-Cookie header from the backend (so JWT cookie is forwarded):
-    const setCookieHeader = backendResponse.headers.get('set-cookie')
-    if (setCookieHeader) {
-      frontendResponse.headers.set('set-cookie', setCookieHeader)
-    }
 
     return frontendResponse
   } catch (error) {

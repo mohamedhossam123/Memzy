@@ -14,43 +14,43 @@ namespace MyApiProject.Controllers
             _authService = AuthService;
         }
 
-[HttpPost("signup")]
-public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
-{
-    try
-    {
-        if (string.IsNullOrWhiteSpace(dto.Email) )
-            return BadRequest("Email is required");
-        if (string.IsNullOrWhiteSpace(dto.Password))
-            return BadRequest("Password is required");
-        
-        var existingUser = await _authService.VerifyUserAsync(dto.Email, "anypassword");
-        if (existingUser != null)
-            return BadRequest("Email already registered");
-        
-        var user = new User
+        [HttpPost("signup")]
+        public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
         {
-            Name = dto.Name,
-            Email = dto.Email,
-            PasswordHash = _authService.HashPassword(dto.Password),
-            CreatedAt = DateTime.UtcNow
-        };
+            try
+            {
+                if (string.IsNullOrWhiteSpace(dto.Email))
+                    return BadRequest("Email is required");
+                if (string.IsNullOrWhiteSpace(dto.Password))
+                    return BadRequest("Password is required");
+                
+                var existingUser = await _authService.VerifyUserAsync(dto.Email, "anypassword");
+                if (existingUser != null)
+                    return BadRequest("Email already registered");
+                
+                var user = new User
+                {
+                    Name = dto.Name,
+                    Email = dto.Email,
+                    PasswordHash = _authService.HashPassword(dto.Password),
+                    CreatedAt = DateTime.UtcNow
+                };
 
-        var createdUser = await _authService.CreateUserAsync(user);
-        if (createdUser.UserId == 0) 
-            return StatusCode(500, "Failed to create user");
-        
-        return CreatedAtAction(nameof(GetUser), new { id = createdUser.UserId }, new {
-            UserId = createdUser.UserId,
-            Name = createdUser.Name,
-            Email = createdUser.Email
-        });
-    }
-    catch (Exception )
-    {
-        return StatusCode(500, "Registration failed");
-    }
-}
+                var createdUser = await _authService.CreateUserAsync(user);
+                if (createdUser.UserId == 0) 
+                    return StatusCode(500, "Failed to create user");
+                
+                return CreatedAtAction(nameof(GetUser), new { id = createdUser.UserId }, new {
+                    UserId = createdUser.UserId,
+                    Name = createdUser.Name,
+                    Email = createdUser.Email
+                });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Registration failed");
+            }
+        }
 
         [HttpGet("GetUserByID")]
         public async Task<IActionResult> GetUser(int id)
@@ -59,47 +59,40 @@ public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
             return user != null ? Ok(user) : NotFound();
         }
 
-
- [HttpPost("login")]
-public async Task<IActionResult> Login([FromBody] LoginDto dto)
-{
-    try
-    {
-        if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
-            return BadRequest("Email and password are required");
-
-        var user = await _authService.VerifyUserAsync(dto.Email, dto.Password);
-        if (user == null)
-            return Unauthorized("Invalid credentials");
-
-        var token = await _authService.GenerateJwtToken(user);
-        
-        // Set cookie with proper CORS settings
-        Response.Cookies.Append("authToken", token, new CookieOptions
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            HttpOnly = true,
-            Secure = true, // Use 'false' in development if not using HTTPS
-            SameSite = SameSiteMode.None, // Required for cross-origin
-            Expires = DateTime.UtcNow.AddDays(7)
-        });
+            try
+            {
+                if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
+                    return BadRequest("Email and password are required");
 
-        return Ok(new {
-            Token = token, // Include token in response body
-            User = new {
-                UserId = user.UserId,
-                Name = user.Name,
-                Email = user.Email,
-                ProfilePictureUrl = user.ProfilePictureUrl,
-                Bio = user.Bio,
+                var user = await _authService.VerifyUserAsync(dto.Email, dto.Password);
+                if (user == null)
+                    return Unauthorized("Invalid credentials");
+
+                var token = await _authService.GenerateJwtToken(user);
+                
+                // No more cookie setting
+                
+                return Ok(new {
+                    Token = token, 
+                    User = new {
+                        UserId = user.UserId,
+                        Name = user.Name,
+                        Email = user.Email,
+                        ProfilePictureUrl = user.ProfilePictureUrl,
+                        Bio = user.Bio,
+                    }
+                });
             }
-        });
-    }
-    catch (Exception)
-    {
-        return StatusCode(500, "An error occurred during login");
-    }
-}
-[HttpGet("validate")]
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred during login");
+            }
+        }
+
+        [HttpGet("validate")]
         [Authorize] 
         public async Task<IActionResult> ValidateToken()
         {
@@ -114,11 +107,14 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
                 }
 
                 return Ok(new {
-                    UserId = user.UserId,
-                    Name = user.Name,
-                    Email = user.Email,
-                    ProfilePictureUrl = user.ProfilePictureUrl,
-                    Bio = user.Bio,
+                    Authenticated = true,
+                    User = new {
+                        UserId = user.UserId,
+                        Name = user.Name,
+                        Email = user.Email,
+                        ProfilePictureUrl = user.ProfilePictureUrl,
+                        Bio = user.Bio,
+                    }
                 });
             }
             catch (UnauthorizedAccessException)
@@ -129,11 +125,13 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
             {
                 return StatusCode(500, $"Token validation error: {ex.Message}");
             }
-}
+        }
+
         [HttpPost("logout")]
         [Authorize]
         public IActionResult Logout()
         {
+            // No more cookie deletion needed
             return Ok("Logged out successfully");
         }
 
@@ -159,46 +157,45 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
                 return StatusCode(500, $"Token refresh error: {ex.Message}");
             }
         }
+
         [HttpGet("getCurrentUser")]
-[Authorize]
-public async Task<IActionResult> GetCurrentUser()
-{
-    try
-    {
-        var userId = await _authService.GetAuthenticatedUserId();
-        var user = await _authService.GetUserByIdAsync(userId);
-        
-        if (user == null)
+        [Authorize]
+        public async Task<IActionResult> GetCurrentUser()
         {
-            return Unauthorized("Invalid user");
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+                var user = await _authService.GetUserByIdAsync(userId);
+                
+                if (user == null)
+                {
+                    return Unauthorized("Invalid user");
+                }
+                var humorTypes = user.UserHumorTypes.Select(uht => uht.HumorType).ToList();
+                
+                var friendCount = await _authService.GetFriendCountAsync(userId);
+                var postCount = await _authService.GetPostCountAsync(userId);
+
+                return Ok(new {
+                    UserId = user.UserId,
+                    Name = user.Name,
+                    Email = user.Email,
+                    ProfilePictureUrl = user.ProfilePictureUrl,
+                    Bio = user.Bio,
+                    HumorTypes = humorTypes.Select(ht => new {
+                        HumorTypeId = ht.HumorTypeId,
+                        HumorTypeName = ht.HumorTypeName
+                    }).ToList(),
+                    CreatedAt = user.CreatedAt,
+                    FriendCount = friendCount,
+                    PostCount = postCount
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error retrieving current user: {ex.Message}");
+            }
         }
-        var humorTypes = user.UserHumorTypes.Select(uht => uht.HumorType).ToList();
-        
-        var friendCount = await _authService.GetFriendCountAsync(userId);
-        var postCount = await _authService.GetPostCountAsync(userId);
-
-
-        return Ok(new {
-            UserId = user.UserId,
-            Name = user.Name,
-            Email = user.Email,
-            ProfilePictureUrl = user.ProfilePictureUrl,
-            Bio = user.Bio,
-            HumorTypes = humorTypes.Select(ht => new {
-                HumorTypeId = ht.HumorTypeId,
-                HumorTypeName = ht.HumorTypeName
-            }).ToList(),
-            CreatedAt = user.CreatedAt,
-            FriendCount = friendCount,
-            PostCount = postCount
-        });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"Error retrieving current user: {ex.Message}");
-    }
-}
-
         
         [HttpGet("Get friend count and post count")]
         [Authorize]
@@ -216,5 +213,6 @@ public async Task<IActionResult> GetCurrentUser()
             {
                 return StatusCode(500, $"Error retrieving counts: {ex.Message}");
             }
-        }}
+        }
+    }
 }

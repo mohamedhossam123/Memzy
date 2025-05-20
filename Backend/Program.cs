@@ -62,14 +62,7 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
 
-    options.Events = new JwtBearerEvents
-    {
-        OnMessageReceived = context =>
-        {
-            context.Token = context.Request.Cookies["authToken"];
-            return Task.CompletedTask;
-        }
-    };
+    // Removed cookie handling event
 });
 
 /*** Exception Handling ***/
@@ -135,8 +128,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("http://localhost:3000", "http://localhost:5001")
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials()
-            .WithExposedHeaders("Set-Cookie");
+            .AllowCredentials(); // Keep this for now as it doesn't hurt
     });
 });
 

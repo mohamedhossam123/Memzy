@@ -19,9 +19,8 @@ import {
   PasswordModal,
 } from '@/Components/SettingsModals/PasswordModal'
 
-
 export default function UserProfile() {
-  const { user } = useAuth()
+  const { user, token } = useAuth() // Using token from AuthContext
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   
@@ -29,7 +28,6 @@ export default function UserProfile() {
     profilePic?: string
     name?: string
     bio?: string
-    token?: string
     friendCount?: number
     postCount?: number
     humorTypes?: { humorTypeName: string }[]
@@ -45,7 +43,7 @@ export default function UserProfile() {
   const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>('friends')
   const [friendRequests, setFriendRequests] = useState<any[]>([])
   const [friendsList, setFriendsList] = useState<any[]>([])
-
+  
   useEffect(() => {
     if (!user) {
       router.push('/login')
@@ -58,14 +56,11 @@ export default function UserProfile() {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/getCurrentUser`,
-        { headers: { Authorization: `Bearer ${user?.token}` } }
+        { headers: { Authorization: `Bearer ${token}` }}
       )
       if (!response.ok) throw new Error('Failed to fetch')
       const data = await response.json()
       setUserData(data)
-      if (data.humorTypes?.length) {
-        setHumorPreferences(data.humorTypes.map((ht: any) => ht.humorTypeName))
-      }
     } catch (err) {
       console.error(err)
     } finally {
@@ -77,7 +72,7 @@ export default function UserProfile() {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetFriends`,
-        { headers: { Authorization: `Bearer ${user?.token}` } }
+        { headers: { Authorization: `Bearer ${token}` } }
       )
       if (!response.ok) throw new Error('Failed to fetch friends')
       const data = await response.json()
@@ -90,8 +85,8 @@ export default function UserProfile() {
   const fetchFriendRequests = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/get-received-requests`,
-        { headers: { Authorization: `Bearer ${user?.token}` } }
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetFriends`,
+        { headers: { Authorization: `Bearer ${token}` } }
       )
       if (!response.ok) throw new Error('Failed to fetch requests')
       const data = await response.json()
@@ -117,7 +112,7 @@ export default function UserProfile() {
         `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/acceptRequest/${requestId}`,
         {
           method: 'POST',
-          headers: { Authorization: `Bearer ${user?.token}` }
+          headers: { Authorization: `Bearer ${token}` }
         }
       )
       if (!response.ok) throw new Error('Failed to accept request')
@@ -134,7 +129,7 @@ export default function UserProfile() {
         `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/rejectrequest/${requestId}`,
         {
           method: 'POST',
-          headers: { Authorization: `Bearer ${user?.token}` }
+          headers: { Authorization: `Bearer ${token}` }
         }
       )
       if (!response.ok) throw new Error('Failed to reject request')
@@ -150,7 +145,7 @@ export default function UserProfile() {
         `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/RemoveFriend?friendId=${friendId}`,
         {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${user?.token}` }
+          headers: { Authorization: `Bearer ${token}` }
         }
       )
       if (!response.ok) throw new Error('Failed to remove friend')
@@ -168,7 +163,7 @@ export default function UserProfile() {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${user?.token}`
+            Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({ humorTypes: selectedHumor })
         }
@@ -187,7 +182,7 @@ export default function UserProfile() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${user?.token}`
+            Authorization: `Bearer ${token}`
           },
           body: JSON.stringify(newName)
         }
@@ -206,7 +201,7 @@ export default function UserProfile() {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateProfilePicture`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${user?.token}` },
+          headers: { Authorization: `Bearer ${token}` },
           body: formData
         }
       )
@@ -224,7 +219,7 @@ export default function UserProfile() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${user?.token}`
+            Authorization: `Bearer ${token}`
           },
           body: JSON.stringify(newBio)
         }
@@ -244,7 +239,7 @@ export default function UserProfile() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${user?.token}`
+            Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({ 
             currentPassword,  

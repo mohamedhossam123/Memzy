@@ -1,24 +1,37 @@
 // app/api/auth/logout/route.ts
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
-    const response = NextResponse.json(
-      { success: true },
-      { status: 200 }
-    );
-    response.cookies.set({
-      name: 'auth_token',
-      value: '',
-      expires: new Date(0),
-      path: '/',
-    });
+    // Get authorization header from the request
+    const token = req.headers.get('authorization')?.split(' ')[1]
     
-    return response;
+    if (!token) {
+      return NextResponse.json(
+        { message: 'No token provided' },
+        { status: 401 }
+      )
+    }
+    const response = await fetch('http://localhost:5001/api/Auth/logout', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+    })
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { message: 'Logout failed on backend' },
+        { status: response.status }
+      )
+    }
+
+    return NextResponse.json({ message: 'Logged out successfully' })
   } catch (error) {
+    console.error('Logout error:', error)
     return NextResponse.json(
-      { success: false, error: 'Logout failed' },
+      { message: 'Logout failed' },
       { status: 500 }
-    );
+    )
   }
 }
