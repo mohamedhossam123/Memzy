@@ -134,18 +134,16 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Memzy API v1"));
-}
 
+app.Urls.Add("http://localhost:5001"); 
 app.UseExceptionHandler("/error");
 app.UseRouting();
 app.UseCors("NextJsFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.Urls.Add("http://localhost:5001"); 
+
 app.Run();
