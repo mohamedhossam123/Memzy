@@ -20,12 +20,10 @@ export function Header() {
   const [profileImageError, setProfileImageError] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
 
-  // Reset error state when the user's profilePictureUrl changes
   useEffect(() => {
     setProfileImageError(false)
   }, [user?.profilePictureUrl])
 
-  // Debug logs (only in development)
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
       console.log('User object:', user)
@@ -35,7 +33,6 @@ export function Header() {
     }
   }, [user, profileImageError])
 
-  // Close search results dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -91,7 +88,6 @@ export function Header() {
     setShowResults(false)
   }
 
-  // Determine which image URL to show for the logged-in user
   const getProfileImageUrl = () => {
     if (profileImageError || !user?.profilePictureUrl) {
       return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
@@ -101,7 +97,6 @@ export function Header() {
       : `https://${user.profilePictureUrl}`
   }
 
-  // Determine which image URL to show for each search result
   const getSearchResultImageUrl = (url?: string) => {
     if (!url) return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
     return url.startsWith('http') ? url : `https://${url}`

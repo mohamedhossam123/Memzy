@@ -62,20 +62,7 @@ export function Sidebar() {
               {!isCollapsed && <span>Home</span>}
             </Link>
           </li>
-          <li>
-            <Link 
-              href="/posts" 
-              className={`flex items-center gap-3 py-3 px-4 rounded-lg ${
-                isActive('/posts') ? 'bg-[#8e44ad] text-[#f5f5f5] font-semibold' : 'text-[#e9ecef] hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f5f5f5]'
-              } hover:translate-x-1 transition-all ${
-                isCollapsed ? 'justify-center' : ''
-              }`}
-              aria-label={isCollapsed ? "My Posts" : undefined}
-            >
-              <span className="text-xl">📝</span>
-              {!isCollapsed && <span>My Posts</span>}
-            </Link>
-          </li>
+          
         </ul>
       </div>
       
@@ -120,20 +107,7 @@ export function Sidebar() {
           <h2 className="text-xs uppercase text-[#dee2e6] mb-4 pl-4">Account</h2>
         )}
         <ul className="space-y-2">
-          <li>
-            <Link 
-              href="/settings" 
-              className={`flex items-center gap-3 py-3 px-4 rounded-lg ${
-                isActive('/settings') ? 'bg-[#8e44ad] text-[#f5f5f5] font-semibold' : 'text-[#e9ecef] hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f5f5f5]'
-              } hover:translate-x-1 transition-all ${
-                isCollapsed ? 'justify-center' : ''
-              }`}
-              aria-label={isCollapsed ? "Settings" : undefined}
-            >
-              <span className="text-xl">⚙️</span>
-              {!isCollapsed && <span>Settings</span>}
-            </Link>
-          </li>
+          
           <li>
             <button 
               onClick={handleLogout}
