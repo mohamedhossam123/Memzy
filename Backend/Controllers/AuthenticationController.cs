@@ -15,42 +15,53 @@ namespace MyApiProject.Controllers
         }
 
         [HttpPost("signup")]
-        public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
+public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email))
+            return BadRequest("Email is required");
+        if (string.IsNullOrWhiteSpace(dto.Password))
+            return BadRequest("Password is required");
+        if (string.IsNullOrWhiteSpace(dto.UserName))
+            return BadRequest("Username is required");
+        
+        // Check if email exists
+        var existingUserByEmail = await _authService.VerifyUserAsync(dto.Email, "anypassword");
+        if (existingUserByEmail != null)
+            return BadRequest("Email already registered");
+            
+        // Check if username exists
+        var existingUserByUsername = await _authService.GetUserByUsernameAsync(dto.UserName);
+        if (existingUserByUsername != null)
+            return BadRequest("Username already taken");
+        
+        var user = new User
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(dto.Email))
-                    return BadRequest("Email is required");
-                if (string.IsNullOrWhiteSpace(dto.Password))
-                    return BadRequest("Password is required");
-                
-                var existingUser = await _authService.VerifyUserAsync(dto.Email, "anypassword");
-                if (existingUser != null)
-                    return BadRequest("Email already registered");
-                
-                var user = new User
-                {
-                    Name = dto.Name,
-                    Email = dto.Email,
-                    PasswordHash = _authService.HashPassword(dto.Password),
-                    CreatedAt = DateTime.UtcNow
-                };
+            Name = dto.Name,
+            Email = dto.Email,
+            PasswordHash = _authService.HashPassword(dto.Password),
+            CreatedAt = DateTime.UtcNow,
+            UserName = dto.UserName,
+        };
 
-                var createdUser = await _authService.CreateUserAsync(user);
-                if (createdUser.UserId == 0) 
-                    return StatusCode(500, "Failed to create user");
-                
-                return CreatedAtAction(nameof(GetUser), new { id = createdUser.UserId }, new {
-                    UserId = createdUser.UserId,
-                    Name = createdUser.Name,
-                    Email = createdUser.Email
-                });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Registration failed");
-            }
-        }
+        var createdUser = await _authService.CreateUserAsync(user);
+        if (createdUser.UserId == 0) 
+            return StatusCode(500, "Failed to create user");
+        
+        return CreatedAtAction(nameof(GetUser), new { id = createdUser.UserId }, new
+        {
+            UserId = createdUser.UserId,
+            Name = createdUser.Name,
+            Email = createdUser.Email,
+            Username = createdUser.UserName,
+        });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, $"Registration failed: {ex.Message}");
+    }
+}
 
         [HttpGet("GetUserByID")]
         public async Task<IActionResult> GetUser(int id)
@@ -74,12 +85,14 @@ namespace MyApiProject.Controllers
                 var token = await _authService.GenerateJwtToken(user);
                 return Ok(new {
                     Token = token, 
-                    User = new {
+                    User = new
+                    {
                         UserId = user.UserId,
                         Name = user.Name,
                         Email = user.Email,
                         ProfilePictureUrl = user.ProfilePictureUrl,
                         Bio = user.Bio,
+                        Username = user.UserName,
                     }
                 });
             }
@@ -105,12 +118,14 @@ namespace MyApiProject.Controllers
 
                 return Ok(new {
                     Authenticated = true,
-                    User = new {
+                    User = new
+                    {
                         UserId = user.UserId,
                         Name = user.Name,
                         Email = user.Email,
                         ProfilePictureUrl = user.ProfilePictureUrl,
                         Bio = user.Bio,
+                        Username = user.UserName,
                     }
                 });
             }
@@ -172,19 +187,22 @@ namespace MyApiProject.Controllers
                 var friendCount = await _authService.GetFriendCountAsync(userId);
                 var postCount = await _authService.GetPostCountAsync(userId);
 
-                return Ok(new {
+                return Ok(new
+                {
                     UserId = user.UserId,
                     Name = user.Name,
                     Email = user.Email,
                     ProfilePictureUrl = user.ProfilePictureUrl,
                     Bio = user.Bio,
-                    HumorTypes = humorTypes.Select(ht => new {
+                    HumorTypes = humorTypes.Select(ht => new
+                    {
                         HumorTypeId = ht.HumorTypeId,
                         HumorTypeName = ht.HumorTypeName
                     }).ToList(),
                     CreatedAt = user.CreatedAt,
                     FriendCount = friendCount,
-                    PostCount = postCount
+                    PostCount = postCount,
+                    UserName = user.UserName,
                 });
             }
             catch (Exception ex)

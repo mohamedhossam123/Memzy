@@ -17,7 +17,7 @@ public class SearchService : ISearchService
         throw new ArgumentException("Search term cannot be empty");
     
     return await _context.Users
-        .Where(u => u.Name.Contains(searchTerm))
+        .Where(u => u.Name.Contains(searchTerm) || u.UserName.Contains(searchTerm))
         .OrderBy(u => u.Name)
         .Take(3)
         .ToListAsync();

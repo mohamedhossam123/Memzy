@@ -47,12 +47,9 @@ namespace Memzy_finalist.Services
             throw new ArgumentException("No valid humor types provided");
         }
 
-        // Remove existing humor preferences
         var existingPrefs = _context.UserHumorTypes
             .Where(uht => uht.UserId == userId);
         _context.UserHumorTypes.RemoveRange(existingPrefs);
-
-        // Fetch the corresponding HumorType entities
         var humorTypeEntities = await _context.HumorTypes
             .Where(ht => validTypes.Contains(ht.HumorTypeName))
             .ToListAsync();

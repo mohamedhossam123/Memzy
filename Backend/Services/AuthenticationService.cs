@@ -64,6 +64,10 @@ private readonly IConfiguration _configuration;
     {
         return await _context.Users.FindAsync(id);
     }
+    public async Task<User> GetUserByUsernameAsync(string username)
+{
+    return await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+}
 
     public async Task<User> CreateUserAsync(User user)
     {

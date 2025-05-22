@@ -36,7 +36,6 @@ namespace Memzy_finalist.Models
               .IsRequired();
 
         entity.Property(p => p.MediaType)
-              // store enum as string: "Image" / "Video"
               .HasConversion<string>()
               .IsRequired();
 
@@ -45,8 +44,6 @@ namespace Memzy_finalist.Models
               .HasForeignKey(p => p.UserId)
               .OnDelete(DeleteBehavior.Cascade);
     });
-
-    // —— NEW: PostHumor join‐table configuration ——
     modelBuilder.Entity<PostHumor>(entity =>
     {
         entity.HasKey(ph => ph.PostHumorId);
@@ -122,6 +119,9 @@ namespace Memzy_finalist.Models
     modelBuilder.Entity<User>()
         .HasIndex(u => u.Email)
         .IsUnique();
+    modelBuilder.Entity<User>()
+    .HasIndex(u => u.UserName)
+    .IsUnique();
 
     modelBuilder.Entity<HumorType>()
         .HasIndex(ht => ht.HumorTypeName)
