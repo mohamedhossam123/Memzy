@@ -26,6 +26,7 @@ export default function UserProfile() {
     friendCount?: number
     postCount?: number
     humorTypes?: { humorTypeName: string }[]
+     userName?: string 
   }
 
   const [userData, setUserData] = useState<FullUser | null>(null)
@@ -227,33 +228,31 @@ export default function UserProfile() {
   }
 
   const handlePasswordChange = async (currentPassword: string, newPassword: string) => {
-    setPasswordError('')
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/change-password`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ 
-            currentPassword,  
-            newPassword
-          })
-        }
-      )
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || 'Password update failed')
+  setPasswordError('')
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          currentPassword,  
+          newPassword
+        })
       }
-      alert('Password changed successfully')
-      return true
-    } catch (err: any) {
-      console.error(err)
-      setPasswordError(err.message)
-      return false
+    )
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.error || 'Password update failed')
     }
+    alert('Password changed successfully')
+  } catch (err: any) {
+    console.error(err)
+    setPasswordError(err.message)
   }
+}
 
   const getProfilePicUrl = (picPath?: string) => {
     if (!picPath) return '/default-avatar.png'
@@ -314,8 +313,11 @@ export default function UserProfile() {
                 <span>✏️ Edit Name</span>
               </button>
             </div>
-            
-            <div className="space-y-2">
+            <div className="text-light/70 text-lg">
+    @{userData?.userName || 'username'}
+  </div>
+  
+  <div className="space-y-2">
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <span className="text-light/80">Humor style:</span>
                 <button
@@ -433,14 +435,13 @@ export default function UserProfile() {
           onSave={handleBioUpdate}
         />
 
-        <PasswordModal
-          isOpen={activeModal === 'password'}
-          onClose={() => setActiveModal(null)}
-          onConfirm={async (current, next) => {
-            await handlePasswordChange(current, next)
-          }}
-          error={passwordError}
-        />
+          <PasswordModal
+        isOpen={activeModal === 'password'}
+        onClose={() => setActiveModal(null)}
+        onConfirm={handlePasswordChange}
+        error={passwordError}
+      />
+
 
         {/* Create Post Modal */}
         <Transition appear show={activeModal === 'createPost'} as={Fragment}>
@@ -495,129 +496,149 @@ export default function UserProfile() {
         </Transition>
 
         {/* Friends Modal */}
-        {activeModal === 'friends' && (
-          <div className="fixed inset-0 z-50 overflow-y-auto">
+        <Transition appear show={activeModal === 'friends'} as={Fragment}>
+          <Dialog
+            as="div"
+            className="fixed inset-0 z-50 overflow-y-auto"
+            onClose={() => setActiveModal(null)}
+          >
             <div className="min-h-screen px-4 text-center">
-              <div 
-                className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" 
-                aria-hidden="true"
-                onClick={() => setActiveModal(null)}
-              />
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-50"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-50"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-black bg-opacity-50" aria-hidden="true" />
+              </Transition.Child>
               
               <span className="inline-block h-screen align-middle" aria-hidden="true">
                 &#8203;
               </span>
 
-              <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl transform transition-all">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-2xl font-bold text-[#c56cf0]">
-                    Friends Management
-                  </h3>
-                  <button
-                    onClick={() => setActiveModal(null)}
-                    className="text-light/50 hover:text-light/80 transition-colors"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* Tab Buttons */}
-                <div className="flex gap-2 mb-4">
-                  {friendTabs.map(tab => (
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl transform transition-all">
+                  <div className="flex justify-between items-center mb-4">
+                    <Dialog.Title className="text-2xl font-bold text-[#c56cf0]">
+                      Friends Management
+                    </Dialog.Title>
                     <button
-                      key={tab}
-                      onClick={() => setActiveFriendsTab(tab)}
-                      className={`px-4 py-2 rounded-lg font-medium transition ${
-                        activeFriendsTab === tab
-                          ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white'
-                          : 'bg-[rgba(255,255,255,0.05)] text-light/80 hover:bg-[rgba(255,255,255,0.1)]'
-                      }`}
+                      onClick={() => setActiveModal(null)}
+                      className="text-light/50 hover:text-light/80 transition-colors"
                     >
-                      {tab === 'friends' ? 'Friends' : 'Requests'}
+                      ✕
                     </button>
-                  ))}
-                </div>
+                  </div>
 
-                {/* Tab Content */}
-                <div className="max-h-64 overflow-y-auto space-y-4">
-                  {activeFriendsTab === 'friends' ? (
-                    friendsList.length > 0 ? (
-                      friendsList.map(friend => (
-                        <div key={friend.userId} className="flex items-center gap-3 p-2 bg-glass/10 rounded-lg">
-                          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                            {friend.profilePic ? (
-                              <Image
-                                src={getProfilePicUrl(friend.profilePic)}
-                                alt={friend.name}
-                                width={32}
-                                height={32}
-                                className="rounded-full"
-                              />
-                            ) : (
-                              <span className="text-white">
-                                {friend.name?.charAt(0).toUpperCase()}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-light/90">{friend.name}</span>
-                          <button
-                            onClick={() => handleRemoveFriend(friend.userId)}
-                            className="ml-auto text-red-400 hover:text-red-300 transition-colors"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-center text-light/60">No friends yet</p>
-                    )
-                  ) : (
-                    friendRequests.length > 0 ? (
-                      friendRequests.map(request => (
-                        <div key={request.requestId} className="flex items-center justify-between p-2 bg-glass/10 rounded-lg">
-                          <div className="flex items-center gap-3">
+                  {/* Tab Buttons */}
+                  <div className="flex gap-2 mb-4">
+                    {friendTabs.map(tab => (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveFriendsTab(tab)}
+                        className={`px-4 py-2 rounded-lg font-medium transition ${
+                          activeFriendsTab === tab
+                            ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white'
+                            : 'bg-[rgba(255,255,255,0.05)] text-light/80 hover:bg-[rgba(255,255,255,0.1)]'
+                        }`}
+                      >
+                        {tab === 'friends' ? 'Friends' : 'Requests'}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Tab Content */}
+                  <div className="max-h-64 overflow-y-auto space-y-4">
+                    {activeFriendsTab === 'friends' ? (
+                      friendsList.length > 0 ? (
+                        friendsList.map(friend => (
+                          <div key={friend.userId} className="flex items-center gap-3 p-2 bg-glass/10 rounded-lg">
                             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                              {request.sender?.profilePic ? (
+                              {friend.profilePic ? (
                                 <Image
-                                  src={getProfilePicUrl(request.sender.profilePic)}
-                                  alt={request.sender.name}
+                                  src={getProfilePicUrl(friend.profilePic)}
+                                  alt={friend.name}
                                   width={32}
                                   height={32}
                                   className="rounded-full"
                                 />
                               ) : (
                                 <span className="text-white">
-                                  {request.sender?.name?.charAt(0).toUpperCase()}
+                                  {friend.name?.charAt(0).toUpperCase()}
                                 </span>
                               )}
                             </div>
-                            <span className="text-light/90">{request.sender?.name}</span>
-                          </div>
-                          <div className="flex gap-2">
-                            <button 
-                              onClick={() => handleAcceptRequest(request.requestId)}
-                              className="text-sm px-3 py-1 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30"
+                            <span className="text-light/90">{friend.name}</span>
+                            <button
+                              onClick={() => handleRemoveFriend(friend.userId)}
+                              className="ml-auto text-red-400 hover:text-red-300 transition-colors"
                             >
-                              Accept
-                            </button>
-                            <button 
-                              onClick={() => handleRejectRequest(request.requestId)}
-                              className="text-sm px-3 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"
-                            >
-                              Decline
+                              Remove
                             </button>
                           </div>
-                        </div>
-                      ))
+                        ))
+                      ) : (
+                        <p className="text-center text-light/60">No friends yet</p>
+                      )
                     ) : (
-                      <p className="text-center text-light/60">No pending requests</p>
-                    )
-                  )}
+                      friendRequests.length > 0 ? (
+                        friendRequests.map(request => (
+                          <div key={request.requestId} className="flex items-center justify-between p-2 bg-glass/10 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                                {request.sender?.profilePic ? (
+                                  <Image
+                                    src={getProfilePicUrl(request.sender.profilePic)}
+                                    alt={request.sender.name}
+                                    width={32}
+                                    height={32}
+                                    className="rounded-full"
+                                  />
+                                ) : (
+                                  <span className="text-white">
+                                    {request.sender?.name?.charAt(0).toUpperCase()}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-light/90">{request.sender?.name}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <button 
+                                onClick={() => handleAcceptRequest(request.requestId)}
+                                className="text-sm px-3 py-1 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30"
+                              >
+                                Accept
+                              </button>
+                              <button 
+                                onClick={() => handleRejectRequest(request.requestId)}
+                                className="text-sm px-3 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-center text-light/60">No pending requests</p>
+                      )
+                    )}
+                  </div>
                 </div>
-              </div>
+              </Transition.Child>
             </div>
-          </div>
-        )}
+          </Dialog>
+        </Transition>
       </div>
     </div>
   )

@@ -1,5 +1,3 @@
-//SignUp/page.tsx
-
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -8,6 +6,7 @@ import Link from 'next/link'
 export default function SignupPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [userName, setUserName] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -19,8 +18,20 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    
+    // Validate inputs
+    if (!name || !email || !userName || !password || !confirmPassword) {
+      setError('All fields are required')
+      return
+    }
+    
     if (password !== confirmPassword) {
       setError("Passwords don't match")
+      return
+    }
+    
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
       return
     }
     
@@ -30,7 +41,12 @@ export default function SignupPage() {
       const response = await fetch(`${BACKEND_URL}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ 
+          name, 
+          email, 
+          userName, 
+          password 
+        }),
       })
       
       const data = await response.json()
@@ -74,6 +90,20 @@ export default function SignupPage() {
           </div>
           
           <div>
+            <label className="block text-gray-300 mb-2 font-medium">Username</label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)] rounded-lg text-white focus:outline-none focus:border-[#c56cf0] focus:ring-1 focus:ring-[rgba(197,108,240,0.3)] transition-all"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              minLength={3}
+              maxLength={20}
+              required
+            />
+            <p className="text-xs text-gray-400 mt-1">3-20 characters, letters and numbers only</p>
+          </div>
+          
+          <div>
             <label className="block text-gray-300 mb-2 font-medium">Email</label>
             <input
               type="email"
@@ -94,6 +124,7 @@ export default function SignupPage() {
               minLength={6}
               required
             />
+            <p className="text-xs text-gray-400 mt-1">Minimum 6 characters</p>
           </div>
           
           <div>

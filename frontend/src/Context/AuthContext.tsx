@@ -12,6 +12,7 @@ type User = {
   bio?: string
   humorTypeId?: number
   createdAt?: string
+  userName?: string
 }
 
 interface ApiOptions extends RequestInit {
@@ -81,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             bio: data.user.bio,
             humorTypeId: data.user.humorTypeId,
             createdAt: data.user.createdAt,
+            userName: data.user.userName,
           })
         } else {
           setToken(null)
@@ -120,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: data.user.email,
         profilePictureUrl: data.user.profilePictureUrl,
         bio: data.user.bio,
+        userName: data.user.userName,
       })
 
       router.push('/')

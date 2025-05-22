@@ -1,40 +1,23 @@
 // app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 
-interface BackendLoginResponse {
-  Token?: string
-  token?: string
-  User?: {
-    UserId?: number
-    Name?: string
-    Email?: string
-    ProfilePictureUrl?: string
-    Bio?: string
-  }
-  user?: {
-    userId?: number
-    name?: string
-    email?: string
-    profilePictureUrl?: string
-    bio?: string
-  }
-}
-
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json()
+    
     if (!email?.trim() || !password?.trim()) {
       return NextResponse.json(
         { message: 'Email and password are required' },
         { status: 400 }
       )
     }
+
     const backendResponse = await fetch(
       'http://localhost:5001/api/Auth/login',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ Email: email, Password: password }),
+        body: JSON.stringify({ email, password }), // Changed from Email/Password to lowercase
       }
     )
 
@@ -47,7 +30,6 @@ export async function POST(req: NextRequest) {
     }
 
     const responseData = await backendResponse.json()
-
     const token = responseData.token || responseData.Token
 
     if (!token || !responseData.user?.userId) {
@@ -58,18 +40,18 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const frontendResponse = NextResponse.json({
+    return NextResponse.json({
       token,
       user: {
         userId: responseData.user.userId,
         name: responseData.user.name,
         email: responseData.user.email,
+        userName: responseData.user.userName, // Added username
         profilePictureUrl: responseData.user.profilePictureUrl ?? null,
         bio: responseData.user.bio ?? null,
       },
     })
 
-    return frontendResponse
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(

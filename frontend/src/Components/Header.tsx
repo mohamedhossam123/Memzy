@@ -8,21 +8,59 @@ import Image from 'next/image'
 interface SearchResult {
   id: string | number
   name: string
+  userName?: string
   profilePictureUrl?: string
 }
 
 export function Header() {
-  const { user, updateUser } = useAuth()
+  const { user, updateUser, token } = useAuth()
   const { results, search } = useSearch()
   const [query, setQuery] = useState('')
   const [showResults, setShowResults] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   const [profileImageError, setProfileImageError] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [userName, setUserName] = useState<string>('')
 
   useEffect(() => {
     setProfileImageError(false)
   }, [user?.profilePictureUrl])
+
+  useEffect(() => {
+    if (user?.userId) {
+      // First check if username exists in AuthContext user
+      if (user.userName) {
+        setUserName(user.userName)
+      } else {
+        // If not, fetch it from the API like the profile page does
+        fetchUserName()
+      }
+    }
+  }, [user])
+
+  const fetchUserName = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/getCurrentUser`,
+        { 
+          headers: { 
+  Authorization: `Bearer ${token}`,
+  'Content-Type': 'application/json'
+}
+
+        }
+      )
+      if (!response.ok) throw new Error('Failed to fetch username')
+      const data = await response.json()
+      setUserName(data.userName)
+      // Update the auth context with the username
+      if (user) {
+        updateUser({ ...user, userName: data.userName })
+      }
+    } catch (err) {
+      console.error('Error fetching username:', err)
+    }
+  }
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
@@ -138,7 +176,12 @@ export function Header() {
                   className="w-10 h-10 rounded-full object-cover"
                 />
               </div>
-              <span className="text-[#f5f5f5] font-semibold">{user.name}</span>
+              <div className="flex flex-col">
+                <span className="text-[#f5f5f5] font-semibold">{user.name}</span>
+                <span className="text-[#f5f5f5]/70 text-xs">
+                  @{userName || user.userName || 'username'}
+                </span>
+              </div>
             </div>
           </label>
         ) : (
@@ -183,7 +226,12 @@ export function Header() {
                       e.currentTarget.src = 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
                     }}
                   />
-                  <span className="text-white">{result.name}</span>
+                  <div className="flex flex-col">
+                    <span className="text-white">{result.name}</span>
+                    <span className="text-white/70 text-xs">
+                      @{result.userName || 'username'}
+                    </span>
+                  </div>
                 </div>
               )
             })}

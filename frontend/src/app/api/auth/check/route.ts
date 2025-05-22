@@ -2,10 +2,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 
-
 export async function GET(req: NextRequest) {
   try {
-    const token = req.headers.get('authorization')?.split(' ')[1] || '';
+    const token = req.headers.get('authorization')?.split(' ')[1] || ''
     
     if (!token) {
       return NextResponse.json(
@@ -18,7 +17,7 @@ export async function GET(req: NextRequest) {
       headers: {
         'Authorization': `Bearer ${token}`
       }
-    });
+    })
 
     if (!backendResponse.ok) {
       return NextResponse.json(
@@ -35,10 +34,12 @@ export async function GET(req: NextRequest) {
         userId: data.user.userId,
         name: data.user.name,
         email: data.user.email,
+        userName: data.user.userName, // Added username
         profilePictureUrl: data.user.profilePictureUrl ?? null,
         bio: data.user.bio ?? null,
       } : null,
     })
+
   } catch (error) {
     console.error('Auth check error:', error)
     return NextResponse.json(
