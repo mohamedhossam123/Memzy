@@ -3,7 +3,6 @@
 import { useAuth } from '@/Context/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
 import { HumorModal } from '@/Components/SettingsModals/HumorModal'
@@ -26,7 +25,7 @@ export default function UserProfile() {
     friendCount?: number
     postCount?: number
     humorTypes?: { humorTypeName: string }[]
-     userName?: string 
+    userName?: string 
   }
 
   const [userData, setUserData] = useState<FullUser | null>(null)
@@ -34,11 +33,16 @@ export default function UserProfile() {
     'humor' | 'profilePic' | 'name' | 'bio' | 'password' | 'friends' | 'createPost' | null
   >(null)
   const [passwordError, setPasswordError] = useState('')
+  const [profileImageError, setProfileImageError] = useState(false)
 
   const friendTabs = ["friends", "requests"] as const
   const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>('friends')
   const [friendRequests, setFriendRequests] = useState<any[]>([])
   const [friendsList, setFriendsList] = useState<any[]>([])
+  
+  useEffect(() => {
+    setProfileImageError(false)
+  }, [userData?.profilePic])
   
   useEffect(() => {
     if (!user) {
@@ -228,37 +232,55 @@ export default function UserProfile() {
   }
 
   const handlePasswordChange = async (currentPassword: string, newPassword: string) => {
-  setPasswordError('')
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/change-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ 
-          currentPassword,  
-          newPassword
-        })
+    setPasswordError('')
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/change-password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ 
+            currentPassword,  
+            newPassword
+          })
+        }
+      )
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Password update failed')
       }
-    )
-    if (!res.ok) {
-      const err = await res.json()
-      throw new Error(err.error || 'Password update failed')
+      alert('Password changed successfully')
+    } catch (err: any) {
+      console.error(err)
+      setPasswordError(err.message)
     }
-    alert('Password changed successfully')
-  } catch (err: any) {
-    console.error(err)
-    setPasswordError(err.message)
   }
+
+  const getProfileImageUrl = (profilePic?: string) => {
+  // First check if we have userData.profilePic, then fallback to user.profilePictureUrl from auth context
+  const imageUrl = profilePic || user?.profilePictureUrl
+  
+  if (profileImageError || !imageUrl) {
+    return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
+  }
+  return imageUrl.startsWith('http')
+    ? imageUrl
+    : `https://${imageUrl}`
 }
 
-  const getProfilePicUrl = (picPath?: string) => {
-    if (!picPath) return '/default-avatar.png'
-    if (picPath.startsWith('http')) return picPath
-    const cleanPath = picPath.replace(/^[\/]/, '')
-    return `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/${cleanPath}?t=${Date.now()}`
+
+  // For other users' profile pictures (in friends list, etc.) - same as Header
+  const getSearchResultImageUrl = (url?: string) => {
+    if (!url) return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
+    return url.startsWith('http') ? url : `https://${url}`
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('UserData profilePic:', userData?.profilePic)
+    console.log('profileImageError:', profileImageError)
+    console.log('Final URL used:', getProfileImageUrl(userData?.profilePic))
   }
 
   if (isLoading) return (
@@ -276,31 +298,39 @@ export default function UserProfile() {
         {/* Profile Header */}
         <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
           {/* Profile Picture Section */}
-          <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-accent overflow-hidden shadow-glow hover:shadow-accent/30 transition-shadow">
-            {userData?.profilePic ? (
-              <Image
-                src={getProfilePicUrl(userData.profilePic)}
-                alt="Profile"
-                width={160}
-                height={160}
-                className="object-cover w-full h-full"
-                priority
-                unoptimized={process.env.NODE_ENV !== 'production'}
-              />
-            ) : (
-              <div className="w-full h-full bg-primary flex items-center justify-center">
-                <span className="text-4xl md:text-5xl font-bold text-white">
-                  {user.name?.charAt(0).toUpperCase() ?? '?'}
-                </span>
-              </div>
-            )}
-            <button
-              onClick={() => setActiveModal('profilePic')}
-              className="absolute bottom-0 right-0 bg-glass/80 backdrop-blur-sm rounded-tl-lg px-3 py-1 text-sm hover:bg-glass transition-colors"
-            >
-              Edit
-            </button>
-          </div>
+          <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-accent overflow-hidden shadow-glow group">
+  <img
+    src={getProfileImageUrl(userData?.profilePic)}
+    alt={userData?.name || user.name || 'User'}
+    onError={() => setProfileImageError(true)}
+    className="w-full h-full object-cover"
+  />
+  <button
+    onClick={() => setActiveModal('profilePic')}
+    className="absolute bottom-0 right-0 transform -translate-x-2 -translate-y-2 bg-glass/90 backdrop-blur-lg rounded-full p-2 shadow-lg hover:bg-accent/80 transition-all duration-300 hover:scale-110"
+    aria-label="Edit profile picture"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-5 w-5 text-white"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </svg>
+  </button>
+</div>
 
           {/* Profile Info Section */}
           <div className="flex-1 space-y-4 text-center md:text-left">
@@ -314,10 +344,10 @@ export default function UserProfile() {
               </button>
             </div>
             <div className="text-light/70 text-lg">
-    @{userData?.userName || 'username'}
-  </div>
-  
-  <div className="space-y-2">
+              @{userData?.userName || 'username'}
+            </div>
+            
+            <div className="space-y-2">
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <span className="text-light/80">Humor style:</span>
                 <button
@@ -435,13 +465,12 @@ export default function UserProfile() {
           onSave={handleBioUpdate}
         />
 
-          <PasswordModal
-        isOpen={activeModal === 'password'}
-        onClose={() => setActiveModal(null)}
-        onConfirm={handlePasswordChange}
-        error={passwordError}
-      />
-
+        <PasswordModal
+          isOpen={activeModal === 'password'}
+          onClose={() => setActiveModal(null)}
+          onConfirm={handlePasswordChange}
+          error={passwordError}
+        />
 
         {/* Create Post Modal */}
         <Transition appear show={activeModal === 'createPost'} as={Fragment}>
@@ -564,20 +593,15 @@ export default function UserProfile() {
                       friendsList.length > 0 ? (
                         friendsList.map(friend => (
                           <div key={friend.userId} className="flex items-center gap-3 p-2 bg-glass/10 rounded-lg">
-                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                              {friend.profilePic ? (
-                                <Image
-                                  src={getProfilePicUrl(friend.profilePic)}
-                                  alt={friend.name}
-                                  width={32}
-                                  height={32}
-                                  className="rounded-full"
-                                />
-                              ) : (
-                                <span className="text-white">
-                                  {friend.name?.charAt(0).toUpperCase()}
-                                </span>
-                              )}
+                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden">
+                              <img
+                                src={getSearchResultImageUrl(friend.profilePic)}
+                                alt={friend.name}
+                                onError={(e) => {
+                                  e.currentTarget.src = 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
+                                }}
+                                className="w-full h-full object-cover"
+                              />
                             </div>
                             <span className="text-light/90">{friend.name}</span>
                             <button
@@ -596,20 +620,15 @@ export default function UserProfile() {
                         friendRequests.map(request => (
                           <div key={request.requestId} className="flex items-center justify-between p-2 bg-glass/10 rounded-lg">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                                {request.sender?.profilePic ? (
-                                  <Image
-                                    src={getProfilePicUrl(request.sender.profilePic)}
-                                    alt={request.sender.name}
-                                    width={32}
-                                    height={32}
-                                    className="rounded-full"
-                                  />
-                                ) : (
-                                  <span className="text-white">
-                                    {request.sender?.name?.charAt(0).toUpperCase()}
-                                  </span>
-                                )}
+                              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden">
+                                <img
+                                  src={getSearchResultImageUrl(request.sender?.profilePic)}
+                                  alt={request.sender?.name}
+                                  onError={(e) => {
+                                    e.currentTarget.src = 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
+                                  }}
+                                  className="w-full h-full object-cover"
+                                />
                               </div>
                               <span className="text-light/90">{request.sender?.name}</span>
                             </div>

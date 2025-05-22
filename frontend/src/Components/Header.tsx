@@ -28,11 +28,9 @@ export function Header() {
 
   useEffect(() => {
     if (user?.userId) {
-      // First check if username exists in AuthContext user
       if (user.userName) {
         setUserName(user.userName)
       } else {
-        // If not, fetch it from the API like the profile page does
         fetchUserName()
       }
     }
@@ -53,7 +51,6 @@ export function Header() {
       if (!response.ok) throw new Error('Failed to fetch username')
       const data = await response.json()
       setUserName(data.userName)
-      // Update the auth context with the username
       if (user) {
         updateUser({ ...user, userName: data.userName })
       }
