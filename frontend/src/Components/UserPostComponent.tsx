@@ -1,4 +1,4 @@
-// Components/UserPostComponent.tsx
+// UserPostComponent.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -72,17 +72,16 @@ export default function PostFeed() {
   }, [user, token, router])
 
   const getHumorLabelById = (id?: number, fallback?: string) => {
-  if (!id && fallback) return fallback
-  switch (id) {
-    case 1:
-      return 'Dark Humor'
-    case 2:
-      return 'Friendly Humor'
-    default:
-      return fallback || 'Unknown Humor'
+    if (!id && fallback) return fallback
+    switch (id) {
+      case 1:
+        return 'Dark Humor'
+      case 2:
+        return 'Friendly Humor'
+      default:
+        return fallback || 'Unknown Humor'
+    }
   }
-}
-
 
   if (loading) {
     return (
@@ -132,6 +131,17 @@ export default function PostFeed() {
           <div key={post.postId} className="flex flex-col bg-gray-900 rounded-lg overflow-hidden">
             {/* ── Media Container ── */}
             <div className="relative aspect-square rounded-lg overflow-hidden mb-4 bg-gray-800">
+              {/* Approval Status Badge */}
+              <div className="absolute top-2 right-2 z-10">
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  post.isApproved 
+                    ? 'bg-green-500/20 text-green-400' 
+                    : 'bg-yellow-500/20 text-yellow-400'
+                }`}>
+                  {post.isApproved ? 'Approved' : 'Pending'}
+                </span>
+              </div>
+
               {mediaUrl ? (
                 isVideo ? (
                   <video
@@ -190,9 +200,7 @@ export default function PostFeed() {
                 <p className="text-light/90 text-sm line-clamp-3">{post.description}</p>
                 <div className="flex flex-wrap gap-2">
                   {post.postHumors.map((humor, index) => (
-                    
                     <span
-                    
                       key={index}
                       className="px-2.5 py-1 bg-[#8e2de233] text-[#c56cf0] text-xs font-medium rounded-full"
                     >
@@ -203,9 +211,14 @@ export default function PostFeed() {
               </div>
 
               <div className="flex justify-between items-center pt-3 border-t border-[rgba(255,255,255,0.05)]">
-                <span className="text-xs text-light/60">
-                  {new Date(post.createdAt).toLocaleDateString()}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-light/60">
+                    {new Date(post.createdAt).toLocaleDateString()}
+                  </span>
+                  {!post.isApproved && (
+                    <span className="text-xs text-yellow-400">(Under Review)</span>
+                  )}
+                </div>
                 <span className="text-xs text-[#c56cf0]">❤️ {post.likeCounter}</span>
               </div>
             </div>
