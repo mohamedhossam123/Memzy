@@ -16,8 +16,8 @@ interface Post {
   mediaType: 'Image' | 'Video'
   postHumors: {
     humorType: {
-      name?: string
-      id?: number
+      id: number     
+      name: string  
     }
   }[]
 }
@@ -72,15 +72,17 @@ export default function PostFeed() {
   }, [user, token, router])
 
   const getHumorLabelById = (id?: number, fallback?: string) => {
-    switch (id) {
-      case 1:
-        return 'Dark Humor'
-      case 2:
-        return 'Friendly Humor'
-      default:
-        return fallback || 'Unknown'
-    }
+  if (!id && fallback) return fallback
+  switch (id) {
+    case 1:
+      return 'Dark Humor'
+    case 2:
+      return 'Friendly Humor'
+    default:
+      return fallback || 'Unknown Humor'
   }
+}
+
 
   if (loading) {
     return (
@@ -188,7 +190,9 @@ export default function PostFeed() {
                 <p className="text-light/90 text-sm line-clamp-3">{post.description}</p>
                 <div className="flex flex-wrap gap-2">
                   {post.postHumors.map((humor, index) => (
+                    
                     <span
+                    
                       key={index}
                       className="px-2.5 py-1 bg-[#8e2de233] text-[#c56cf0] text-xs font-medium rounded-full"
                     >

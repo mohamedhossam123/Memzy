@@ -31,8 +31,31 @@ public async Task<IActionResult> GetMyPosts()
         .Where(p => p.UserId == uid) 
         .Include(p => p.PostHumors)
            .ThenInclude(ph => ph.HumorType)
-        .OrderByDescending(p => p.CreatedAt) 
+        .OrderByDescending(p => p.CreatedAt)
+        .Select(p => new 
+        {
+            p.PostId,
+            p.UserId,
+            p.MediaType,
+            p.Description,
+            p.FileName,
+            p.FilePath,
+            p.ContentType,
+            p.FileSize,
+            p.CreatedAt,
+            p.LikeCounter,
+            p.IsApproved,
+            PostHumors = p.PostHumors.Select(ph => new 
+            {
+                HumorType = new 
+                {
+                    id=ph.HumorType.HumorTypeId,
+                    name=ph.HumorType.HumorTypeName
+                }
+            }).ToList()
+        })
         .ToListAsync();
+        
     return Ok(posts);
 }
 
