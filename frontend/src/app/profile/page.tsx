@@ -11,7 +11,7 @@ import { NameModal } from '@/Components/SettingsModals/NameModal'
 import { BioModal } from '@/Components/SettingsModals/BioModal'
 import { PasswordModal } from '@/Components/SettingsModals/PasswordModal'
 import PostForm from '@/Components/PostsFormComponent'
-import PostFeed from '@/Components/PostFeedComponent'
+import PostFeed from '@/Components/UserPostComponent'
 
 export default function UserProfile() {
   const { user, token } = useAuth()

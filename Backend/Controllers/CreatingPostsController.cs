@@ -23,38 +23,45 @@ namespace MyApiProject.Controllers
         
 
         [HttpGet]
-    public async Task<IActionResult> GetMyPosts([FromQuery] MediaType? mediaType = null)
-    {
-        var uid = await _auth.GetAuthenticatedUserId();
+public async Task<IActionResult> GetMyPosts()
+{
+    var uid = await _auth.GetAuthenticatedUserId();
 
-        var q = _ctx.Posts
-            .Where(p => p.UserId == uid)
-            .Include(p => p.PostHumors)
-               .ThenInclude(ph => ph.HumorType)
-            .OrderByDescending(p => p.CreatedAt)
-            .AsQueryable();
+    var posts = await _ctx.Posts
+        .Where(p => p.UserId == uid) 
+        .Include(p => p.PostHumors)
+           .ThenInclude(ph => ph.HumorType)
+        .OrderByDescending(p => p.CreatedAt) 
+        .ToListAsync();
+    return Ok(posts);
+}
 
-        if (mediaType != null)
-            q = q.Where(p => p.MediaType == mediaType);
-
-        var list = await q.ToListAsync();
-        return Ok(list);
-    }
-
-    [HttpPost("CreatePost")]
+        [HttpPost("CreatePost")]
 [Authorize]
 public async Task<IActionResult> CreatePost([FromForm] CreatePostRequest request)
 {
-    var uid = await _auth.GetAuthenticatedUserId();
-    var post = await _creatingPostsService.PostMediaAsync(
-        request.File,
-        request.HumorTypeIds,
-        request.Description,
-        uid,
-        request.MediaType
-    );
-    return CreatedAtAction(nameof(GetMyPosts), new { id = post.PostId }, post);
+    try
+    {
+        var uid = await _auth.GetAuthenticatedUserId();
+
+        var post = await _creatingPostsService.PostMediaAsync(
+            request.File,
+            request.HumorTypeIds,
+            request.Description,
+            uid,
+            request.MediaType
+        );
+
+        return CreatedAtAction(nameof(GetMyPosts), new { id = post.PostId }, post);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Error creating post: " + ex.Message);
+        Console.WriteLine(ex.StackTrace);
+        return StatusCode(500, new { message = ex.Message });
+    }
 }
+
 
     [HttpGet("stats")]
     public async Task<IActionResult> GetStats()
