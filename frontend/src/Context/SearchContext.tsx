@@ -1,6 +1,6 @@
 // SearchContext.tsx
 'use client'
-import { createContext, useContext, useState, ReactNode, useCallback ,useRef,useEffect} from 'react'
+import { createContext, useContext, useState, ReactNode, useCallback, useRef, useEffect } from 'react'
 import debounce from 'lodash.debounce'
 
 type SearchResult = {
@@ -15,6 +15,8 @@ type SearchContextType = {
   results: SearchResult[]
   loading: boolean
   error: string | null
+  searchTerm: string
+  setSearchTerm: (term: string) => void
   search: (query: string) => void
   clearResults: () => void
 }
@@ -23,6 +25,8 @@ const SearchContext = createContext<SearchContextType>({
   results: [],
   loading: false,
   error: null,
+  searchTerm: '',
+  setSearchTerm: () => {},
   search: () => {},
   clearResults: () => {}
 })
@@ -31,11 +35,13 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const clearResults = useCallback(() => {
     setResults([])
     setError(null)
+    setSearchTerm('')
   }, [])
 
   const searchImplementation = useCallback(async (query: string) => {
@@ -95,6 +101,12 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     [searchImplementation]
   )
 
+  // Update search term and trigger search
+  const handleSetSearchTerm = useCallback((term: string) => {
+    setSearchTerm(term)
+    debouncedSearch(term)
+  }, [debouncedSearch])
+
   // Cancel debounce on unmount
   useEffect(() => {
     return () => {
@@ -110,6 +122,8 @@ export function SearchProvider({ children }: { children: ReactNode }) {
       results, 
       loading,
       error,
+      searchTerm,
+      setSearchTerm: handleSetSearchTerm,
       search: debouncedSearch,
       clearResults
     }}>
