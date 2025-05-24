@@ -1,6 +1,7 @@
 using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyApiProject.Controllers
 {
@@ -116,36 +117,77 @@ public async Task<IActionResult> UploadProfilePicture([FromForm] ProfilePictureD
     }
 }
 
-        
+
 
         [HttpPost("change-password")]
-[Authorize]
-public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
-{
-    try
-    {
-        var userId = await _authService.GetAuthenticatedUserId();
-        var user = await _authService.GetUserByIdAsync(userId);
-        
-        if (user == null)
-            return Unauthorized("User not found");
-        if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
-            return BadRequest("Current password is incorrect");
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+                var user = await _authService.GetUserByIdAsync(userId);
 
-        if (string.IsNullOrWhiteSpace(dto.NewPassword) || dto.NewPassword.Length < 6)
-            return BadRequest("New password must be at least 6 characters");
-        user.PasswordHash = _authService.HashPassword(dto.NewPassword);
-        await _context.SaveChangesAsync();
+                if (user == null)
+                    return Unauthorized("User not found");
+                if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+                    return BadRequest("Current password is incorrect");
 
-        return Ok(new { Message = "Password changed successfully" });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, new { Error = "Password change failed", ex.Message });
-    }
-}
+                if (string.IsNullOrWhiteSpace(dto.NewPassword) || dto.NewPassword.Length < 6)
+                    return BadRequest("New password must be at least 6 characters");
+                user.PasswordHash = _authService.HashPassword(dto.NewPassword);
+                await _context.SaveChangesAsync();
 
+                return Ok(new { Message = "Password changed successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = "Password change failed", ex.Message });
+            }
+        }
+        [HttpGet("GetPendingPosts")]
+        [Authorize]
+        public async Task<IActionResult> GetPendingPosts()
+        {
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+                
+                var posts = await _context.Posts
+                    .Where(p => p.UserId == userId && !p.IsApproved)
+                    .Include(p => p.PostHumors)
+                        .ThenInclude(ph => ph.HumorType)
+                    .ToListAsync();
 
+                return Ok(posts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("GetApprovedPosts")]
+        [Authorize]
+        public async Task<IActionResult> GetApprovedPosts()
+        {
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+
+                var posts = await _context.Posts
+                    .Where(p => p.UserId == userId && p.IsApproved)
+                    .Include(p => p.PostHumors)
+                        .ThenInclude(ph => ph.HumorType)
+                    .ToListAsync();
+
+                return Ok(posts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
         [HttpPost("UpdateUserBio")]
         [Authorize]
         public async Task<IActionResult> UpdateUserBio([FromBody] string newBio)

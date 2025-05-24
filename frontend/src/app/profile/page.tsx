@@ -75,7 +75,7 @@ export default function UserProfile() {
   const fetchPendingPosts = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetPendingPosts`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/GetPendingPosts`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
       if (!response.ok) throw new Error('Failed to fetch pending posts')
@@ -88,7 +88,7 @@ export default function UserProfile() {
   const fetchApprovedPosts = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetApprovedPosts`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/GetApprovedPosts`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
       if (!response.ok) throw new Error('Failed to fetch approved posts')
