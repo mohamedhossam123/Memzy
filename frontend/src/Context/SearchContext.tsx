@@ -1,78 +1,149 @@
 // SearchContext.tsx
-
 'use client'
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, ReactNode, useCallback ,useRef,useEffect} from 'react'
+import debounce from 'lodash.debounce'
 
 type SearchResult = {
   id: string
   name: string
-  profilePic?: string
+  userName?: string
   profilePictureUrl?: string
   bio?: string
 }
 
 type SearchContextType = {
   results: SearchResult[]
-  search: (query: string) => Promise<{ success: boolean; message?: string }>
+  loading: boolean
+  error: string | null
+  search: (query: string) => void
+  clearResults: () => void
 }
 
 const SearchContext = createContext<SearchContextType>({
   results: [],
-  search: () => Promise.resolve({ success: false, message: 'Context not initialized' })
+  loading: false,
+  error: null,
+  search: () => {},
+  clearResults: () => {}
 })
 
 export function SearchProvider({ children }: { children: ReactNode }) {
   const [results, setResults] = useState<SearchResult[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
-  const search = async (query: string): Promise<{ success: boolean; message?: string }> => {
+  const clearResults = useCallback(() => {
+    setResults([])
+    setError(null)
+  }, [])
+
+  const searchImplementation = useCallback(async (query: string) => {
     if (!query.trim()) {
-      setResults([])
-      return { success: true }
+      clearResults()
+      return
     }
 
     try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+      // Cancel previous request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+      
+      const controller = new AbortController()
+      abortControllerRef.current = controller
+      
+      setLoading(true)
+      setError(null)
+
+      const response = await fetch(`/api/Search/userSearch?searchTerm=${encodeURIComponent(query)}`, {
         method: 'GET',
         headers: { 
           'Content-Type': 'application/json',
-        }
+        },
+        signal: controller.signal
       })
 
-      const payload = await response.json().catch(() => ({}))
-      
       if (!response.ok) {
-        console.error('Search failed:', payload.message || 'Unknown error')
-        setResults([])
-        return { 
-          success: false, 
-          message: payload.message || 'Search failed' 
-        }
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const formattedResults = (payload.Results ?? payload.results ?? payload).map((item: any) => ({
-        name: item.Name ?? item.name,
-        profilePic: item.ProfilePictureUrl ?? item.profilePictureUrl ?? item.profilePic,
-        bio: item.Bio ?? item.bio,
-      }))
+      const data: unknown = await response.json()
+      
+      // Validate and normalize response format
+      const normalizedResults = Array.isArray(data) 
+        ? data.map(normalizeSearchResult)
+        : []
 
-      setResults(formattedResults)
-      return { success: true }
-
+      setResults(normalizedResults)
     } catch (error) {
-      console.error('Search error:', error)
-      setResults([])
-      return { 
-        success: false, 
-        message: 'Service unavailable. Please try again later.' 
+      if ((error as Error).name !== 'AbortError') {
+        setError('Failed to fetch results. Please try again.')
+        console.error('Search error:', error)
+      }
+    } finally {
+      setLoading(false)
+      abortControllerRef.current = null
+    }
+  }, [clearResults])
+
+  // Debounced search with 300ms delay
+  const debouncedSearch = useCallback(
+    debounce((query: string) => {
+      searchImplementation(query)
+    }, 300),
+    [searchImplementation]
+  )
+
+  // Cancel debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel()
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
       }
     }
-  }
+  }, [debouncedSearch])
 
   return (
-    <SearchContext.Provider value={{ results, search }}>
+    <SearchContext.Provider value={{ 
+      results, 
+      loading,
+      error,
+      search: debouncedSearch,
+      clearResults
+    }}>
       {children}
     </SearchContext.Provider>
   )
+}
+
+// Type guard for search result validation
+function isSearchResult(obj: any): obj is SearchResult {
+  return typeof obj === 'object' && 
+         typeof obj.id === 'string' && 
+         typeof obj.name === 'string'
+}
+
+// Normalize API response to SearchResult type
+function normalizeSearchResult(item: unknown): SearchResult {
+  if (!isSearchResult(item)) {
+    console.warn('Invalid search result format:', item)
+    return {
+      id: 'invalid',
+      name: 'Invalid result',
+      profilePictureUrl: undefined,
+      bio: undefined
+    }
+  }
+
+  return {
+    id: item.id,
+    name: item.name,
+    userName: item.userName,
+    profilePictureUrl: item.profilePictureUrl,
+    bio: item.bio
+  }
 }
 
 export function useSearch() {

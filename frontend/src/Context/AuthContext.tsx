@@ -88,8 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         const response = await res.json()
         console.log('Validate response:', response)
-
-        // Extract user data from different possible fields
         const userData =
           response.Data || response.data || response.user || response
 

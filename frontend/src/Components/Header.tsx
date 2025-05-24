@@ -1,9 +1,11 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useSearch } from '../Context/SearchContext'
 import { useAuth } from '../Context/AuthContext'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import debounce from 'lodash.debounce'
 
 interface SearchResult {
   id: string | number
@@ -13,8 +15,9 @@ interface SearchResult {
 }
 
 export function Header() {
+  const router = useRouter()
   const { user, updateUser, token } = useAuth()
-  const { results, search } = useSearch()
+  const { results, search, loading, error } = useSearch()
   const [query, setQuery] = useState('')
   const [showResults, setShowResults] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
@@ -22,52 +25,22 @@ export function Header() {
   const [isUploading, setIsUploading] = useState(false)
   const [userName, setUserName] = useState<string>('')
 
-  useEffect(() => {
-    setProfileImageError(false)
-  }, [user?.profilePictureUrl])
 
-  useEffect(() => {
-    if (user?.userId) {
-      if (user.userName) {
-        setUserName(user.userName)
-      } else {
-        fetchUserName()
+
+  const debouncedSearch = useCallback(
+    debounce((searchTerm: string) => {
+      if (searchTerm.trim()) {
+        search(searchTerm)
+        setShowResults(true)
       }
-    }
-  }, [user])
-
-  const fetchUserName = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/getCurrentUser`,
-        { 
-          headers: { 
-  Authorization: `Bearer ${token}`,
-  'Content-Type': 'application/json'
-}
-
-        }
-      )
-      if (!response.ok) throw new Error('Failed to fetch username')
-      const data = await response.json()
-      setUserName(data.userName)
-      if (user) {
-        updateUser({ ...user, userName: data.userName })
-      }
-    } catch (err) {
-      console.error('Error fetching username:', err)
-    }
-  }
-
+    }, 300),
+    [search]
+  )
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('User object:', user)
-      console.log('profilePictureUrl:', user?.profilePictureUrl)
-      console.log('profileImageError:', profileImageError)
-      console.log('Final URL used:', getProfileImageUrl())
+    return () => {
+      debouncedSearch.cancel()
     }
-  }, [user, profileImageError])
-
+  }, [debouncedSearch])
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -77,6 +50,40 @@ export function Header() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  useEffect(() => {
+    if (user?.userId && !user.userName) {
+      fetchUserName()
+    }
+  }, [user])
+
+  const fetchUserName = async () => {
+    if (!token) return
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/getCurrentUser`,
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      
+      const data = await response.json()
+      
+      setUserName(data.userName)
+      if (user && typeof user.userId === 'number') {
+  updateUser({ ...user, userName: data.userName })
+}
+
+    } catch (err) {
+      console.error('Error fetching username:', err)
+    }
+  }
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -94,8 +101,8 @@ export function Header() {
       })
 
       if (!response.ok) throw new Error('Upload failed')
-
       const data = await response.json()
+      
       if (data.Url && user) {
         setProfileImageError(false)
         updateUser({ ...user, profilePictureUrl: data.Url })
@@ -110,17 +117,20 @@ export function Header() {
 
   const handleSearchChange = (value: string) => {
     setQuery(value)
-    if (value.trim()) {
-      search(value)
-      setShowResults(true)
-    } else {
-      setShowResults(false)
-    }
+    debouncedSearch(value)
   }
 
-  const handleResultClick = (userName: string) => {
-    setQuery(userName)
+  const handleResultClick = (userId: string | number) => {
+    router.push(`/profile/${userId}`)
     setShowResults(false)
+    setQuery('')
+  }
+
+  const SearchStatusIndicator = () => {
+    if (loading) return <div className="text-white/50 text-sm p-2">Searching...</div>
+    if (error) return <div className="text-red-400 text-sm p-2">{error}</div>
+    if (showResults && !results.length) return <div className="text-white/50 text-sm p-2">No results found</div>
+    return null
   }
 
   const getProfileImageUrl = () => {
@@ -141,6 +151,7 @@ export function Header() {
 
   return (
     <header className="col-span-full flex justify-between items-center py-5 px-8 bg-[rgba(10,10,10,0.7)] backdrop-blur-sm border-b border-[rgba(255,255,255,0.1)] z-[100] shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+      {/* Left Section - User Profile */}
       <div className="flex items-center gap-6">
         {user ? (
           <label className="cursor-pointer">
@@ -161,15 +172,7 @@ export function Header() {
                 <img
                   src={profileImageUrl}
                   alt={user.name || 'User'}
-                  onError={() => {
-                    console.error('Image load error for URL:', profileImageUrl)
-                    setProfileImageError(true)
-                  }}
-                  onLoad={() => {
-                    if (process.env.NODE_ENV !== 'production') {
-                      console.log('Loaded image for URL:', profileImageUrl)
-                    }
-                  }}
+                  onError={() => setProfileImageError(true)}
                   className="w-10 h-10 rounded-full object-cover"
                 />
               </div>
@@ -186,32 +189,38 @@ export function Header() {
         )}
       </div>
 
-      {/* Search bar */}
-      <div ref={searchRef} className="relative ml-6">
-        <div className="flex max-w-[320px] w-[320px] items-center justify-between gap-2 bg-[#2f3640] rounded-[50px] relative">
-          <button className="text-white absolute right-2 w-[42px] h-[42px] rounded-full bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] border-0 inline-block transition-all duration-300 ease-[cubic-bezier(.23,1,0.32,1)] hover:text-white hover:bg-[#1A1A1A] hover:shadow-[0_10px_20px_rgba(0,0,0,0.5)] hover:-translate-y-[3px] active:shadow-none active:translate-y-0">
-            🔍
-          </button>
+      {/* Center Section - Search Bar */}
+      <div ref={searchRef} className="relative mx-6 flex-1 max-w-2xl">
+        <div className="flex items-center bg-[#2f3640] rounded-[50px] relative">
           <input
             type="text"
-            className="border-none bg-transparent outline-none text-white text-[15px] py-4 px-6 pr-[46px] w-full"
-            placeholder="Search..."
+            className="border-none bg-transparent outline-none text-white text-[15px] py-4 px-6 w-full"
+            placeholder="Search users..."
             value={query}
             onChange={(e) => handleSearchChange(e.target.value)}
             onFocus={() => query.trim() && setShowResults(true)}
+            aria-label="Search users"
           />
+          {loading && (
+            <div className="absolute right-4">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+            </div>
+          )}
         </div>
 
-        {/* Search results dropdown */}
-        {showResults && results.length > 0 && (
+        {/* Search Results Dropdown */}
+        {showResults && (
           <div className="absolute top-full mt-2 w-full bg-[#2d1b3a] rounded-lg shadow-lg border border-[rgba(255,255,255,0.1)] max-h-60 overflow-auto z-50">
+            <SearchStatusIndicator />
             {results.map((result: SearchResult) => {
               const resultImg = getSearchResultImageUrl(result.profilePictureUrl)
               return (
                 <div
                   key={result.id}
                   className="p-3 hover:bg-[#3a2449] cursor-pointer flex items-center gap-3"
-                  onClick={() => handleResultClick(result.name)}
+                  onClick={() => handleResultClick(result.id)}
+                  role="button"
+                  tabIndex={0}
                 >
                   <img
                     src={resultImg}
@@ -236,7 +245,7 @@ export function Header() {
         )}
       </div>
 
-      {/* Right side – Logo */}
+      {/* Right Section - Logo */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-lg bg-[#c56cf0] relative overflow-hidden">
           <Image
@@ -244,18 +253,13 @@ export function Header() {
             alt="Memzy Logo"
             fill
             className="object-cover"
+            priority
           />
         </div>
         <div className="relative w-[136px] h-[40px] flex items-center">
-          <h1
-            className="absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-bold
-                       whitespace-nowrap overflow-hidden animate-smooth-typing
-                       border-r-2 border-[#c56cf0]
-                       text-[#c56cf0] drop-shadow-[0_0_15px_rgba(197,108,240,0.3)]"
-          >
+          <h1 className="text-3xl font-bold text-[#c56cf0] drop-shadow-[0_0_15px_rgba(197,108,240,0.3)]">
             Memzy
           </h1>
-          <h1 className="text-3xl font-bold invisible">Memzy</h1>
         </div>
       </div>
     </header>
