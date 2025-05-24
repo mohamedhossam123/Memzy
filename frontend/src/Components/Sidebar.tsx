@@ -7,11 +7,11 @@ import { useAuth } from '@/Context/AuthContext'
 import { useSidebar } from '@/Context/SidebarContext'
 
 export function Sidebar() {
-  const { logout } = useAuth() 
+  const { logout, user } = useAuth() 
   const router = useRouter()
   const pathname = usePathname()
   const { isCollapsed, toggleSidebar } = useSidebar()
-  
+  console.log('Current user status:', user?.status);
   const handleLogout = async () => {
     try {
       await logout() 
@@ -22,6 +22,8 @@ export function Sidebar() {
   }
 
   const isActive = (path: string) => pathname === path
+
+  const isModerator = user?.status?.toLowerCase() === 'moderator';
   
   return (
     <nav 
@@ -63,6 +65,23 @@ export function Sidebar() {
             </Link>
           </li>
           
+          {/* Add Mod button for moderators */}
+          {isModerator && (
+            <li>
+              <Link 
+                href="/mod" 
+                className={`flex items-center gap-3 py-3 px-4 rounded-lg ${
+                  isActive('/mod') ? 'bg-[#8e44ad] text-[#f5f5f5] font-semibold' : 'text-[#e9ecef] hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f5f5f5]'
+                } hover:translate-x-1 transition-all ${
+                  isCollapsed ? 'justify-center' : ''
+                }`}
+                aria-label={isCollapsed ? "Mod" : undefined}
+              >
+                <span className="text-xl">🛡️</span>
+                {!isCollapsed && <span>Mod</span>}
+              </Link>
+            </li>
+          )}
         </ul>
       </div>
       

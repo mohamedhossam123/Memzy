@@ -49,6 +49,8 @@ export async function POST(req: NextRequest) {
         userName: responseData.user.userName,
         profilePictureUrl: responseData.user.profilePictureUrl ?? null,
         bio: responseData.user.bio ?? null,
+        status: responseData.user.status ?? null,
+        
       },
     })
 

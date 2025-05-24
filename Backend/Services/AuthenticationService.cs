@@ -127,6 +127,7 @@ if (existingEmailUser != null)
         PasswordHash = HashPassword(dto.Password),
         CreatedAt = DateTime.UtcNow,
         UserName = dto.UserName,
+        Status =dto.Status
     };
 
     var createdUser = await CreateUserAsync(user);
@@ -135,12 +136,13 @@ if (existingEmailUser != null)
 
 public async Task<(bool Success, string Message, string Token, object User)> LoginAsync(LoginDto dto)
 {
+    
     var user = await VerifyUserAsync(dto.Email, dto.Password);
     if (user == null)
         return (false, "Invalid credentials", null, null);
 
     var token = await GenerateJwtToken(user);
-
+Console.WriteLine($"User status during login: {user.Status}");
     return (true, "Login successful", token, new
     {
         user.UserId,
@@ -148,37 +150,43 @@ public async Task<(bool Success, string Message, string Token, object User)> Log
         user.Email,
         user.ProfilePictureUrl,
         user.Bio,
-        Username = user.UserName
+        Username = user.UserName,
+        Status = user.Status
     });
 }
 
 public async Task<(bool Success, string Message, object Data)> ValidateTokenAsync()
 {
+    
     try
-    {
-        var userId = await GetAuthenticatedUserId();
-        var user = await GetUserByIdAsync(userId);
-        if (user == null)
-            return (false, "Invalid user", null);
-        return (true, "Valid token", new {
-    user = new { 
-        userId = user.UserId,
-        name = user.Name,
-        email = user.Email,
-        profilePictureUrl = user.ProfilePictureUrl,
-        bio = user.Bio,
-        userName = user.UserName
-    }
-});
-    }
-    catch (UnauthorizedAccessException)
-    {
-        return (false, "Invalid token", null);
-    }
-    catch (Exception ex)
-    {
-        return (false, $"Token validation error: {ex.Message}", null);
-    }
+        {
+            var userId = await GetAuthenticatedUserId();
+            var user = await GetUserByIdAsync(userId);
+            if (user == null)
+                return (false, "Invalid user", null);
+            Console.WriteLine($"User status during login: {user.Status}");
+            return (true, "Valid token", new
+            {
+                user = new
+                {
+                    userId = user.UserId,
+                    name = user.Name,
+                    email = user.Email,
+                    profilePictureUrl = user.ProfilePictureUrl,
+                    bio = user.Bio,
+                    userName = user.UserName,
+                    status = user.Status
+                }
+            });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return (false, "Invalid token", null);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Token validation error: {ex.Message}", null);
+        }
 }
 
 public async Task<(bool Success, string Message, string Token)> RefreshTokenAsync()

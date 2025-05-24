@@ -34,9 +34,10 @@ export async function GET(req: NextRequest) {
         userId: data.user.userId,
         name: data.user.name,
         email: data.user.email,
-        userName: data.user.userName, // Added username
+        userName: data.user.userName, 
         profilePictureUrl: data.user.profilePictureUrl ?? null,
         bio: data.user.bio ?? null,
+        status : data.user.status ?? null,
       } : null,
     })
 

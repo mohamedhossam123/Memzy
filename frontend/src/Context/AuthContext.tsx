@@ -21,6 +21,7 @@ type User = {
   humorTypeId?: number
   createdAt?: string
   userName?: string
+  status?: string
 }
 
 interface ApiOptions extends RequestInit {
@@ -101,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             userName: userData.userName || userData.UserName || '',
             humorTypeId: userData.humorTypeId,
             createdAt: userData.createdAt,
+            status: userData.status
           })
         } else {
           console.warn('Invalid user data structure in token validation')
@@ -155,6 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userName: data.user.userName || data.user.UserName || '',
         humorTypeId: data.user.humorTypeId,
         createdAt: data.user.createdAt,
+        status: data.user.status
       })
 
       router.push('/')
