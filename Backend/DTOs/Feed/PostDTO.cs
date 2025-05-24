@@ -9,4 +9,5 @@ public class PostDto
     public int LikeCounter { get; set; }
     public bool IsApproved { get; set; }
     public List<int> HumorTypeIds { get; set; } = new();
+    public string UserName { get; set; }
 }

@@ -12,9 +12,9 @@ namespace Memzy_finalist.Services
         {
             var posts = await query
                 .Include(p => p.PostHumors)
+                .Include(p => p.User) 
                 .AsNoTracking()
                 .ToListAsync();
-
             return posts.Select(p => new PostDto
             {
                 PostId       = p.PostId,
@@ -24,7 +24,8 @@ namespace Memzy_finalist.Services
                 CreatedAt    = p.CreatedAt,
                 LikeCounter  = p.LikeCounter,
                 IsApproved   = p.IsApproved,
-                HumorTypeIds = p.PostHumors.Select(ph => ph.HumorTypeId).ToList()
+                HumorTypeIds = p.PostHumors.Select(ph => ph.HumorTypeId).ToList(),
+                UserName     = p.User?.UserName ?? p.User?.Name ?? "Anonymous" 
             }).ToList();
         }
 

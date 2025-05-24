@@ -14,7 +14,7 @@ interface ApiPost {
   likeCounter: number
   isApproved: boolean
   humorTypeIds: number[]
-  userName?: string
+  userName: string // This should now be provided by your backend
 }
 
 interface ApiResponse {
@@ -104,6 +104,7 @@ export default function Feed() {
         { page, pageSize: 6 },
         { authenticated: !!user }
       )
+      
       if (!response || !response.ok) {
         throw new Error('Failed to fetch feed')
       }
@@ -169,8 +170,8 @@ export default function Feed() {
         </div>
       ) : (
         <>
-          {posts.map((post) => (
-            <PostCard key={`post-${post.timestamp}-${post.author}`} {...post} />
+          {posts.map((post, index) => (
+            <PostCard key={`post-${post.timestamp}-${post.author}-${index}`} {...post} />
           ))}
 
           <div ref={sentinelRef} className="text-center py-4">

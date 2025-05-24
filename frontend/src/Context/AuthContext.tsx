@@ -1,12 +1,19 @@
 // AuthContext.tsx
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react'
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+  useMemo,
+} from 'react'
 import { useRouter } from 'next/navigation'
 
-
 type User = {
-  userId?: number
+  userId: number
   name: string
   email: string
   profilePictureUrl?: string
@@ -46,7 +53,8 @@ const getStoredToken = (): string | null => {
 
 const setStoredToken = (token: string | null) => {
   if (typeof window !== 'undefined') {
-    token ? localStorage.setItem('auth_token', token) : localStorage.removeItem('auth_token')
+    if (token) localStorage.setItem('auth_token', token)
+    else localStorage.removeItem('auth_token')
   }
 }
 
@@ -68,28 +76,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async (currentToken: string) => {
     try {
-      const res = await fetch('http://localhost:5001/api/Auth/validate', {
-        headers: { 'Authorization': `Bearer ${currentToken}` }
-      })
-      
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/validate`,
+        {
+          headers: {
+            Authorization: `Bearer ${currentToken}`,
+          },
+        }
+      )
+
       if (res.ok) {
-        const data = await res.json()
-        if (data.authenticated && data.user) {
+        const response = await res.json()
+        console.log('Validate response:', response)
+
+        // Extract user data from different possible fields
+        const userData =
+          response.Data || response.data || response.user || response
+
+        if (userData?.userId) {
           setUser({
-            userId: data.user.userId,
-            name: data.user.name,
-            email: data.user.email,
-            profilePictureUrl: data.user.profilePictureUrl,
-            bio: data.user.bio,
-            humorTypeId: data.user.humorTypeId,
-            createdAt: data.user.createdAt,
-            userName: data.user.userName,
+            userId: userData.userId,
+            name: userData.name || '',
+            email: userData.email || '',
+            profilePictureUrl: userData.profilePictureUrl,
+            bio: userData.bio,
+            userName: userData.userName || userData.UserName || '',
+            humorTypeId: userData.humorTypeId,
+            createdAt: userData.createdAt,
           })
         } else {
+          console.warn('Invalid user data structure in token validation')
           setToken(null)
           setStoredToken(null)
         }
       } else {
+        console.warn('Token validation failed')
         setToken(null)
         setStoredToken(null)
       }
@@ -104,17 +125,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('http://localhost:5001/api/Auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/login`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        }
+      )
 
-      if (!response.ok) throw new Error('Login failed')
-      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Login failed')
+      }
+
       const data = await response.json()
+      console.log('Login response data:', data)
+      if (!data.token || !data.user?.userId) {
+        throw new Error('Invalid server response format')
+      }
+
       const newToken = data.token
-      
       setToken(newToken)
       setStoredToken(newToken)
       setUser({
@@ -123,7 +154,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: data.user.email,
         profilePictureUrl: data.user.profilePictureUrl,
         bio: data.user.bio,
-        userName: data.user.userName,
+        userName: data.user.userName || data.user.UserName || '',
+        humorTypeId: data.user.humorTypeId,
+        createdAt: data.user.createdAt,
       })
 
       router.push('/')
@@ -137,9 +170,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true)
     try {
       if (token) {
-        await fetch('http://localhost:5001/api/Auth/logout', {
+        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/logout`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         })
       }
     } catch (error) {
@@ -153,66 +186,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [router, token])
 
-  const api = useMemo(() => ({
-    fetch: async (url: string, options: ApiOptions = {}) => {
-      const { authenticated = true, headers = {}, ...rest } = options
-      const requestHeaders = { ...headers }
+  const api = useMemo(
+    () => ({
+      fetch: async (url: string, options: ApiOptions = {}) => {
+        const { authenticated = true, headers = {}, ...rest } = options
+        const requestHeaders = { ...headers }
 
-      if (authenticated && token) {
-        requestHeaders['Authorization'] = `Bearer ${token}`
-      }
-
-      try {
-        const response = await fetch(url, {
-          ...rest,
-          headers: requestHeaders
-        })
-
-        if (response.status === 401) {
-          logout()
-          return null
+        if (authenticated && token) {
+          requestHeaders['Authorization'] = `Bearer ${token}`
         }
 
-        return response
-      } catch (error) {
-        console.error('API request failed:', error)
-        throw error
-      }
-    },
-    get: (url: string, options?: ApiOptions) => api.fetch(url, { ...options, method: 'GET' }),
-    post: (url: string, data: any, options?: ApiOptions) => 
-      api.fetch(url, {
-        ...options,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...options?.headers,
-        },
-        body: JSON.stringify(data),
-      }),
-    put: (url: string, data: any, options?: ApiOptions) => 
-      api.fetch(url, {
-        ...options,
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...options?.headers,
-        },
-        body: JSON.stringify(data),
-      }),
-    delete: (url: string, options?: ApiOptions) => 
-      api.fetch(url, { ...options, method: 'DELETE' })
-  }), [token, logout])
+        try {
+          const response = await fetch(url, {
+            ...rest,
+            headers: requestHeaders,
+          })
 
-  const value = {
-    user,
-    token,
-    login,
-    logout,
-    loading,
-    updateUser: setUser,
-    api
-  }
+          if (response.status === 401) {
+            logout()
+            return null
+          }
+
+          return response
+        } catch (error) {
+          console.error('API request failed:', error)
+          throw error
+        }
+      },
+      get: (url: string, options?: ApiOptions) =>
+        api.fetch(url, { ...options, method: 'GET' }),
+      post: (url: string, data: any, options?: ApiOptions) =>
+        api.fetch(url, {
+          ...options,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...options?.headers,
+          },
+          body: JSON.stringify(data),
+        }),
+      put: (url: string, data: any, options?: ApiOptions) =>
+        api.fetch(url, {
+          ...options,
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...options?.headers,
+          },
+          body: JSON.stringify(data),
+        }),
+      delete: (url: string, options?: ApiOptions) =>
+        api.fetch(url, { ...options, method: 'DELETE' }),
+    }),
+    [token, logout]
+  )
+
+  const value = useMemo(
+    () => ({
+      user,
+      token,
+      login,
+      logout,
+      loading,
+      updateUser: setUser,
+      api,
+    }),
+    [user, token, loading, login, logout, api]
+  )
 
   return (
     <AuthContext.Provider value={value}>

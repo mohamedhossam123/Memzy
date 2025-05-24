@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }), // Changed from Email/Password to lowercase
+        body: JSON.stringify({ email, password }), 
       }
     )
 
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
         userId: responseData.user.userId,
         name: responseData.user.name,
         email: responseData.user.email,
-        userName: responseData.user.userName, // Added username
+        userName: responseData.user.userName,
         profilePictureUrl: responseData.user.profilePictureUrl ?? null,
         bio: responseData.user.bio ?? null,
       },

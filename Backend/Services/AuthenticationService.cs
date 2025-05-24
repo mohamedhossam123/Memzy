@@ -111,9 +111,10 @@ public class AuthenticationService : IAuthenticationService
 
 public async Task<(bool Success, string Message, User User)> SignUpUserAsync(UserCreateDto dto)
 {
-    var existingEmail = await VerifyUserAsync(dto.Email, "dummy");
-    if (existingEmail != null)
-        return (false, "Email already registered", null);
+    var existingEmailUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+if (existingEmailUser != null)
+    return (false, "Email already registered", null);
+
 
     var existingUsername = await GetUserByUsernameAsync(dto.UserName);
     if (existingUsername != null)
@@ -159,20 +160,16 @@ public async Task<(bool Success, string Message, object Data)> ValidateTokenAsyn
         var user = await GetUserByIdAsync(userId);
         if (user == null)
             return (false, "Invalid user", null);
-
-        return (true, "Valid token", new
-        {
-            Authenticated = true,
-            User = new
-            {
-                user.UserId,
-                user.Name,
-                user.Email,
-                user.ProfilePictureUrl,
-                user.Bio,
-                Username = user.UserName,
-            }
-        });
+        return (true, "Valid token", new {
+    user = new { 
+        userId = user.UserId,
+        name = user.Name,
+        email = user.Email,
+        profilePictureUrl = user.ProfilePictureUrl,
+        bio = user.Bio,
+        userName = user.UserName
+    }
+});
     }
     catch (UnauthorizedAccessException)
     {
