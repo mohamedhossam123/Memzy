@@ -9,6 +9,8 @@ public interface ICreatingPostsService
         int userId,
         MediaType mediaType
     );
+    Task<List<object>> GetUserPostsAsync(int userId);
+    Task<object> GetUserStatsAsync(int userId);
     
 
 }

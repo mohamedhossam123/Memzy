@@ -34,7 +34,6 @@ export default function PostsModal({
       : 'q_auto,w_800,c_limit'
     return url.replace('/upload/', `/upload/${transformations}/`)
   }
-
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="fixed inset-0 z-50 overflow-y-auto" onClose={onClose}>

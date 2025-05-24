@@ -11,4 +11,11 @@ public interface IAuthenticationService
     string HashPassword(string password);
     Task<int> GetFriendCountAsync(int userId);
     Task<int> GetPostCountAsync(int userId);
+    Task<(bool Success, string Message, User User)> SignUpUserAsync(UserCreateDto dto);
+Task<(bool Success, string Message, object Data)> GetCurrentUserInfoAsync();
+Task<(bool Success, string Message, string Token)> RefreshTokenAsync();
+Task<(bool Success, string Message, object Data)> ValidateTokenAsync();
+Task<(bool Success, string Message, string Token, object User)> LoginAsync(LoginDto dto);
+Task<(bool Success, string Message, object Data)> GetFriendAndPostCountAsync();
+
 }

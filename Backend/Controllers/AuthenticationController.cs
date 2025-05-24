@@ -1,6 +1,7 @@
 using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 namespace MyApiProject.Controllers
 {
     [ApiController]
@@ -9,59 +10,33 @@ namespace MyApiProject.Controllers
     {
         private readonly IAuthenticationService _authService;
 
-        public AuthController(IAuthenticationService AuthService)
+        public AuthController(IAuthenticationService authService)
         {
-            _authService = AuthService;
+            _authService = authService;
         }
 
         [HttpPost("signup")]
-public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
-{
-    try
-    {
-        if (string.IsNullOrWhiteSpace(dto.Email))
-            return BadRequest("Email is required");
-        if (string.IsNullOrWhiteSpace(dto.Password))
-            return BadRequest("Password is required");
-        if (string.IsNullOrWhiteSpace(dto.UserName))
-            return BadRequest("Username is required");
-        
-        // Check if email exists
-        var existingUserByEmail = await _authService.VerifyUserAsync(dto.Email, "anypassword");
-        if (existingUserByEmail != null)
-            return BadRequest("Email already registered");
-            
-        // Check if username exists
-        var existingUserByUsername = await _authService.GetUserByUsernameAsync(dto.UserName);
-        if (existingUserByUsername != null)
-            return BadRequest("Username already taken");
-        
-        var user = new User
+        public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
         {
-            Name = dto.Name,
-            Email = dto.Email,
-            PasswordHash = _authService.HashPassword(dto.Password),
-            CreatedAt = DateTime.UtcNow,
-            UserName = dto.UserName,
-        };
+            if (string.IsNullOrWhiteSpace(dto.Email) ||
+                string.IsNullOrWhiteSpace(dto.Password) ||
+                string.IsNullOrWhiteSpace(dto.UserName))
+            {
+                return BadRequest("Email, password, and username are required.");
+            }
 
-        var createdUser = await _authService.CreateUserAsync(user);
-        if (createdUser.UserId == 0) 
-            return StatusCode(500, "Failed to create user");
-        
-        return CreatedAtAction(nameof(GetUser), new { id = createdUser.UserId }, new
-        {
-            UserId = createdUser.UserId,
-            Name = createdUser.Name,
-            Email = createdUser.Email,
-            Username = createdUser.UserName,
-        });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"Registration failed: {ex.Message}");
-    }
-}
+            var result = await _authService.SignUpUserAsync(dto);
+            if (!result.Success)
+                return BadRequest(result.Message);
+
+            return CreatedAtAction(nameof(GetUser), new { id = result.User.UserId }, new
+            {
+                result.User.UserId,
+                result.User.Name,
+                result.User.Email,
+                Username = result.User.UserName
+            });
+        }
 
         [HttpGet("GetUserByID")]
         public async Task<IActionResult> GetUser(int id)
@@ -73,70 +48,22 @@ public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
-                    return BadRequest("Email and password are required");
+            if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
+                return BadRequest("Email and password are required.");
 
-                var user = await _authService.VerifyUserAsync(dto.Email, dto.Password);
-                if (user == null)
-                    return Unauthorized("Invalid credentials");
+            var result = await _authService.LoginAsync(dto);
+            if (!result.Success)
+                return Unauthorized(result.Message);
 
-                var token = await _authService.GenerateJwtToken(user);
-                return Ok(new {
-                    Token = token, 
-                    User = new
-                    {
-                        UserId = user.UserId,
-                        Name = user.Name,
-                        Email = user.Email,
-                        ProfilePictureUrl = user.ProfilePictureUrl,
-                        Bio = user.Bio,
-                        Username = user.UserName,
-                    }
-                });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "An error occurred during login");
-            }
+            return Ok(result);
         }
 
         [HttpGet("validate")]
-        [Authorize] 
+        [Authorize]
         public async Task<IActionResult> ValidateToken()
         {
-            try
-            {
-                int userId = await _authService.GetAuthenticatedUserId();
-                var user = await _authService.GetUserByIdAsync(userId);
-                
-                if (user == null)
-                {
-                    return Unauthorized("Invalid user");
-                }
-
-                return Ok(new {
-                    Authenticated = true,
-                    User = new
-                    {
-                        UserId = user.UserId,
-                        Name = user.Name,
-                        Email = user.Email,
-                        ProfilePictureUrl = user.ProfilePictureUrl,
-                        Bio = user.Bio,
-                        Username = user.UserName,
-                    }
-                });
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Unauthorized("Invalid token");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Token validation error: {ex.Message}");
-            }
+            var result = await _authService.ValidateTokenAsync();
+            return result.Success ? Ok(result) : Unauthorized(result.Message);
         }
 
         [HttpPost("logout")]
@@ -150,83 +77,24 @@ public async Task<IActionResult> SignUp([FromBody] UserCreateDto dto)
         [Authorize]
         public async Task<IActionResult> RefreshToken()
         {
-            try
-            {
-                var userId = await _authService.GetAuthenticatedUserId();
-                var user = await _authService.GetUserByIdAsync(userId);
-                
-                if (user == null)
-                {
-                    return Unauthorized("Invalid user");
-                }
-                var token = await _authService.GenerateJwtToken(user);
-                
-                return Ok(new { Token = token });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Token refresh error: {ex.Message}");
-            }
+            var result = await _authService.RefreshTokenAsync();
+            return result.Success ? Ok(new { result.Token }) : StatusCode(500, result.Message);
         }
 
         [HttpGet("getCurrentUser")]
         [Authorize]
         public async Task<IActionResult> GetCurrentUser()
         {
-            try
-            {
-                var userId = await _authService.GetAuthenticatedUserId();
-                var user = await _authService.GetUserByIdAsync(userId);
-                
-                if (user == null)
-                {
-                    return Unauthorized("Invalid user");
-                }
-                var humorTypes = user.UserHumorTypes.Select(uht => uht.HumorType).ToList();
-                
-                var friendCount = await _authService.GetFriendCountAsync(userId);
-                var postCount = await _authService.GetPostCountAsync(userId);
-
-                return Ok(new
-                {
-                    UserId = user.UserId,
-                    Name = user.Name,
-                    Email = user.Email,
-                    ProfilePictureUrl = user.ProfilePictureUrl,
-                    Bio = user.Bio,
-                    HumorTypes = humorTypes.Select(ht => new
-                    {
-                        HumorTypeId = ht.HumorTypeId,
-                        HumorTypeName = ht.HumorTypeName
-                    }).ToList(),
-                    CreatedAt = user.CreatedAt,
-                    FriendCount = friendCount,
-                    PostCount = postCount,
-                    UserName = user.UserName,
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error retrieving current user: {ex.Message}");
-            }
+            var result = await _authService.GetCurrentUserInfoAsync();
+            return result.Success ? Ok(result.Data) : StatusCode(500, result.Message);
         }
-        
-        [HttpGet("Get friend count and post count")]
+
+        [HttpGet("friend-post-count")]
         [Authorize]
         public async Task<IActionResult> GetFriendCountAndPostCount()
         {
-            try
-            {
-                var userId = await _authService.GetAuthenticatedUserId();
-                var friendCount = await _authService.GetFriendCountAsync(userId);
-                var postCount = await _authService.GetPostCountAsync(userId);
-
-                return Ok(new { FriendCount = friendCount, PostCount = postCount });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error retrieving counts: {ex.Message}");
-            }
+            var result = await _authService.GetFriendAndPostCountAsync();
+            return result.Success ? Ok(result.Data) : StatusCode(500, result.Message);
         }
     }
 }

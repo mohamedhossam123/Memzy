@@ -338,7 +338,6 @@ export default function UserProfile() {
   }
 
   const getProfileImageUrl = (profilePic?: string) => {
-  // First check if we have userData.profilePic, then fallback to user.profilePictureUrl from auth context
   const imageUrl = profilePic || user?.profilePictureUrl
   
   if (profileImageError || !imageUrl) {
@@ -349,8 +348,6 @@ export default function UserProfile() {
     : `https://${imageUrl}`
 }
 
-
-  // For other users' profile pictures (in friends list, etc.) - same as Header
   const getSearchResultImageUrl = (url?: string) => {
     if (!url) return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
     return url.startsWith('http') ? url : `https://${url}`
@@ -373,7 +370,6 @@ export default function UserProfile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-darker to-primary-dark text-light">
       <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 md:p-8">
-        
         {/* Profile Header */}
         <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
           {/* Profile Picture Section */}
