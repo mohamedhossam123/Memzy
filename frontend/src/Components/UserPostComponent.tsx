@@ -219,7 +219,7 @@ export default function PostFeed() {
                     <span className="text-xs text-yellow-400">(Under Review)</span>
                   )}
                 </div>
-                <span className="text-xs text-[#c56cf0]">❤️ {post.likeCounter}</span>
+                <span className="text-xs text-[#c56cf0]">😂 {post.likeCounter}</span>
               </div>
             </div>
           </div>

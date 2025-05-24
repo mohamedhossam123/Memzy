@@ -1,3 +1,4 @@
+// AuthContext.tsx
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react'

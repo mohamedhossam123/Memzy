@@ -16,19 +16,20 @@ namespace MyApiProject.Controllers
             _feedService = feedService;
             }
 
-        [HttpPost("GetFirst3postsOfImagesAndVideosBasedOnHumor")]
-        [Authorize]
-        public async Task<IActionResult> FeedGeneratorBasedOnHumor()
-        {
-            var userId =  await _authService.GetAuthenticatedUserId();
-            var result = await _feedService.FeedGeneratorBasedOnHumor(userId);
-            return Ok(result);
-        }
-        [HttpPost("GetFirst3postsOfImagesAndVideosEverythingGoes")]
-        public async Task<IActionResult> GetvideoAsyncEverythingGoes()
-        {
-            var result = await _feedService.FeedGeneratorEverythingGoes();
-            return Ok(result);
-        }
+        [HttpPost("GetFirst6BasedOnUser")]
+[Authorize]
+public async Task<IActionResult> FeedGeneratorBasedOnHumor([FromBody] PaginationRequest request)
+{
+    var userId = await _authService.GetAuthenticatedUserId();
+    var result = await _feedService.FeedGeneratorBasedOnHumor(userId, request.Page, request.PageSize);
+    return Ok(result);
+}
+
+[HttpPost("GetFirst6")]
+public async Task<IActionResult> GetvideoAsyncEverythingGoes([FromBody] PaginationRequest request)
+{
+    var result = await _feedService.FeedGeneratorEverythingGoes(request.Page, request.PageSize); // ✅ correct
+    return Ok(result);
+}
     }
 }

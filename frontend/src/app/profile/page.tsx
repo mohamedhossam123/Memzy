@@ -18,6 +18,7 @@ export default function UserProfile() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   
+  
   interface FullUser {
     profilePic?: string
     name?: string

@@ -50,7 +50,7 @@ export function Sidebar() {
         <ul className="space-y-2">
           <li>
             <Link 
-              href="/" 
+              href="/feed" 
               className={`flex items-center gap-3 py-3 px-4 rounded-lg ${
                 isActive('/') ? 'bg-[#8e44ad] text-[#f5f5f5] font-semibold' : 'text-[#e9ecef] hover:bg-[rgba(255,255,255,0.1)] hover:text-[#f5f5f5]'
               } hover:translate-x-1 transition-all ${

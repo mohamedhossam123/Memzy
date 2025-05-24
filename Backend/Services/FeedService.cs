@@ -2,7 +2,6 @@ using Memzy_finalist.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Memzy_finalist.Services
-
 {
     public class FeedService : IFeedService
     {
@@ -29,7 +28,7 @@ namespace Memzy_finalist.Services
             }).ToList();
         }
 
-        public async Task<FeedResultDTO> FeedGeneratorBasedOnHumor(int userId)
+        public async Task<FeedResultDTO> FeedGeneratorBasedOnHumor(int userId, int page, int pageSize)
         {
             var prefs = await _ctx.UserHumorTypes
                 .Where(u => u.UserId == userId)
@@ -45,20 +44,24 @@ namespace Memzy_finalist.Services
                 baseQuery = baseQuery
                     .Where(p => p.PostHumors.Any(ph => prefs.Contains(ph.HumorTypeId)));
             }
-            var topPostsQuery = baseQuery.Take(6);
 
-            var dtos = await FetchPostsAsync(topPostsQuery);
+            var paginatedQuery = baseQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize);
+
+            var dtos = await FetchPostsAsync(paginatedQuery);
             return new FeedResultDTO { Posts = dtos };
         }
 
-        public async Task<FeedResultDTO> FeedGeneratorEverythingGoes()
+        public async Task<FeedResultDTO> FeedGeneratorEverythingGoes(int page, int pageSize)
         {
-            var topPostsQuery = _ctx.Posts
+            var paginatedQuery = _ctx.Posts
                 .Where(p => p.IsApproved)
                 .OrderByDescending(p => p.CreatedAt)
-                .Take(6);
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize);
 
-            var dtos = await FetchPostsAsync(topPostsQuery);
+            var dtos = await FetchPostsAsync(paginatedQuery);
             return new FeedResultDTO { Posts = dtos };
         }
     }
