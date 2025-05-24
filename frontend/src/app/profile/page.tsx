@@ -11,7 +11,8 @@ import { NameModal } from '@/Components/SettingsModals/NameModal'
 import { BioModal } from '@/Components/SettingsModals/BioModal'
 import { PasswordModal } from '@/Components/SettingsModals/PasswordModal'
 import PostForm from '@/Components/PostsFormComponent'
-import PostFeed from '@/Components/UserPostComponent'
+import PostFeed, { Post } from '@/Components/UserPostComponent'
+import PostsModal from '@/Components/SettingsModals/PostsModal'
 
 export default function UserProfile() {
   const { user, token } = useAuth()
@@ -31,10 +32,17 @@ export default function UserProfile() {
 
   const [userData, setUserData] = useState<FullUser | null>(null)
   const [activeModal, setActiveModal] = useState<
-    'humor' | 'profilePic' | 'name' | 'bio' | 'password' | 'friends' | 'createPost' | null
+    'humor' | 'profilePic' | 'name' | 'bio' | 'password' | 'friends' | 'createPost' | 'posts' | null
   >(null)
   const [passwordError, setPasswordError] = useState('')
   const [profileImageError, setProfileImageError] = useState(false)
+  
+
+
+   const [pendingPosts, setPendingPosts] = useState<Post[]>([])
+  const [approvedPosts, setApprovedPosts] = useState<Post[]>([])
+
+
 
   const friendTabs = ["friends", "requests"] as const
   const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>('friends')
@@ -52,6 +60,76 @@ export default function UserProfile() {
       fetchUserDetails()
     }
   }, [user, router])
+ 
+
+
+
+
+   useEffect(() => {
+    if (activeModal === 'posts') {
+      fetchPendingPosts()
+      fetchApprovedPosts()
+    }
+  }, [activeModal])
+
+  const fetchPendingPosts = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetPendingPosts`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      if (!response.ok) throw new Error('Failed to fetch pending posts')
+      setPendingPosts(await response.json())
+    } catch (error) {
+      console.error('Error fetching pending posts:', error)
+    }
+  }
+
+  const fetchApprovedPosts = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetApprovedPosts`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      if (!response.ok) throw new Error('Failed to fetch approved posts')
+      setApprovedPosts(await response.json())
+    } catch (error) {
+      console.error('Error fetching approved posts:', error)
+    }
+  }
+
+  const handleApprovePost = async (postId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/ApprovePost/${postId}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      )
+      if (!response.ok) throw new Error('Failed to approve post')
+      fetchPendingPosts()
+      fetchApprovedPosts()
+    } catch (error) {
+      console.error('Error approving post:', error)
+    }
+  }
+
+  const handleRejectPost = async (postId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/RejectPost/${postId}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      )
+      if (!response.ok) throw new Error('Failed to reject post')
+      fetchPendingPosts()
+    } catch (error) {
+      console.error('Error rejecting post:', error)
+    }
+  }
 
   const fetchUserDetails = async () => {
     try {
@@ -378,24 +456,27 @@ export default function UserProfile() {
 
         {/* Stats & Security Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-          <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 shadow-glow hover:shadow-glow/50 transition-all">
-            <h3 className="text-xl font-semibold mb-4 text-accent border-b border-glass pb-2">
-              Social Stats
-            </h3>
-            <div className="flex justify-around">
-              <button
-                onClick={() => setActiveModal('friends')}
-                className="flex flex-col items-center transition-transform hover:scale-105"
-              >
-                <span className="text-3xl font-bold mb-1">{userData?.friendCount ?? 0}</span>
-                <span className="text-sm text-light/70">Friends</span>
-              </button>
-              <div className="flex flex-col items-center">
-                <span className="text-3xl font-bold mb-1">{userData?.postCount ?? 0}</span>
-                <span className="text-sm text-light/70">Posts</span>
-              </div>
-            </div>
+        <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 shadow-glow hover:shadow-glow/50 transition-all">
+          <h3 className="text-xl font-semibold mb-4 text-accent border-b border-glass pb-2">
+            Social Stats
+          </h3>
+          <div className="flex justify-around">
+            <button
+              onClick={() => setActiveModal('friends')}
+              className="flex flex-col items-center transition-transform hover:scale-105"
+            >
+              <span className="text-3xl font-bold mb-1">{userData?.friendCount ?? 0}</span>
+              <span className="text-sm text-light/70">Friends</span>
+            </button>
+            <button
+              onClick={() => setActiveModal('posts')}
+              className="flex flex-col items-center transition-transform hover:scale-105"
+            >
+              <span className="text-3xl font-bold mb-1">{userData?.postCount ?? 0}</span>
+              <span className="text-sm text-light/70">Posts</span>
+            </button>
           </div>
+        </div>
 
           <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 shadow-glow hover:shadow-glow/50 transition-all">
             <h3 className="text-xl font-semibold mb-4 text-accent border-b border-glass pb-2">
@@ -472,7 +553,14 @@ export default function UserProfile() {
           onConfirm={handlePasswordChange}
           error={passwordError}
         />
-
+        <PostsModal
+        isOpen={activeModal === 'posts'}
+        onClose={() => setActiveModal(null)}
+        pendingPosts={pendingPosts}
+        approvedPosts={approvedPosts}
+        onApprove={handleApprovePost}
+        onReject={handleRejectPost}
+      />
         {/* Create Post Modal */}
         <Transition appear show={activeModal === 'createPost'} as={Fragment}>
           <Dialog

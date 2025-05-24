@@ -36,7 +36,7 @@ public class UserService : IUserService
         await _context.SaveChangesAsync();
         return user;
     }
-
+    
     public async Task<User> UpdateUsernameAsync(int userId, string newName)
     {
         if (string.IsNullOrWhiteSpace(newName))

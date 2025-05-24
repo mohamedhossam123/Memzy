@@ -9,5 +9,6 @@ public interface ICreatingPostsService
         int userId,
         MediaType mediaType
     );
+    
 
 }

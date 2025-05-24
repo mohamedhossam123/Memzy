@@ -10,4 +10,7 @@ public interface IUserService
     Task<User> ForgotPasswordAsync(string email);
     Task<User> ResetPasswordAsync(User user, string newPassword);
     Task<string> UploadProfilePictureAsync(IFormFile file, int userId);
+    Task<User> GetUserAcceptedPostsAsync(int userId);
+    Task<User> GetUserPendingPosts(int userId);
+
 }

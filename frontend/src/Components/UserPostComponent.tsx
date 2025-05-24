@@ -1,10 +1,11 @@
+// UserPostComponent.tsx
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/Context/AuthContext'
 
-interface Post {
+export interface Post {
   postId: number
   filePath: string | null
   description: string
