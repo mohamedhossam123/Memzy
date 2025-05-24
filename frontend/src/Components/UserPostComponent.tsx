@@ -1,8 +1,6 @@
-// UserPostComponent.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/Context/AuthContext'
 
@@ -16,19 +14,37 @@ interface Post {
   mediaType: 'Image' | 'Video'
   postHumors: {
     humorType: {
-      id: number     
-      name: string  
+      id: number
+      name: string
     }
   }[]
 }
 
 export default function PostFeed() {
-  const [mediaErrors, setMediaErrors] = useState<Set<number>>(new Set())
   const [posts, setPosts] = useState<Post[]>([])
+  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set())
+  const [videoErrors, setVideoErrors] = useState<Set<number>>(new Set())
+  const [imageLoaded, setImageLoaded] = useState<Set<number>>(new Set())
+  const [videoLoaded, setVideoLoaded] = useState<Set<number>>(new Set())
+  const videoRefs = useRef<Record<number, HTMLVideoElement | null>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const { user, token } = useAuth()
+
+  const isVideoFile = (url: string | null): boolean => {
+    if (!url) return false
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.avi', '.mov', '.wmv', '.flv', '.mkv']
+    return videoExtensions.some(ext => url.toLowerCase().includes(ext))
+  }
+
+  const getOptimizedMediaUrl = (url: string, type: 'image' | 'video') => {
+    if (!url.includes('cloudinary.com')) return url
+    const transformations = type === 'image' 
+      ? 'q_auto,f_auto,w_800,c_limit' 
+      : 'q_auto,w_800,c_limit'
+    return url.replace('/upload/', `/upload/${transformations}/`)
+  }
 
   useEffect(() => {
     async function fetchPosts() {
@@ -41,17 +57,12 @@ export default function PostFeed() {
           return
         }
 
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/user`,
-          {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          }
-        )
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        })
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
@@ -62,7 +73,6 @@ export default function PostFeed() {
         setPosts(data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
-        console.error('Error fetching posts:', err)
       } finally {
         setLoading(false)
       }
@@ -70,6 +80,34 @@ export default function PostFeed() {
 
     fetchPosts()
   }, [user, token, router])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const video = entry.target as HTMLVideoElement
+          if (entry.isIntersecting) {
+            video.play().catch(console.error)
+            video.loop = true // Enable looping
+          } else {
+            video.pause()
+            video.currentTime = 0
+          }
+        })
+      },
+      { threshold: 0.75, rootMargin: '0px 0px 100px 0px' }
+    )
+
+    Object.values(videoRefs.current).forEach((video) => {
+      if (video) observer.observe(video)
+    })
+
+    return () => {
+      Object.values(videoRefs.current).forEach((video) => {
+        if (video) observer.unobserve(video)
+      })
+    }
+  }, [posts])
 
   const getHumorLabelById = (id?: number, fallback?: string) => {
     if (!id && fallback) return fallback
@@ -80,6 +118,37 @@ export default function PostFeed() {
         return 'Friendly Humor'
       default:
         return fallback || 'Unknown Humor'
+    }
+  }
+
+  const handleRetry = (postId: number, isVideo: boolean) => {
+    if (isVideo) {
+      setVideoErrors(prev => {
+        const next = new Set(prev)
+        next.delete(postId)
+        return next
+      })
+      setVideoLoaded(prev => {
+        const next = new Set(prev)
+        next.delete(postId)
+        return next
+      })
+      const video = videoRefs.current[postId]
+      if (video) {
+        video.load()
+        video.play().catch(console.error)
+      }
+    } else {
+      setImageErrors(prev => {
+        const next = new Set(prev)
+        next.delete(postId)
+        return next
+      })
+      setImageLoaded(prev => {
+        const next = new Set(prev)
+        next.delete(postId)
+        return next
+      })
     }
   }
 
@@ -95,20 +164,6 @@ export default function PostFeed() {
     return (
       <div className="text-center py-8">
         <p className="text-red-400">Error: {error}</p>
-        <div className="flex justify-center mt-4 space-x-4">
-          <button
-            className="px-4 py-2 bg-[#8e2de233] text-[#c56cf0] rounded-lg hover:bg-[#8e2de266]"
-            onClick={() => window.location.reload()}
-          >
-            Try Again
-          </button>
-          <button
-            className="px-4 py-2 bg-[#8e2de033] text-[#c56cf0] rounded-lg hover:bg-[#8e2de066]"
-            onClick={() => router.push('/login')}
-          >
-            Go to Login
-          </button>
-        </div>
       </div>
     )
   }
@@ -124,101 +179,136 @@ export default function PostFeed() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
       {posts.map((post) => {
-        const isVideo = post.mediaType === 'Video'
-        const mediaUrl = post.filePath ?? undefined
+        const isVideoByType = post.mediaType === 'Video'
+        const isVideoByExtension = isVideoFile(post.filePath)
+        const isVideo = isVideoByType || isVideoByExtension
+        
+        const mediaUrl = post.filePath ? getOptimizedMediaUrl(post.filePath, isVideo ? 'video' : 'image') : null
+        const imageFailed = imageErrors.has(post.postId)
+        const videoFailed = videoErrors.has(post.postId)
+        const imageLoadedState = imageLoaded.has(post.postId)
+        const videoLoadedState = videoLoaded.has(post.postId)
+        const mediaFailed = isVideo ? videoFailed : imageFailed
+        const mediaLoadedState = isVideo ? videoLoadedState : imageLoadedState
 
         return (
           <div key={post.postId} className="flex flex-col bg-gray-900 rounded-lg overflow-hidden">
-            {/* ── Media Container ── */}
-            <div className="relative aspect-square rounded-lg overflow-hidden mb-4 bg-gray-800">
-              {/* Approval Status Badge */}
+            <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-800">
               <div className="absolute top-2 right-2 z-10">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  post.isApproved 
-                    ? 'bg-green-500/20 text-green-400' 
-                    : 'bg-yellow-500/20 text-yellow-400'
+                  post.isApproved ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
                 }`}>
                   {post.isApproved ? 'Approved' : 'Pending'}
                 </span>
               </div>
 
-              {mediaUrl ? (
-                isVideo ? (
-                  <video
-                    className="w-full h-full object-cover"
-                    controls
-                    playsInline
-                    preload="metadata"
-                    onError={() => setMediaErrors((prev) => new Set(prev).add(post.postId))}
-                  >
-                    <source src={mediaUrl} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                ) : (
-                  <div className="relative w-full h-full">
-                    <Image
-                      src={mediaUrl}
-                      alt={post.description || 'Post image'}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      onError={() => setMediaErrors((prev) => new Set(prev).add(post.postId))}
-                      unoptimized
-                    />
+              {mediaUrl && !mediaFailed && (
+                <>
+                  {isVideo ? (
+                    <div className="relative w-full h-full">
+                      {!videoLoadedState && (
+                        <div className="absolute inset-0 bg-gray-800 flex items-center justify-center z-10">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c56cf0]"></div>
+                        </div>
+                      )}
+                      <video
+                        ref={(el) => { videoRefs.current[post.postId] = el }}
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                        autoPlay
+                        loop
+                        preload="auto"
+                        onLoadedData={() => setVideoLoaded(prev => new Set(prev).add(post.postId))}
+                        onCanPlay={() => {
+                          setVideoLoaded(prev => new Set(prev).add(post.postId))
+                          const video = videoRefs.current[post.postId]
+                          if (video) video.play().catch(console.error)
+                        }}
+                        onError={(e) => {
+                          console.error('Video error:', e)
+                          setVideoErrors(prev => new Set(prev).add(post.postId))
+                        }}
+                      >
+                        <source src={mediaUrl} type="video/mp4" />
+                        <source src={mediaUrl} type="video/webm" />
+                        <source src={mediaUrl} type="video/ogg" />
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                  ) : (
+                    <div className="relative w-full h-full">
+                      {!imageLoadedState && (
+                        <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c56cf0]"></div>
+                        </div>
+                      )}
+                      <img
+                        src={mediaUrl}
+                        alt={post.description || 'Post image'}
+                        className={`w-full h-full object-cover transition-opacity duration-300 ${
+                          imageLoadedState ? 'opacity-100' : 'opacity-0'
+                        }`}
+                        onLoad={() => setImageLoaded(prev => new Set(prev).add(post.postId))}
+                        onError={(e) => {
+                          console.error('Image error:', e)
+                          setImageErrors(prev => new Set(prev).add(post.postId))
+                        }}
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+
+              {mediaFailed && (
+                <div className="absolute inset-0 bg-gray-900/80 flex flex-col items-center justify-center gap-2">
+                  <div className="text-2xl mb-2">
+                    {isVideo ? '🎥' : '🖼️'}
                   </div>
-                )
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-light/60">No media available</span>
+                  <p className="text-red-400 text-sm">
+                    {isVideo ? 'Video' : 'Image'} failed to load
+                  </p>
+                  <p className="text-gray-400 text-xs text-center px-4">
+                    {isVideo ? 'Check video format and file path' : 'Check image format and file path'}
+                  </p>
+                  <button
+                    onClick={() => handleRetry(post.postId, isVideo)}
+                    className="px-3 py-1 text-xs bg-[#8e2de233] text-[#c56cf0] rounded-full hover:bg-[#8e2de266]"
+                  >
+                    Retry
+                  </button>
                 </div>
               )}
 
-              {mediaErrors.has(post.postId) && (
-                <div className="absolute inset-0 bg-gray-800 bg-opacity-80 flex items-center justify-center">
-                  <div className="text-center">
-                    <span className="text-light/60 block mb-2">Failed to load media</span>
-                    <button
-                      className="px-3 py-1 text-xs bg-[#8e2de233] text-[#c56cf0] rounded-full hover:bg-[#8e2de266]"
-                      onClick={() =>
-                        setMediaErrors((prev) => {
-                          const newErrors = new Set(prev)
-                          newErrors.delete(post.postId)
-                          return newErrors
-                        })
-                      }
-                    >
-                      Retry
-                    </button>
-                  </div>
+              {!mediaUrl && (
+                <div className="absolute inset-0 bg-gray-900/80 flex flex-col items-center justify-center gap-2">
+                  <div className="text-2xl mb-2">📄</div>
+                  <p className="text-gray-400 text-sm">No media available</p>
                 </div>
               )}
             </div>
 
-            {/* ── Post Details ── */}
-            <div className="px-4 pb-4 flex-1 flex flex-col justify-between">
+            <div className="px-4 pb-4 pt-3 flex-1 flex flex-col justify-between">
               <div className="space-y-3">
                 <p className="text-light/90 text-sm line-clamp-3">{post.description}</p>
                 <div className="flex flex-wrap gap-2">
                   {post.postHumors.map((humor, index) => (
                     <span
                       key={index}
-                      className="px-2.5 py-1 bg-[#8e2de233] text-[#c56cf0] text-xs font-medium rounded-full"
+                      className={`px-2.5 py-1 text-xs font-medium rounded-full ${
+                        humor.humorType.id === 1
+                          ? 'bg-red-400/10 text-red-300'
+                          : 'bg-green-300/10 text-green-200'
+                      }`}
                     >
                       {getHumorLabelById(humor.humorType.id, humor.humorType.name)}
                     </span>
                   ))}
                 </div>
               </div>
-
               <div className="flex justify-between items-center pt-3 border-t border-[rgba(255,255,255,0.05)]">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-light/60">
-                    {new Date(post.createdAt).toLocaleDateString()}
-                  </span>
-                  {!post.isApproved && (
-                    <span className="text-xs text-yellow-400">(Under Review)</span>
-                  )}
-                </div>
+                <span className="text-xs text-light/60">{new Date(post.createdAt).toLocaleDateString()}</span>
                 <span className="text-xs text-[#c56cf0]">😂 {post.likeCounter}</span>
               </div>
             </div>
