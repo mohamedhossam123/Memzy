@@ -13,7 +13,6 @@ namespace MyApiProject.Controllers
         {
             _moderatorService = moderatorService;
         }
-
         [HttpDelete("deleteUser")]
         [Authorize]
         public async Task<IActionResult> DeleteUser([FromBody] DeleteUserRequest request)

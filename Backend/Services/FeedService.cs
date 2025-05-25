@@ -38,7 +38,8 @@ namespace Memzy_finalist.Services
 
             IQueryable<Post> baseQuery = _ctx.Posts
                 .Where(p => p.IsApproved)
-                .OrderByDescending(p => p.CreatedAt);
+                .OrderBy(p => Guid.NewGuid());
+
 
             if (prefs.Any())
             {
@@ -58,7 +59,7 @@ namespace Memzy_finalist.Services
         {
             var paginatedQuery = _ctx.Posts
                 .Where(p => p.IsApproved)
-                .OrderByDescending(p => p.CreatedAt)
+                .OrderBy(p => Guid.NewGuid())
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize);
 

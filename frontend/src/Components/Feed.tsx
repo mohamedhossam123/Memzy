@@ -28,6 +28,7 @@ const humorMap: Record<number, 'Dark Humor' | 'Friendly Humor'> = {
 
 function mapApiPostToPostProps(apiPost: ApiPost): PostProps {
   return {
+    id: apiPost.postId, 
     author: apiPost.userName || 'Anonymous',
     content: apiPost.description,
     mediaType: apiPost.mediaType === 0 ? 'image' : apiPost.mediaType === 1 ? 'video' : null,
@@ -90,40 +91,49 @@ export default function Feed() {
     onLoadMore: () => setPage(prev => prev + 1)
   })
 
+  useEffect(() => {
+  setPage(1)
+  setPosts([])
+  setHasMore(true)
+}, [user])
+
   const fetchPosts = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      
-      const endpoint = user 
-        ? '/api/Posts/GetFirst6BasedOnUser'
-        : '/api/Posts/GetFirst6'
+  try {
+    setLoading(true)
+    setError(null)
 
-      const response = await api.post(
-        endpoint,
-        { page, pageSize: 6 },
-        { authenticated: !!user }
-      )
-      
-      if (!response || !response.ok) {
-        throw new Error('Failed to fetch feed')
-      }
-      const data: ApiResponse = await response.json()
-      const newPosts = data.posts.map(mapApiPostToPostProps)
+    const endpoint = user 
+      ? '/api/Posts/GetFirst6BasedOnUser'
+      : '/api/Posts/GetFirst6'
 
-      setPosts(prev => page === 1 ? newPosts : [...prev, ...newPosts])
-      setHasMore(newPosts.length === 6)
-    } catch (err) {
-      console.error('Feed error:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load feed')
-    } finally {
-      setLoading(false)
+    const response = await api.post(
+      endpoint,
+      { page, pageSize: 6 },
+      { authenticated: !!user }
+    )
+
+    if (!response || !response.ok) {
+      throw new Error('Failed to fetch feed')
     }
-  }, [page, user, api])
+
+    const data: ApiResponse = await response.json()
+    const newPosts = data.posts.map(mapApiPostToPostProps)
+
+    setPosts(prev => page === 1 ? newPosts : [...prev, ...newPosts])
+    setHasMore(newPosts.length === 6)
+  } catch (err) {
+    console.error('Feed error:', err)
+    setError(err instanceof Error ? err.message : 'Failed to load feed')
+  } finally {
+    setLoading(false)
+  }
+}, [user, api, page])
+
 
   useEffect(() => {
-    fetchPosts()
-  }, [fetchPosts])
+  fetchPosts()
+}, [page])
+
 
   if (loading && page === 1) {
     return (
@@ -170,9 +180,9 @@ export default function Feed() {
         </div>
       ) : (
         <>
-          {posts.map((post, index) => (
-            <PostCard key={`post-${post.timestamp}-${post.author}-${index}`} {...post} />
-          ))}
+          {posts.map((post) => (
+  <PostCard key={post.id} {...post} /> 
+))}
 
           <div ref={sentinelRef} className="text-center py-4">
             {hasMore && (

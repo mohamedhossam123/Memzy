@@ -4,6 +4,7 @@
 import { useState,useRef ,useEffect} from 'react'
 
 export interface PostProps {
+  id: number
   author: string
   content: string
   mediaType?: 'image' | 'video' | null
