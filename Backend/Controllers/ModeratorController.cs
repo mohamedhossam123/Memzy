@@ -13,54 +13,95 @@ namespace MyApiProject.Controllers
         {
             _moderatorService = moderatorService;
         }
+
         [HttpDelete("deleteUser")]
         [Authorize]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser([FromBody] DeleteUserRequest request)
         {
-            await _moderatorService.DeleteUserAsync(id);
-            return Ok(new { Message = "User deleted successfully" });
+            try
+            {
+                await _moderatorService.DeleteUserAsync(request.Id);
+                return Ok(new { Message = "User deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Failed to delete user", Error = ex.Message });
+            }
         }
+
         [HttpGet("pendingPosts")]
         [Authorize]
         public async Task<IActionResult> GetPendingPosts()
         {
-            var pendingPosts = await _moderatorService.GetPendingPostsAsync();
-            return Ok(pendingPosts);
+            try
+            {
+                var pendingPosts = await _moderatorService.GetPendingPostsAsync();
+                return Ok(pendingPosts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Failed to retrieve pending posts", Error = ex.Message });
+            }
         }
+
         [HttpPost("approvePost")]
         [Authorize]
-        public async Task<IActionResult> ApprovePost(int postId, int modId)
+        public async Task<IActionResult> ApprovePost([FromBody] PostActionRequest request)
         {
-            var result = await _moderatorService.ApprovePostAsync(postId, modId);
-            if (result)
+            try
             {
-                return Ok(new { Message = "Post approved successfully" });
+                var result = await _moderatorService.ApprovePostAsync(request.PostId, request.ModId);
+                if (result)
+                {
+                    return Ok(new { Message = "Post approved successfully" });
+                }
+                return BadRequest(new { Message = "Failed to approve post" });
             }
-            return BadRequest(new { Message = "Failed to approve post" });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while approving the post", Error = ex.Message });
+            }
         }
+
         [HttpPost("rejectPost")]
         [Authorize]
-        public async Task<IActionResult> RejectPost(int postId, int modId)
+        public async Task<IActionResult> RejectPost([FromBody] PostActionRequest request)
         {
-            var result = await _moderatorService.RejectPostAsync(postId, modId);
-            if (result)
+            try
             {
-                return Ok(new { Message = "Post rejected successfully" });
+                var result = await _moderatorService.RejectPostAsync(request.PostId, request.ModId);
+                if (result)
+                {
+                    return Ok(new { Message = "Post rejected successfully" });
+                }
+                return BadRequest(new { Message = "Failed to reject post" });
             }
-            return BadRequest(new { Message = "Failed to reject post" });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while rejecting the post", Error = ex.Message });
+            }
         }
+
         [HttpDelete("deletePost")]
         [Authorize] 
-        public async Task<IActionResult> DeletePost(int postId, int modId)
+        public async Task<IActionResult> DeletePost([FromBody] PostActionRequest request)
         {
-            var result = await _moderatorService.DeletePostAsync(postId, modId);
-            if (result)
+            try
             {
-                return Ok(new { Message = "Post deleted successfully" });
+                var result = await _moderatorService.DeletePostAsync(request.PostId, request.ModId);
+                if (result)
+                {
+                    return Ok(new { Message = "Post deleted successfully" });
+                }
+                return BadRequest(new { Message = "Failed to delete post" });
             }
-            return BadRequest(new { Message = "Failed to delete post" });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while deleting the post", Error = ex.Message });
+            }
         }
-    [HttpGet("users")]
+
+        [HttpGet("users")]
         [Authorize] 
         public async Task<IActionResult> GetAllUsers()
         {

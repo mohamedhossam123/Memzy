@@ -1,6 +1,5 @@
 // components/ModeratorDashboard.tsx
 'use client'
-
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/Context/AuthContext'
 import { useSearch } from '@/Context/SearchContext'
@@ -127,36 +126,36 @@ export default function ModeratorDashboard() {
   }, [activeTab, api, currentUser?.userId])
 
   const handlePostAction = async (postId: number, action: 'approve' | 'reject' | 'delete') => {
-    try {
-      const modId = currentUser?.userId
-      if (!modId) throw new Error('Moderator ID missing')
+  try {
+    const modId = currentUser?.userId
+    if (!modId) throw new Error('Moderator ID missing')
 
-      let response
-      switch (action) {
-        case 'approve':
-          response = await api.post('/api/Moderator/approvePost', { postId, modId })
-          break
-        case 'reject':
-          response = await api.post('/api/Moderator/rejectPost', { postId, modId })
-          break
-        case 'delete':
-          response = await api.delete('/api/Moderator/deletePost', {
-            body: JSON.stringify({ postId, modId }),
-            headers: { 'Content-Type': 'application/json' }
-          })
-          break
-      }
-      
-      if (response?.ok) {
-        setPendingPosts(posts => posts.filter(post => post.id !== postId))
-        showMessage('success', `Post ${action}d successfully`)
-      } else {
-        throw new Error(`Failed to ${action} post: ${response?.status}`)
-      }
-    } catch (err) {
-      showMessage('error', err instanceof Error ? err.message : 'Action failed')
+    let response
+    switch (action) {
+      case 'approve':
+        response = await api.post('/api/Moderator/approvePost', { postId, modId })
+        break
+      case 'reject':
+        response = await api.post('/api/Moderator/rejectPost', { postId, modId })
+        break
+      case 'delete':
+        response = await api.delete('/api/Moderator/deletePost', {
+          body: JSON.stringify({ postId, modId }),
+          headers: { 'Content-Type': 'application/json' }
+        })
+        break
     }
+    
+    if (response?.ok) {
+      setPendingPosts(posts => posts.filter(post => post.id !== postId))
+      showMessage('success', `Post ${action}d successfully`)
+    } else {
+      throw new Error(`Failed to ${action} post: ${response?.status}`)
+    }
+  } catch (err) {
+    showMessage('error', err instanceof Error ? err.message : 'Action failed')
   }
+}
 
   const handleDeleteUser = async (userId: number) => {
     try {
