@@ -1,4 +1,4 @@
-// Components/Feed.tsx
+// Components/Feed.tsx (Complete Fixed Version)
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
@@ -14,7 +14,9 @@ interface ApiPost {
   likeCounter: number
   isApproved: boolean
   humorTypeIds: number[]
-  userName: string 
+  userName: string
+  isLiked: boolean;
+  onLikeUpdate?: (postId: number, isLiked: boolean, likeCount: number) => void;
 }
 
 interface ApiResponse {
@@ -36,6 +38,7 @@ function mapApiPostToPostProps(apiPost: ApiPost): PostProps {
     timestamp: new Date(apiPost.createdAt).toLocaleString(),
     humorType: humorMap[apiPost.humorTypeIds[0]] || 'Friendly Humor',
     likes: apiPost.likeCounter,
+    isLiked: apiPost.isLiked || false, // Properly map the isLiked property
   }
 }
 
@@ -60,7 +63,7 @@ function useInfiniteScroll({ loading, hasMore, onLoadMore }: {
 
     observerRef.current = new IntersectionObserver(callback, {
       root: null,
-      rootMargin: '0px',
+      rootMargin: '100px', // Load more content 100px before reaching the bottom
       threshold: 0.1
     })
 
@@ -84,72 +87,111 @@ export default function Feed() {
   const [hasMore, setHasMore] = useState(true)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [initialLoad, setInitialLoad] = useState(true)
   const { user, api } = useAuth()
+  
   const { sentinelRef } = useInfiniteScroll({
     loading,
     hasMore,
-    onLoadMore: () => setPage(prev => prev + 1)
+    onLoadMore: useCallback(() => {
+      if (!loading && hasMore) {
+        setPage(prev => prev + 1)
+      }
+    }, [loading, hasMore])
   })
 
   useEffect(() => {
-  setPage(1)
-  setPosts([])
-  setHasMore(true)
-}, [user])
+    setPage(1)
+    setPosts([])
+    setHasMore(true)
+    setError(null)
+    setInitialLoad(true)
+  }, [user])
 
   const fetchPosts = useCallback(async () => {
-  try {
-    setLoading(true)
-    setError(null)
+    try {
+      setLoading(true)
+      setError(null)
 
-    const endpoint = user 
-      ? '/api/Posts/GetFirst6BasedOnUser'
-      : '/api/Posts/GetFirst6'
+      const endpoint = user 
+        ? `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetFirst6BasedOnUser`
+        : `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetFirst6`
 
-    const response = await api.post(
-      endpoint,
-      { page, pageSize: 6 },
-      { authenticated: !!user }
-    )
+      const response = await api.post(
+        endpoint,
+        { page, pageSize: 6 },
+        { authenticated: !!user }
+      )
 
-    if (!response || !response.ok) {
-      throw new Error('Failed to fetch feed')
+      if (!response || !response.ok) {
+        const errorText = await response?.text().catch(() => 'Unknown error')
+        throw new Error(`Failed to fetch feed: ${response?.status} ${errorText}`)
+      }
+
+      const data: ApiResponse = await response.json()
+      
+      if (!data.posts || !Array.isArray(data.posts)) {
+        throw new Error('Invalid response format from server')
+      }
+
+      const newPosts = data.posts.map(mapApiPostToPostProps)
+
+      setPosts(prev => {
+        if (page === 1) {
+          return newPosts
+        } else {
+          const existingIds = new Set(prev.map(p => p.id))
+          const uniqueNewPosts = newPosts.filter(post => !existingIds.has(post.id))
+          return [...prev, ...uniqueNewPosts]
+        }
+      })
+      
+      setHasMore(newPosts.length === 6)
+      setInitialLoad(false)
+    } catch (err) {
+      console.error('Feed error:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load feed')
+      setHasMore(false)
+    } finally {
+      setLoading(false)
     }
-
-    const data: ApiResponse = await response.json()
-    const newPosts = data.posts.map(mapApiPostToPostProps)
-
-    setPosts(prev => page === 1 ? newPosts : [...prev, ...newPosts])
-    setHasMore(newPosts.length === 6)
-  } catch (err) {
-    console.error('Feed error:', err)
-    setError(err instanceof Error ? err.message : 'Failed to load feed')
-  } finally {
-    setLoading(false)
-  }
-}, [user, api, page])
-
+  }, [user, api, page])
 
   useEffect(() => {
-  fetchPosts()
-}, [page])
+    fetchPosts()
+  }, [fetchPosts])
+  const updatePostLike = useCallback((postId: number, isLiked: boolean, likeCount: number) => {
+    setPosts(prev => prev.map(post => 
+      post.id === postId 
+        ? { ...post, isLiked, likes: likeCount }
+        : post
+    ))
+  }, [])
 
-
-  if (loading && page === 1) {
+  // Initial loading state
+  if (loading && initialLoad) {
     return (
       <div className="text-center py-12">
         <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-        <p className="text-light/60 mt-4">Loading your personalized feed...</p>
+        <p className="text-light/60 mt-4">
+          {user ? 'Loading your personalized feed...' : 'Loading posts...'}
+        </p>
       </div>
     )
   }
 
-  if (error) {
+  // Error state
+  if (error && posts.length === 0) {
     return (
       <div className="text-center py-12">
+        <div className="text-4xl mb-4">😵</div>
         <p className="text-red-400 mb-4">Error loading feed: {error}</p>
         <button 
-          onClick={() => window.location.reload()} 
+          onClick={() => {
+            setPage(1)
+            setError(null)
+            fetchPosts()
+          }} 
           className="px-4 py-2 bg-accent/20 text-accent rounded-lg hover:bg-accent/30 transition-colors"
         >
           Try Again
@@ -160,15 +202,37 @@ export default function Feed() {
 
   return (
     <div className="space-y-6">
+      {/* Welcome message for authenticated users */}
       {user && (
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-glow mb-2">
             Welcome back, {user.name}!
           </h2>
+          <p className="text-light/60">
+            Here are posts tailored to your humor preferences
+          </p>
+        </div>
+      )}
+
+      {/* Login prompt for unauthenticated users */}
+      {!user && (
+        <div className="text-center mb-6 bg-glass/5 rounded-2xl p-6">
+          <div className="text-4xl mb-2">👋</div>
+          <h3 className="text-xl font-semibold text-light mb-2">Welcome to Memzy!</h3>
+          <p className="text-light/60 mb-4">
+            Login to get personalized content based on your humor preferences
+          </p>
+          <a 
+            href="/login" 
+            className="inline-block px-6 py-2 bg-accent/20 text-accent rounded-lg hover:bg-accent/30 transition-colors"
+          >
+            Login
+          </a>
         </div>
       )}
       
-      {posts.length === 0 ? (
+      {/* Posts or empty state */}
+      {posts.length === 0 && !loading ? (
         <div className="text-center py-12 bg-glass/5 rounded-2xl">
           <div className="text-6xl mb-4">😅</div>
           <h3 className="text-xl font-semibold text-light mb-2">No posts found</h3>
@@ -177,22 +241,71 @@ export default function Feed() {
               ? "We couldn't find posts matching your humor preferences. Try updating your humor settings!" 
               : "No posts available at the moment. Check back later!"}
           </p>
+          {user && (
+            <button 
+              onClick={() => {
+                setPage(1)
+                fetchPosts()
+              }}
+              className="mt-4 px-4 py-2 bg-accent/20 text-accent rounded-lg hover:bg-accent/30 transition-colors"
+            >
+              Refresh Feed
+            </button>
+          )}
         </div>
       ) : (
         <>
+          {/* Posts list */}
           {posts.map((post) => (
-  <PostCard key={post.id} {...post} /> 
-))}
+            <PostCard 
+              key={`${post.id}-${post.isLiked}`} // Force re-render when like status changes
+              {...post} 
+              onLikeUpdate={updatePostLike} 
+            /> 
+          ))}
 
+          {/* Loading more indicator */}
           <div ref={sentinelRef} className="text-center py-4">
-            {hasMore && (
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+            {loading && hasMore && (
+              <>
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div>
+                <p className="text-light/60 mt-2 text-sm">Loading more posts...</p>
+              </>
             )}
           </div>
 
-          {!hasMore && (
-            <div className="text-center py-6 text-light/60">
-              You've reached the end of the feed
+          {/* End of feed message */}
+          {!hasMore && posts.length > 0 && (
+            <div className="text-center py-6 bg-glass/5 rounded-2xl">
+              <div className="text-2xl mb-2">🎉</div>
+              <p className="text-light/60">You've reached the end of the feed</p>
+              <button 
+                onClick={() => {
+                  setPage(1)
+                  setPosts([])
+                  setHasMore(true)
+                  fetchPosts()
+                }}
+                className="mt-3 px-4 py-2 bg-accent/20 text-accent rounded-lg hover:bg-accent/30 transition-colors text-sm"
+              >
+                Refresh Feed
+              </button>
+            </div>
+          )}
+
+          {/* Error state for pagination */}
+          {error && posts.length > 0 && (
+            <div className="text-center py-4 bg-red-500/10 rounded-lg border border-red-400/30">
+              <p className="text-red-400 text-sm">Failed to load more posts</p>
+              <button 
+                onClick={() => {
+                  setError(null)
+                  fetchPosts()
+                }}
+                className="mt-2 px-3 py-1 bg-red-400/20 text-red-400 rounded text-sm hover:bg-red-400/30 transition-colors"
+              >
+                Retry
+              </button>
             </div>
           )}
         </>

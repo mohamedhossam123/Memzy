@@ -79,6 +79,7 @@ public class ModeratorService : IModeratorService
             .Where(p => !p.IsApproved)
             .Include(p => p.PostHumors)
                 .ThenInclude(ph => ph.HumorType) 
+                .Include(p => p.Likes) 
             .Include(p => p.User)
             .ToListAsync();
 
@@ -90,7 +91,7 @@ public class ModeratorService : IModeratorService
             mediaUrl = p.FilePath,  
             timestamp = p.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),  
             humorType = p.PostHumors?.FirstOrDefault()?.HumorType?.HumorTypeName ?? "Dark Humor", 
-            likes = p.LikeCounter, 
+            likes = p.Likes.Count,
             status = p.IsApproved ? "approved" : "pending",
             userId = p.UserId,
             user = new

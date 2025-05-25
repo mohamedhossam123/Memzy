@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Memzy_finalist.Models.Entities;
 using Microsoft.AspNetCore.Http;
 
 namespace Memzy_finalist.Models
@@ -16,6 +17,7 @@ namespace Memzy_finalist.Models
     {
         public Post()
         {
+
             PostHumors = new List<PostHumor>();
         }
 
@@ -44,7 +46,6 @@ namespace Memzy_finalist.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public int LikeCounter { get; set; } = 0;
 
         public bool IsApproved { get; set; } = false;
 
@@ -53,6 +54,8 @@ namespace Memzy_finalist.Models
 
         public virtual User User { get; set; }
         public virtual ICollection<PostHumor> PostHumors { get; set; }
+        public virtual ICollection<PostLike> Likes { get; set; } = new List<PostLike>();
+
     }
 
     public class PostHumor
@@ -67,6 +70,7 @@ namespace Memzy_finalist.Models
         public int HumorTypeId { get; set; }
 
         // Navigation properties
+        
         public virtual Post Post { get; set; }
         public virtual HumorType HumorType { get; set; }
     }

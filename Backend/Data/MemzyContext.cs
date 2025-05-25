@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Memzy_finalist.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Memzy_finalist.Models
 {
@@ -7,6 +8,7 @@ namespace Memzy_finalist.Models
         public MemzyContext() { }
         public MemzyContext(DbContextOptions<MemzyContext> options) : base(options) { }
         public virtual DbSet<UserHumorType> UserHumorTypes { get; set; }
+        public DbSet<PostLike> PostLikes { get; set; }
         public virtual DbSet<Friendship> Friendships { get; set; }
         public virtual DbSet<FriendRequest> FriendRequests { get; set; }
         public virtual DbSet<HumorType> HumorTypes { get; set; }
@@ -28,6 +30,21 @@ namespace Memzy_finalist.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
 {
+    modelBuilder.Entity<PostLike>()
+        .HasKey(pl => new { pl.PostId, pl.UserId });
+
+    modelBuilder.Entity<PostLike>()
+        .HasOne(pl => pl.Post)
+        .WithMany(p => p.Likes)
+        .HasForeignKey(pl => pl.PostId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<PostLike>()
+        .HasOne(pl => pl.User)
+        .WithMany(u => u.PostLikes)
+        .HasForeignKey(pl => pl.UserId)
+        .OnDelete(DeleteBehavior.NoAction); // Changed from Cascade to NoAction
+
     modelBuilder.Entity<Post>(entity =>
     {
         entity.HasKey(p => p.PostId);
@@ -44,6 +61,7 @@ namespace Memzy_finalist.Models
               .HasForeignKey(p => p.UserId)
               .OnDelete(DeleteBehavior.Cascade);
     });
+
     modelBuilder.Entity<PostHumor>(entity =>
     {
         entity.HasKey(ph => ph.PostHumorId);
@@ -58,21 +76,22 @@ namespace Memzy_finalist.Models
               .HasForeignKey(ph => ph.HumorTypeId)
               .OnDelete(DeleteBehavior.Cascade);
     });
-   modelBuilder.Entity<FriendRequest>(entity =>
-{
-    entity.HasKey(e => e.RequestId);
-    entity.HasOne(d => d.Sender)
-        .WithMany(p => p.FriendRequestsSent)
-        .HasForeignKey(d => d.SenderId)
-        .OnDelete(DeleteBehavior.NoAction);
-    entity.HasOne(d => d.Receiver)
-        .WithMany(p => p.FriendRequestsReceived)
-        .HasForeignKey(d => d.ReceiverId)
-        .OnDelete(DeleteBehavior.NoAction);
-    entity.HasIndex(fr => new { fr.SenderId, fr.ReceiverId })
-        .IsUnique()
-        .HasFilter($"[Status] = '{FriendRequestStatus.Pending}'");
-});
+
+    modelBuilder.Entity<FriendRequest>(entity =>
+    {
+        entity.HasKey(e => e.RequestId);
+        entity.HasOne(d => d.Sender)
+            .WithMany(p => p.FriendRequestsSent)
+            .HasForeignKey(d => d.SenderId)
+            .OnDelete(DeleteBehavior.NoAction);
+        entity.HasOne(d => d.Receiver)
+            .WithMany(p => p.FriendRequestsReceived)
+            .HasForeignKey(d => d.ReceiverId)
+            .OnDelete(DeleteBehavior.NoAction);
+        entity.HasIndex(fr => new { fr.SenderId, fr.ReceiverId })
+            .IsUnique()
+            .HasFilter($"[Status] = '{FriendRequestStatus.Pending}'");
+    });
 
     modelBuilder.Entity<UserHumorType>()
         .HasKey(uht => new { uht.UserId, uht.HumorTypeId });
@@ -101,27 +120,25 @@ namespace Memzy_finalist.Models
     });
 
     modelBuilder.Entity<Friendship>(entity =>
-{
-    entity.HasKey(e => e.FriendshipId);
-    entity.HasOne(d => d.User1)
-        .WithMany(p => p.FriendsAsUser1)
-        .HasForeignKey(d => d.User1Id)
-        .OnDelete(DeleteBehavior.NoAction); // Changed to NoAction
-    entity.HasOne(d => d.User2)
-        .WithMany(p => p.FriendsAsUser2)
-        .HasForeignKey(d => d.User2Id)
-        .OnDelete(DeleteBehavior.NoAction); 
-    entity.HasIndex(e => new { e.User1Id, e.User2Id }).IsUnique();
-});
-
-
+    {
+        entity.HasKey(e => e.FriendshipId);
+        entity.HasOne(d => d.User1)
+            .WithMany(p => p.FriendsAsUser1)
+            .HasForeignKey(d => d.User1Id)
+            .OnDelete(DeleteBehavior.NoAction);
+        entity.HasOne(d => d.User2)
+            .WithMany(p => p.FriendsAsUser2)
+            .HasForeignKey(d => d.User2Id)
+            .OnDelete(DeleteBehavior.NoAction);
+        entity.HasIndex(e => new { e.User1Id, e.User2Id }).IsUnique();
+    });
 
     modelBuilder.Entity<User>()
         .HasIndex(u => u.Email)
         .IsUnique();
     modelBuilder.Entity<User>()
-    .HasIndex(u => u.UserName)
-    .IsUnique();
+        .HasIndex(u => u.UserName)
+        .IsUnique();
 
     modelBuilder.Entity<HumorType>()
         .HasIndex(ht => ht.HumorTypeName)

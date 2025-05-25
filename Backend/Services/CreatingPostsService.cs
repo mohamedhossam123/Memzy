@@ -51,7 +51,6 @@ public class CreatingPostsService : ICreatingPostsService
             ContentType = upload.ContentType,
             FileSize = file.Length,
             CreatedAt = DateTime.UtcNow,
-            LikeCounter = 0,
             IsApproved = false,
             PostHumors = new List<PostHumor>()
         };
@@ -128,7 +127,9 @@ public class CreatingPostsService : ICreatingPostsService
         return await _context.Posts
             .Where(p => p.UserId == userId)
             .Include(p => p.PostHumors)
+
                 .ThenInclude(ph => ph.HumorType)
+                .Include(p => p.Likes)
             .OrderByDescending(p => p.CreatedAt)
             .Select(p => new
             {
@@ -141,7 +142,7 @@ public class CreatingPostsService : ICreatingPostsService
                 p.ContentType,
                 p.FileSize,
                 p.CreatedAt,
-                p.LikeCounter,
+                LikeCount = p.Likes.Count,
                 p.IsApproved,
                 PostHumors = p.PostHumors.Select(ph => new
                 {
@@ -162,7 +163,9 @@ public class CreatingPostsService : ICreatingPostsService
         var total = await userPosts.CountAsync();
         var approved = await userPosts.CountAsync(p => p.IsApproved);
         var pending = total - approved;
-        var likes = await userPosts.SumAsync(p => p.LikeCounter);
+        var likes = await _context.PostLikes
+    .CountAsync(pl => userPosts.Select(p => p.PostId).Contains(pl.PostId));
+
 
         return new
         {

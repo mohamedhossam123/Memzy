@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using Memzy_finalist.Models.Entities;
 
 namespace Memzy_finalist.Models
 {
@@ -56,6 +57,8 @@ public string UserName { get; set; } = null!;
         public virtual ICollection<Friendship> FriendsAsUser2 { get; set; }
         public virtual ICollection<Message> MessagesSent { get; set; }
         public virtual ICollection<Message> MessagesReceived { get; set; }
+        public virtual ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();
+
         public virtual ICollection<Post> Posts { get; set; }
 
         [NotMapped]

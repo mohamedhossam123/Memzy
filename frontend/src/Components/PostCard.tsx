@@ -1,7 +1,8 @@
-// Component: PostCard
+// Component: PostCard 
 'use client'
 
-import { useState,useRef ,useEffect} from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { useAuth } from '@/Context/AuthContext'
 
 export interface PostProps {
   id: number
@@ -11,21 +12,30 @@ export interface PostProps {
   mediaUrl?: string | null
   timestamp: string
   humorType: 'Dark Humor' | 'Friendly Humor' 
-  likes: number 
+  likes: number
+  isLiked?: boolean 
+  onLikeUpdate?: (postId: number, isLiked: boolean, likes: number) => void;
 }
 
 export default function PostCard({
+  id,
   author,
   content,
   mediaType,
   mediaUrl,
   timestamp,
   humorType,
-  likes,
+  likes: initialLikes,
+  isLiked: initialIsLiked = false,
 }: PostProps) {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
   const [videoError, setVideoError] = useState(false)
+  const [likes, setLikes] = useState(initialLikes)
+  const [isLiked, setIsLiked] = useState(initialIsLiked)
+  const [isLikeLoading, setIsLikeLoading] = useState(false)
+  
+  const { api, user } = useAuth()
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const handleVideoEnd = () => {
@@ -34,6 +44,7 @@ export default function PostCard({
       videoRef.current.play()
     }
   }
+
   const getOptimizedMediaUrl = (url: string, type: 'image' | 'video') => {
     if (!url.includes('cloudinary.com')) return url
     
@@ -45,6 +56,38 @@ export default function PostCard({
     
     return url
   }
+
+  const handleLikeToggle = async () => {
+    if (isLikeLoading || !user) return
+    setIsLikeLoading(true)
+    const newIsLiked = !isLiked
+    const newLikes = newIsLiked ? likes + 1 : likes - 1
+    setIsLiked(newIsLiked)
+    setLikes(newLikes)
+    try {
+      const endpoint = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/${id}/like`
+      const response = newIsLiked 
+        ? await api.post(endpoint, {})
+        : await api.delete(endpoint)
+      if (!response || !response.ok) {
+        setIsLiked(!newIsLiked)
+        setLikes(newIsLiked ? likes : likes + 1)
+        throw new Error('Failed to update like status')
+      }
+            const data = await response.json().catch(() => null)
+      if (data) {
+        setLikes(data.likeCount || newLikes)
+        setIsLiked(data.isLiked !== undefined ? data.isLiked : newIsLiked)
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error)
+      setIsLiked(!newIsLiked)
+      setLikes(newIsLiked ? likes : likes + 1)
+    } finally {
+      setIsLikeLoading(false)
+    }
+  }
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -109,22 +152,22 @@ export default function PostCard({
       )}
 
       {mediaType === 'video' && mediaUrl && !videoError && (
-    <video
-      ref={videoRef}
-      controls
-      className="w-full max-h-96 rounded-xl border border-glass shadow-inner"
-      preload="auto"
-      muted
-      playsInline
-      onEnded={handleVideoEnd}
-      onError={() => {
-        setVideoError(true)
-        console.error('Failed to load video:', mediaUrl)
-      }}
-    >
-      <source src={getOptimizedMediaUrl(mediaUrl, 'video')} type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
+        <video
+          ref={videoRef}
+          controls
+          className="w-full max-h-96 rounded-xl border border-glass shadow-inner"
+          preload="auto"
+          muted
+          playsInline
+          onEnded={handleVideoEnd}
+          onError={() => {
+            setVideoError(true)
+            console.error('Failed to load video:', mediaUrl)
+          }}
+        >
+          <source src={getOptimizedMediaUrl(mediaUrl, 'video')} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       )}
 
       {/* Media Error States */}
@@ -161,10 +204,28 @@ export default function PostCard({
 
       {/* Like Counter */}
       <div className="flex items-center gap-2 pt-2 border-t border-glass/30">
-        <button className="text-accent hover:text-accent/80 transition-colors text-xl">
-          😂
+        <button 
+          className={`transition-all duration-200 text-xl ${
+            isLiked 
+              ? 'text-accent scale-110 hover:scale-105' 
+              : 'text-light/50 hover:text-accent hover:scale-105'
+          } ${isLikeLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${
+            !user ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+          onClick={handleLikeToggle}
+          disabled={isLikeLoading || !user}
+          aria-label={isLiked ? 'Unlike post' : 'Like post'}
+          title={!user ? 'Login to like posts' : undefined}
+        >
+          {isLikeLoading ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-accent"></div>
+          ) : (
+            '😂'
+          )}
         </button>
-        <span className="text-light/70">{likes} {likes === 1 ? 'like' : 'likes'}</span>
+        <span className="text-light/70">
+          {likes} {likes === 1 ? 'like' : 'likes'}
+        </span>
       </div>
     </div>
   )
