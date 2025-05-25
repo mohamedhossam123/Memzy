@@ -51,7 +51,6 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // Cancel previous request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
       }
@@ -75,8 +74,6 @@ export function SearchProvider({ children }: { children: ReactNode }) {
       }
 
       const data: unknown = await response.json()
-      
-      // Validate and normalize response format
       const normalizedResults = Array.isArray(data) 
         ? data.map(normalizeSearchResult)
         : []
@@ -93,7 +90,6 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     }
   }, [clearResults])
 
-  // Debounced search with 300ms delay
   const debouncedSearch = useCallback(
     debounce((query: string) => {
       searchImplementation(query)
@@ -101,13 +97,11 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     [searchImplementation]
   )
 
-  // Update search term and trigger search
   const handleSetSearchTerm = useCallback((term: string) => {
     setSearchTerm(term)
     debouncedSearch(term)
   }, [debouncedSearch])
 
-  // Cancel debounce on unmount
   useEffect(() => {
     return () => {
       debouncedSearch.cancel()
@@ -132,17 +126,14 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   )
 }
 
-// Type guard for search result validation
 function isSearchResult(obj: any): obj is SearchResult {
   return typeof obj === 'object' && 
          typeof obj.id === 'string' && 
          typeof obj.name === 'string'
 }
 
-// Normalize API response to SearchResult type
 function normalizeSearchResult(item: unknown): SearchResult {
   if (!isSearchResult(item)) {
-    console.warn('Invalid search result format:', item)
     return {
       id: 'invalid',
       name: 'Invalid result',

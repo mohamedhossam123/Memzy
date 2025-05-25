@@ -14,7 +14,7 @@ interface ApiPost {
   likeCounter: number
   isApproved: boolean
   humorTypeIds: number[]
-  userName: string // This should now be provided by your backend
+  userName: string 
 }
 
 interface ApiResponse {

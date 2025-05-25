@@ -1,7 +1,7 @@
 // components/ModeratorDashboard.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/Context/AuthContext'
 import { useSearch } from '@/Context/SearchContext'
 
@@ -17,6 +17,7 @@ interface PendingPost {
   likes: number
   status: 'pending' | 'approved' | 'rejected'
   userId: number
+  user: User
 }
 
 interface User {
@@ -38,36 +39,81 @@ export default function ModeratorDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [actionMessage, setActionMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
 
+  const detectMediaType = (url: string): 'image' | 'video' | null => {
+    if (!url) return null
+    
+    const urlLower = url.toLowerCase()
+    
+    if (urlLower.includes('.mp4') || urlLower.includes('.webm') || urlLower.includes('.mov') || 
+        urlLower.includes('.avi') || urlLower.includes('.mkv') || urlLower.includes('video')) {
+      return 'video'
+    }
+    
+    if (urlLower.includes('.jpg') || urlLower.includes('.jpeg') || urlLower.includes('.png') || 
+        urlLower.includes('.gif') || urlLower.includes('.webp') || urlLower.includes('.svg') ||
+        urlLower.includes('image')) {
+      return 'image'
+    }
+    
+    if (urlLower.includes('cloudinary.com')) {
+      if (urlLower.includes('/video/')) return 'video'
+      if (urlLower.includes('/image/')) return 'image'
+    }
+    
+    return null
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
+        setError(null)
         if (activeTab === 'posts') {
-          const postsResponse = await api.get('/api/moderator/pendingPosts')
+          const postsResponse = await api.get('/api/Moderator/pendingPosts')
+          
           if (postsResponse?.ok) {
             const posts = await postsResponse.json()
-            // Transform posts to include mediaType based on URL and remove unnecessary user data
-            const transformedPosts = posts.map((post: any) => ({
-              id: post.id,
-              author: post.author,
-              userName: post.userName,
-              content: post.content,
-              mediaType: post.mediaUrl?.includes('.mp4') ? 'video' : 
-                        post.mediaUrl?.includes('.jpg') || post.mediaUrl?.includes('.png') ? 'image' : null,
-              mediaUrl: post.mediaUrl,
-              timestamp: post.timestamp,
-              humorType: post.humorType,
-              likes: post.likes,
-              status: post.status,
-              userId: post.userId
-            }))
+            
+            if (!Array.isArray(posts)) {
+              setError('Invalid response format from server')
+              return
+            }
+            const transformedPosts = posts.map((post: any) => {
+              const mediaType = detectMediaType(post.mediaUrl)
+              
+              return {
+                id: post.id ,
+                content: post.content || '[No content available]',
+                mediaType: mediaType,
+                mediaUrl: post.mediaUrl,
+                timestamp: post.timestamp || new Date().toISOString(),
+                humorType: post.humorType || 'General',
+                likes: post.likes || 0,
+                status: post.status || 'pending',
+                userId: post.userId,
+                user: {
+                  id: post.user?.id || post.userId,
+                  name: post.user?.name || post.author || 'Unknown user',
+                  userName: post.user?.userName || post.userName || 'unknown',
+                  email: post.user?.email || '',
+                  status: post.user?.status || 'user',
+                  profilePictureUrl: post.user?.profilePictureUrl
+                }
+              }
+            })
+            
             setPendingPosts(transformedPosts)
+          } else {
+            setError(`Failed to fetch posts: ${postsResponse?.status || 'Unknown error'}`)
           }
         } else {
-          const usersResponse = await api.get('/api/users')
+          const usersResponse = await api.get('/api/Moderator/users')
+          
           if (usersResponse?.ok) {
             const users = await usersResponse.json()
             setAllUsers(users.filter((u: User) => u.id !== currentUser?.userId))
+          } else {
+            setError(`Failed to fetch users: ${usersResponse?.status || 'Unknown error'}`)
           }
         }
       } catch (err) {
@@ -88,24 +134,24 @@ export default function ModeratorDashboard() {
       let response
       switch (action) {
         case 'approve':
-          response = await api.post('/api/moderator/approvePost', { postId, modId })
+          response = await api.post('/api/Moderator/approvePost', { postId, modId })
           break
         case 'reject':
-          response = await api.post('/api/moderator/rejectPost', { postId, modId })
+          response = await api.post('/api/Moderator/rejectPost', { postId, modId })
           break
         case 'delete':
-          response = await api.delete('/api/moderator/deletePost', {
+          response = await api.delete('/api/Moderator/deletePost', {
             body: JSON.stringify({ postId, modId }),
             headers: { 'Content-Type': 'application/json' }
           })
           break
       }
-
+      
       if (response?.ok) {
         setPendingPosts(posts => posts.filter(post => post.id !== postId))
         showMessage('success', `Post ${action}d successfully`)
       } else {
-        throw new Error(`Failed to ${action} post`)
+        throw new Error(`Failed to ${action} post: ${response?.status}`)
       }
     } catch (err) {
       showMessage('error', err instanceof Error ? err.message : 'Action failed')
@@ -117,7 +163,7 @@ export default function ModeratorDashboard() {
       const modId = currentUser?.userId
       if (!modId) throw new Error('Moderator ID missing')
 
-      const response = await api.delete('/api/moderator/deleteUser', {
+      const response = await api.delete('/api/Moderator/deleteUser', {
         body: JSON.stringify({ id: userId, modId }),
         headers: { 'Content-Type': 'application/json' }
       })
@@ -140,12 +186,12 @@ export default function ModeratorDashboard() {
 
   const filteredUsers = allUsers.filter(user => 
     [user.name, user.userName, user.email].some(field => 
-      field.toLowerCase().includes(searchTerm.toLowerCase())
+      field?.toLowerCase().includes(searchTerm.toLowerCase())
     )
   )
 
   const getOptimizedMediaUrl = (url: string, type: 'image' | 'video') => {
-    if (!url.includes('cloudinary.com')) return url
+    if (!url || !url.includes('cloudinary.com')) return url
     
     if (type === 'image') {
       return url.replace('/upload/', '/upload/q_auto,f_auto,w_800,c_limit/')
@@ -154,6 +200,121 @@ export default function ModeratorDashboard() {
     }
     
     return url
+  }
+
+  const MediaDisplay = ({ post }: { post: PendingPost }) => {
+    const [imageLoaded, setImageLoaded] = useState(false)
+    const [imageError, setImageError] = useState(false)
+    const [videoError, setVideoError] = useState(false)
+    const videoRef = useRef<HTMLVideoElement>(null)
+
+    const handleVideoEnd = () => {
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0
+        videoRef.current.play()
+      }
+    }
+
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (videoRef.current) {
+              if (entry.isIntersecting) {
+                videoRef.current.play()
+              } else {
+                videoRef.current.pause()
+                videoRef.current.currentTime = 0
+              }
+            }
+          })
+        },
+        { threshold: 0.75 }
+      )
+
+      if (videoRef.current) {
+        observer.observe(videoRef.current)
+      }
+
+      return () => {
+        if (videoRef.current) {
+          observer.unobserve(videoRef.current)
+        }
+      }
+    }, [])
+
+    if (!post.mediaUrl) return null
+
+    if (post.mediaType === 'image') {
+      return (
+        <div className="mb-4 relative">
+          {!imageLoaded && !imageError && (
+            <div className="w-full h-64 bg-glass/5 rounded-xl border border-glass flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+            </div>
+          )}
+          {!imageError && (
+            <img
+              src={getOptimizedMediaUrl(post.mediaUrl, 'image')}
+              alt="Post media"
+              className={`w-full max-h-96 object-contain rounded-xl border border-glass shadow-inner transition-opacity duration-300 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0 absolute top-0'
+              }`}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
+              loading="lazy"
+            />
+          )}
+          {imageError && (
+            <div className="w-full h-32 bg-glass/5 rounded-xl border border-red-400/30 flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-2xl mb-2">🖼️</div>
+                <p className="text-red-400 text-sm">Image failed to load</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    if (post.mediaType === 'video') {
+      return (
+        <div className="mb-4">
+          {!videoError ? (
+            <video
+              ref={videoRef}
+              controls
+              className="w-full max-h-96 rounded-xl border border-glass shadow-inner"
+              preload="auto"
+              muted
+              playsInline
+              onEnded={handleVideoEnd}
+              onError={() => setVideoError(true)}
+            >
+              <source src={post.mediaUrl} type="video/mp4" />
+              <source src={getOptimizedMediaUrl(post.mediaUrl!, 'video')} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          ) : (
+            <div className="w-full h-32 bg-glass/5 rounded-xl border border-red-400/30 flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-2xl mb-2">🎥</div>
+                <p className="text-red-400 text-sm">Video failed to load</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    return (
+      <div className="mb-4">
+        <div className="text-center p-4 bg-glass/5 rounded-xl border border-yellow-400/30">
+          <div className="text-2xl mb-2">❓</div>
+          <p className="text-yellow-400 text-sm">Unknown media type</p>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {
@@ -235,15 +396,23 @@ export default function ModeratorDashboard() {
             <div className="grid gap-6">
               {pendingPosts.map(post => (
                 <div key={post.id} className="relative bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow">
-                  {/* Post Header - Simplified */}
+                  {/* Post Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-glass/20 flex items-center justify-center">
-                        {post.author?.charAt(0) || '?'}
-                      </div>
+                      {post.user.profilePictureUrl ? (
+                        <img 
+                          src={post.user.profilePictureUrl} 
+                          alt={post.user.name} 
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-glass/20 flex items-center justify-center">
+                          {post.user.name.charAt(0)}
+                        </div>
+                      )}
                       <div>
-                        <h3 className="font-semibold">{post.author || 'Unknown user'}</h3>
-                        <p className="text-xs text-light/50">@{post.userName || 'unknown'}</p>
+                        <h3 className="font-semibold">{post.user.name}</h3>
+                        <p className="text-xs text-light/50">@{post.user.userName}</p>
                         <p className="text-xs text-light/50">{new Date(post.timestamp).toLocaleString()}</p>
                       </div>
                     </div>
@@ -273,31 +442,7 @@ export default function ModeratorDashboard() {
                   <p className="mb-4 whitespace-pre-line">{post.content}</p>
 
                   {/* Media Display */}
-                  {post.mediaType === 'image' && post.mediaUrl && (
-                    <div className="mb-4">
-                      <img
-                        src={getOptimizedMediaUrl(post.mediaUrl, 'image')}
-                        alt="Post media"
-                        className="w-full max-h-96 object-contain rounded-xl border border-glass shadow-inner"
-                        loading="lazy"
-                      />
-                    </div>
-                  )}
-
-                  {post.mediaType === 'video' && post.mediaUrl && (
-                    <div className="mb-4">
-                      <video
-                        controls
-                        className="w-full max-h-96 rounded-xl border border-glass shadow-inner"
-                        preload="auto"
-                        muted
-                        playsInline
-                      >
-                        <source src={getOptimizedMediaUrl(post.mediaUrl, 'video')} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    </div>
-                  )}
+                  <MediaDisplay post={post} />
 
                   {/* Post Footer */}
                   <div className="flex items-center justify-between pt-4 border-t border-glass/30">
