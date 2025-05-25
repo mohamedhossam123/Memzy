@@ -12,4 +12,7 @@ public class PostDto
     public List<int> HumorTypeIds { get; set; } = new List<int>();
     public string UserName { get; set; }
     public bool IsLiked { get; set; } = false; 
+    public string ProfileImageUrl { get; set; }
+
+
 }

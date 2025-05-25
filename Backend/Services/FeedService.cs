@@ -19,16 +19,17 @@ namespace Memzy_finalist.Services
 
             return posts.Select(p => new PostDto
             {
-                PostId       = p.PostId,
-                MediaType    = p.MediaType,
-                Description  = p.Description,
-                FilePath     = p.FilePath,
-                CreatedAt    = p.CreatedAt,
-                LikeCounter  = p.Likes.Count,
-                IsApproved   = p.IsApproved,
+                PostId = p.PostId,
+                MediaType = p.MediaType,
+                Description = p.Description,
+                FilePath = p.FilePath,
+                CreatedAt = p.CreatedAt,
+                LikeCounter = p.Likes.Count,
+                IsApproved = p.IsApproved,
                 HumorTypeIds = p.PostHumors.Select(ph => ph.HumorTypeId).ToList(),
-                UserName     = p.User?.UserName ?? p.User?.Name ?? "Anonymous",
-                IsLiked      = currentUserId.HasValue && p.Likes.Any(l => l.UserId == currentUserId.Value)
+                UserName = p.User?.UserName ?? p.User?.Name ?? "Anonymous",
+                IsLiked = currentUserId.HasValue && p.Likes.Any(l => l.UserId == currentUserId.Value),
+                ProfileImageUrl = p.User?.ProfilePictureUrl
             }).ToList();
         }
 

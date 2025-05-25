@@ -1,4 +1,3 @@
-// Component: PostCard 
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
@@ -13,6 +12,7 @@ export interface PostProps {
   timestamp: string
   humorType: 'Dark Humor' | 'Friendly Humor' 
   likes: number
+  profileImageUrl?: string | null;
   isLiked?: boolean 
   onLikeUpdate?: (postId: number, isLiked: boolean, likes: number) => void;
 }
@@ -27,7 +27,9 @@ export default function PostCard({
   humorType,
   likes: initialLikes,
   isLiked: initialIsLiked = false,
-}: PostProps) {
+  profileImageUrl, 
+}: PostProps) 
+ {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
   const [videoError, setVideoError] = useState(false)
@@ -74,7 +76,7 @@ export default function PostCard({
         setLikes(newIsLiked ? likes : likes + 1)
         throw new Error('Failed to update like status')
       }
-            const data = await response.json().catch(() => null)
+      const data = await response.json().catch(() => null)
       if (data) {
         setLikes(data.likeCount || newLikes)
         setIsLiked(data.isLiked !== undefined ? data.isLiked : newIsLiked)
@@ -89,86 +91,108 @@ export default function PostCard({
   }
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (videoRef.current) {
-            if (entry.isIntersecting) {
-              videoRef.current.play()
-            } else {
-              videoRef.current.pause()
-              videoRef.current.currentTime = 0
-            }
+  const videoElement = videoRef.current
+  if (!videoElement) return
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (!videoElement) return
+
+        if (entry.isIntersecting) {
+          if (videoElement.paused && videoElement.readyState >= 2) {
+            videoElement.play().catch(() => {})
           }
-        })
-      },
-      { threshold: 0.75 }
-    )
-
-    if (videoRef.current) {
-      observer.observe(videoRef.current)
+        } else {
+          videoElement.pause()
+          videoElement.currentTime = 0
+        }
+      })
+    },
+    {
+      threshold: 0.5 
     }
+  )
+  observer.observe(videoElement)
+  return () => {
+    observer.disconnect()
+  }
+}, [])
 
-    return () => {
-      if (videoRef.current) {
-        observer.unobserve(videoRef.current)
-      }
-    }
-  }, [])
 
   return (
     <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow hover:shadow-glow/50 transition-all space-y-4">
-      {/* Top: Author + Timestamp */}
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold text-glow">{author}</h3>
-        <p className="text-sm text-light/50">{timestamp}</p>
+  <div className="flex items-center gap-3">
+    {profileImageUrl ? (
+      <img
+        src={profileImageUrl}
+        alt={`${author}'s profile`}
+        className="w-9 h-9 rounded-full object-cover border border-glass"
+      />
+    ) : (
+      <div className="w-9 h-9 rounded-full bg-glass flex items-center justify-center text-sm text-light/60 border border-glass">
+        👤
       </div>
+    )}
+    <h3 className="text-lg font-semibold text-glow">{author}</h3>
+  </div>
+  <p className="text-sm text-light/50">{timestamp}</p>
+</div>
 
       {/* Content */}
       <p className="text-light/90 whitespace-pre-line">{content}</p>
 
       {/* Media */}
       {mediaType === 'image' && mediaUrl && !imageError && (
-        <div className="relative">
-          {!imageLoaded && (
-            <div className="w-full h-64 bg-glass/5 rounded-xl border border-glass flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-            </div>
-          )}
-          <img
-            src={getOptimizedMediaUrl(mediaUrl, 'image')}
-            alt="Post media"
-            className={`w-full max-h-96 object-cover rounded-xl border border-glass shadow-inner transition-opacity duration-300 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0 absolute top-0'
-            }`}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => {
-              setImageError(true)
-              console.error('Failed to load image:', mediaUrl)
-            }}
-            loading="lazy"
-          />
+        <div className="-mx-6">
+          <div className="relative">
+            {!imageLoaded && (
+              <div className="w-full h-64 bg-glass/5 rounded-xl border border-glass flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+              </div>
+            )}
+            <img
+              src={getOptimizedMediaUrl(mediaUrl, 'image')}
+              alt="Post media"
+              className={`w-full object-cover rounded-none border-y border-glass transition-opacity duration-300 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0 absolute top-0'
+              }`}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => {
+                setImageError(true)
+                console.error('Failed to load image:', mediaUrl)
+              }}
+              loading="lazy"
+            />
+          </div>
         </div>
       )}
 
-      {mediaType === 'video' && mediaUrl && !videoError && (
-        <video
-          ref={videoRef}
-          controls
-          className="w-full max-h-96 rounded-xl border border-glass shadow-inner"
-          preload="auto"
-          muted
-          playsInline
-          onEnded={handleVideoEnd}
-          onError={() => {
-            setVideoError(true)
-            console.error('Failed to load video:', mediaUrl)
-          }}
-        >
-          <source src={getOptimizedMediaUrl(mediaUrl, 'video')} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      )}
+{mediaType === 'video' && mediaUrl && !videoError && (
+  <div className="-mx-6 relative">
+    <video
+      ref={videoRef}
+      controls
+      className="w-full h-auto max-h-[800px] rounded-none border-y border-glass"
+      preload="auto"
+      playsInline
+      onLoadedMetadata={(e) => {
+        const video = e.currentTarget
+        const aspectRatio = video.videoWidth / video.videoHeight
+        video.style.aspectRatio = aspectRatio.toString()
+      }}
+      onEnded={handleVideoEnd}
+      onError={() => {
+        setVideoError(true)
+        console.error('Failed to load video:', mediaUrl)
+      }}
+    >
+      <source src={getOptimizedMediaUrl(mediaUrl, 'video')} type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+  </div>
+)}
 
       {/* Media Error States */}
       {imageError && mediaType === 'image' && (

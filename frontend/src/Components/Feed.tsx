@@ -1,4 +1,4 @@
-// Components/Feed.tsx (Complete Fixed Version)
+// Components/Feed.tsx
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
@@ -12,6 +12,7 @@ interface ApiPost {
   filePath: string
   createdAt: string
   likeCounter: number
+  profileImageUrl?: string
   isApproved: boolean
   humorTypeIds: number[]
   userName: string
@@ -38,9 +39,11 @@ function mapApiPostToPostProps(apiPost: ApiPost): PostProps {
     timestamp: new Date(apiPost.createdAt).toLocaleString(),
     humorType: humorMap[apiPost.humorTypeIds[0]] || 'Friendly Humor',
     likes: apiPost.likeCounter,
-    isLiked: apiPost.isLiked || false, // Properly map the isLiked property
+    isLiked: apiPost.isLiked || false, 
+    profileImageUrl: apiPost.profileImageUrl || null,
   }
 }
+
 
 function useInfiniteScroll({ loading, hasMore, onLoadMore }: { 
   loading: boolean
@@ -63,7 +66,7 @@ function useInfiniteScroll({ loading, hasMore, onLoadMore }: {
 
     observerRef.current = new IntersectionObserver(callback, {
       root: null,
-      rootMargin: '100px', // Load more content 100px before reaching the bottom
+      rootMargin: '100px', 
       threshold: 0.1
     })
 
@@ -258,7 +261,7 @@ export default function Feed() {
           {/* Posts list */}
           {posts.map((post) => (
             <PostCard 
-              key={`${post.id}-${post.isLiked}`} // Force re-render when like status changes
+              key={`${post.id}-${post.isLiked}`} 
               {...post} 
               onLikeUpdate={updatePostLike} 
             /> 

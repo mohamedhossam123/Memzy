@@ -171,6 +171,18 @@
   }
 }
 
+/* Add to your global CSS */
+video {
+  aspect-ratio: 16/9;
+  oobject-fit: contain ;
+  background: black;
+}
+
+img {
+  object-fit: cover;
+}
+
+
 /* Input mask transitions */
 #main {
   &:focus-within {
