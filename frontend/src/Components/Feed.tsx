@@ -211,9 +211,6 @@ export default function Feed() {
           <h2 className="text-2xl font-bold text-glow mb-2">
             Welcome back, {user.name}!
           </h2>
-          <p className="text-light/60">
-            Here are posts tailored to your humor preferences
-          </p>
         </div>
       )}
 
