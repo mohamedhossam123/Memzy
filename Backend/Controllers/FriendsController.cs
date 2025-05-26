@@ -56,8 +56,6 @@ public async Task<IActionResult> SendFriendRequest(int receiverId)
         return StatusCode(500, new { error = "An error occurred while processing your request" });
     }
 }
-
-        // In FriendsController.cs
 [HttpPost("acceptRequest/{requestId}")]
 [Authorize]
 public async Task<IActionResult> AcceptFriendRequest(int requestId)

@@ -200,10 +200,24 @@ export function Header() {
 
       {/* Center Section - Search Bar */}
       <div ref={searchRef} className="relative mx-6 flex-1 max-w-2xl">
-        <div className="flex items-center bg-[#2f3640] rounded-[50px] relative">
+        <div className="flex items-center bg-[#1e1e2d] rounded-lg relative transition-all duration-300 focus-within:ring-2 focus-within:ring-[#c56cf0] focus-within:bg-[#2a2a3a]">
+          <svg
+            className="w-5 h-5 text-gray-400 ml-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
           <input
             type="text"
-            className="border-none bg-transparent outline-none text-white text-[15px] py-4 px-6 w-full"
+            className="border-none bg-transparent outline-none text-white text-[15px] py-3 px-4 w-full placeholder-gray-400 focus:placeholder-gray-500"
             placeholder="Search users..."
             value={query}
             onChange={(e) => handleSearchChange(e.target.value)}
@@ -212,14 +226,14 @@ export function Header() {
           />
           {loading && (
             <div className="absolute right-4">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#c56cf0]"></div>
             </div>
           )}
         </div>
 
         {/* Search Results Dropdown */}
         {showResults && (
-          <div className="absolute top-full mt-2 w-full bg-[#2d1b3a] rounded-lg shadow-lg border border-[rgba(255,255,255,0.1)] max-h-60 overflow-auto z-50">
+          <div className="absolute top-full mt-2 w-full bg-[#2d1b3a] rounded-lg shadow-lg border border-[rgba(255,255,255,0.1)] max-h-60 overflow-auto z-50 backdrop-blur-md">
             <SearchStatusIndicator />
             {results.map((result: SearchResult) => {
               const resultImg = getSearchResultImageUrl(result.profilePictureUrl)
