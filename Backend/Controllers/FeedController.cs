@@ -68,21 +68,15 @@ namespace MyApiProject.Controllers
                 {
                     return BadRequest(new { message = "Post already liked" });
                 }
-
-                // Add the like
                 var like = new PostLike
                 {
                     PostId = postId,
                     UserId = userId
                 };
-
                 _context.Set<PostLike>().Add(like);
                 await _context.SaveChangesAsync();
-
-                // Get updated like count
                 var likeCount = await _context.Set<PostLike>()
                     .CountAsync(pl => pl.PostId == postId);
-
                 return Ok(new { 
                     message = "Post liked successfully", 
                     likeCount = likeCount,

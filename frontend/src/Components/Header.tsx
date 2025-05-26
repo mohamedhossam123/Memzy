@@ -25,8 +25,6 @@ export function Header() {
   const [isUploading, setIsUploading] = useState(false)
   const [userName, setUserName] = useState<string>('')
 
-
-
   const debouncedSearch = useCallback(
     debounce((searchTerm: string) => {
       if (searchTerm.trim()) {
@@ -36,11 +34,13 @@ export function Header() {
     }, 300),
     [search]
   )
+  
   useEffect(() => {
     return () => {
       debouncedSearch.cancel()
     }
   }, [debouncedSearch])
+  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -77,8 +77,8 @@ export function Header() {
       
       setUserName(data.userName)
       if (user && typeof user.userId === 'number') {
-  updateUser({ ...user, userName: data.userName })
-}
+        updateUser({ ...user, userName: data.userName })
+      }
 
     } catch (err) {
       console.error('Error fetching username:', err)
@@ -121,9 +121,18 @@ export function Header() {
   }
 
   const handleResultClick = (userId: string | number) => {
-    router.push(`/profile/${userId}`)
+    console.log('Navigating to profile:', userId) // Debug log
     setShowResults(false)
     setQuery('')
+    
+    router.push(`/profile/${userId}`)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent, userId: string | number) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleResultClick(userId)
+    }
   }
 
   const SearchStatusIndicator = () => {
@@ -217,10 +226,12 @@ export function Header() {
               return (
                 <div
                   key={result.id}
-                  className="p-3 hover:bg-[#3a2449] cursor-pointer flex items-center gap-3"
+                  className="p-3 hover:bg-[#3a2449] cursor-pointer flex items-center gap-3 transition-colors duration-200"
                   onClick={() => handleResultClick(result.id)}
+                  onKeyDown={(e) => handleKeyDown(e, result.id)}
                   role="button"
                   tabIndex={0}
+                  aria-label={`View profile of ${result.name}`}
                 >
                   <img
                     src={resultImg}

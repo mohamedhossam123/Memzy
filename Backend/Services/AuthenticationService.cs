@@ -87,6 +87,29 @@ public class AuthenticationService : IAuthenticationService
     {
         return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
     }
+    public async Task<GetUserDto> GetUserDtoByIdAsync(int userId)
+{
+    var user = await _context.Users.FindAsync(userId);
+    if (user == null)
+        return null;
+
+    var friendCount = await GetFriendCountAsync(userId);
+    var postCount = await GetPostCountAsync(userId);
+
+    return new GetUserDto
+    {
+        Id = user.UserId,
+        Name = user.Name,
+        Email = user.Email,
+        UserName = user.UserName,
+        Status = user.Status,
+        CreatedAt = user.CreatedAt,
+        ProfilePictureUrl = user.ProfilePictureUrl ?? string.Empty,
+        Bio = user.Bio ?? string.Empty,
+        FriendsCount = friendCount,
+        PostsCount = postCount
+    };
+}
 
     public async Task<User> VerifyUserAsync(string email, string password)
     {
@@ -228,19 +251,24 @@ public async Task<(bool Success, string Message, object Data)> GetCurrentUserInf
 
         var friendCount = await GetFriendCountAsync(userId);
         var postCount = await GetPostCountAsync(userId);
+        var userDto = new GetUserDto
+        {
+            Id = user.UserId,
+            Name = user.Name,
+            Email = user.Email,
+            UserName = user.UserName,
+            Status = user.Status,
+            CreatedAt = user.CreatedAt,
+            ProfilePictureUrl = user.ProfilePictureUrl ?? string.Empty,
+            Bio = user.Bio ?? string.Empty,
+            FriendsCount = friendCount,
+            PostsCount = postCount
+        };
 
         return (true, "User info fetched", new
         {
-            user.UserId,
-            user.Name,
-            user.Email,
-            user.ProfilePictureUrl,
-            user.Bio,
-            user.CreatedAt,
-            user.UserName,
-            HumorTypes = humorTypes,
-            FriendCount = friendCount,
-            PostCount = postCount
+            User = userDto,
+            HumorTypes = humorTypes
         });
     }
     catch (Exception ex)
@@ -248,7 +276,6 @@ public async Task<(bool Success, string Message, object Data)> GetCurrentUserInf
         return (false, $"Error retrieving current user: {ex.Message}", null);
     }
 }
-
 public async Task<(bool Success, string Message, object Data)> GetFriendAndPostCountAsync()
 {
     try

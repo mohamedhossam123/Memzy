@@ -41,42 +41,43 @@ namespace MyApiProject.Controllers
         [HttpGet("GetUserByID")]
         public async Task<IActionResult> GetUser(int id)
         {
-            var user = await _authService.GetUserByIdAsync(id);
-            return user != null ? Ok(user) : NotFound();
+            var userDto = await _authService.GetUserDtoByIdAsync(id);
+            return userDto != null ? Ok(userDto) : NotFound();
         }
 
         [HttpPost("login")]
-public async Task<IActionResult> Login([FromBody] LoginDto dto)
-{
-    if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
-        return BadRequest("Email and password are required.");
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
+                return BadRequest("Email and password are required.");
 
-    var result = await _authService.LoginAsync(dto);
-    if (!result.Success)
-        return Unauthorized(result.Message);
-    return Ok(new
-    {
-        token = result.Token,
-        user = result.User
-    });
-}
+            var result = await _authService.LoginAsync(dto);
+            if (!result.Success)
+                return Unauthorized(result.Message);
+            
+            return Ok(new
+            {
+                token = result.Token,
+                user = result.User
+            });
+        }
 
         [HttpGet("validate")]
         [Authorize]
         public async Task<IActionResult> ValidateToken()
         {
             var result = await _authService.ValidateTokenAsync();
-    if (!result.Success)
-        return Unauthorized(new { message = result.Message });
+            if (!result.Success)
+                return Unauthorized(new { message = result.Message });
 
-    return Ok(result.Data);
+            return Ok(result.Data);
         }
 
         [HttpPost("logout")]
         [Authorize]
         public IActionResult Logout()
         {
-            return Ok("Logged out successfully");
+            return Ok(new { message = "Logged out successfully" });
         }
 
         [HttpGet("refresh")]
@@ -84,7 +85,7 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
         public async Task<IActionResult> RefreshToken()
         {
             var result = await _authService.RefreshTokenAsync();
-            return result.Success ? Ok(new { result.Token }) : StatusCode(500, result.Message);
+            return result.Success ? Ok(new { token = result.Token }) : StatusCode(500, new { message = result.Message });
         }
 
         [HttpGet("getCurrentUser")]
@@ -92,7 +93,7 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
         public async Task<IActionResult> GetCurrentUser()
         {
             var result = await _authService.GetCurrentUserInfoAsync();
-            return result.Success ? Ok(result.Data) : StatusCode(500, result.Message);
+            return result.Success ? Ok(result.Data) : StatusCode(500, new { message = result.Message });
         }
 
         [HttpGet("friend-post-count")]
@@ -100,7 +101,7 @@ public async Task<IActionResult> Login([FromBody] LoginDto dto)
         public async Task<IActionResult> GetFriendCountAndPostCount()
         {
             var result = await _authService.GetFriendAndPostCountAsync();
-            return result.Success ? Ok(result.Data) : StatusCode(500, result.Message);
+            return result.Success ? Ok(result.Data) : StatusCode(500, new { message = result.Message });
         }
     }
 }

@@ -2,6 +2,7 @@ using Memzy_finalist.Models;
 public interface IAuthenticationService
 {
     Task UpdateUserAsync(User user);
+    Task<GetUserDto> GetUserDtoByIdAsync(int userId); 
     Task<User> GetUserByUsernameAsync(string username);
     Task<User> GetUserByIdAsync(int id);
     Task<User> CreateUserAsync(User user);
