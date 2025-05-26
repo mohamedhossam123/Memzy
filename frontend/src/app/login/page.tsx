@@ -1,83 +1,170 @@
-//login/page.tsx
-
 'use client'
 import { useState } from 'react'
 import { useAuth } from '@/Context/AuthContext'
 import Link from 'next/link'
+import { FiMail, FiLock, FiLogIn, FiArrowRight } from 'react-icons/fi'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const { login } = useAuth()
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setIsLoading(true)
     
     try {
       await login(email, password)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials and try again.')
+    } finally {
+      setIsLoading(false)
     }
   }
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#2d1b3a] to-[#201429]">
-      <div className="bg-[#121212] p-8 rounded-lg shadow-lg w-full max-w-md border border-[rgba(255,255,255,0.05)]">
-        <h2 className="text-3xl font-bold mb-6 text-center text-[#c56cf0] drop-shadow-[0_0_10px_rgba(197,108,240,0.3)]">
-          Login to Memzy
-        </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a0526] via-[#2d0b3d] to-[#42175a] p-4">
+      <div className="bg-[#0f0f0f]/90 backdrop-blur-md p-8 rounded-xl shadow-2xl w-full max-w-md border border-[#ffffff08] relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-[#c56cf0]/10 blur-xl"></div>
+        <div className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full bg-[#7d5fff]/10 blur-xl"></div>
         
-        {error && (
-          <div className="mb-4 p-3 bg-red-500/20 text-red-300 rounded-lg text-center">
-            {error}
-          </div>
-        )}
-        
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-gray-300 mb-2 font-medium">Email</label>
-            <input
-              type="email"
-              className="w-full px-4 py-3 bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)] rounded-lg text-white focus:outline-none focus:border-[#c56cf0] focus:ring-1 focus:ring-[rgba(197,108,240,0.3)] transition-all"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+        <div className="relative z-10">
+          <div className="flex justify-center mb-6">
+            <div className="p-3 rounded-lg bg-gradient-to-r from-[#c56cf0] to-[#7d5fff] shadow-lg">
+              <FiLogIn className="text-white text-2xl" />
+            </div>
           </div>
           
-          <div>
-            <label className="block text-gray-300 mb-2 font-medium">Password</label>
-            <input
-              type="password"
-              className="w-full px-4 py-3 bg-[#1a1a1a] border border-[rgba(255,255,255,0.1)] rounded-lg text-white focus:outline-none focus:border-[#c56cf0] focus:ring-1 focus:ring-[rgba(197,108,240,0.3)] transition-all"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          <h2 className="text-3xl font-bold mb-2 text-center text-white">
+            Welcome Back
+          </h2>
+          <p className="text-center text-[#b3b3b3] mb-8">
+            Log in to continue to Memzy
+          </p>
           
-          <button
-            type="submit"
-            className="w-full bg-[#c56cf0] hover:bg-[#a569bd] text-white font-medium py-3 px-4 rounded-lg transition-all"
-          >
-            Login
-          </button>
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start">
+              <div className="text-red-400 mr-3 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <div className="text-red-300 text-sm flex-1">{error}</div>
+            </div>
+          )}
           
-          <div className="mt-4 text-center">
-            <p className="text-gray-400">
-              Don't have an account?{" "}
-              <Link 
-                href="/SignUp" 
-                className="text-[#c56cf0] hover:text-[#a569bd] font-medium transition-all hover:underline"
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-[#b3b3b3] text-sm font-medium mb-2">Email</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiMail className="text-gray-500" />
+                </div>
+                <input
+                  type="email"
+                  className="w-full pl-10 pr-4 py-3 bg-[#1a1a1a]/70 border border-[#ffffff10] rounded-lg text-white placeholder-[#555] focus:outline-none focus:ring-2 focus:ring-[#c56cf0]/50 focus:border-[#c56cf0]/30 transition-all"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-[#b3b3b3] text-sm font-medium mb-2">Password</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiLock className="text-gray-500" />
+                </div>
+                <input
+                  type="password"
+                  className="w-full pl-10 pr-4 py-3 bg-[#1a1a1a]/70 border border-[#ffffff10] rounded-lg text-white placeholder-[#555] focus:outline-none focus:ring-2 focus:ring-[#c56cf0]/50 focus:border-[#c56cf0]/30 transition-all"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              <div className="mt-2 text-right">
+                <Link href="/forgot-password" className="text-xs text-[#b3b3b3] hover:text-[#c56cf0] transition-colors">
+                  Forgot password?
+                </Link>
+              </div>
+            </div>
+            
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#c56cf0] to-[#7d5fff] text-white font-medium py-3 px-4 rounded-lg transition-all hover:shadow-lg hover:shadow-[#c56cf0]/20 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  Sign In <FiArrowRight className="ml-1" />
+                </>
+              )}
+            </button>
+            
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-[#ffffff10]"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="px-2 bg-[#0f0f0f] text-[#b3b3b3]">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                className="flex items-center justify-center gap-2 bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white font-medium py-2.5 px-4 rounded-lg transition-all border border-[#ffffff10]"
               >
-                Sign up now
-              </Link>
-            </p>
-          </div>
-        </form>
+                <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 8 19">
+                  <path fillRule="evenodd" d="M6.135 3H8V0H6.135a4.147 4.147 0 0 0-4.142 4.142V6H0v3h2v9.938h3V9h2.021l.592-3H5V3.591A.6.6 0 0 1 5.592 3h.543Z" clipRule="evenodd"/>
+                </svg>
+                Facebook
+              </button>
+              <button
+                type="button"
+                className="flex items-center justify-center gap-2 bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white font-medium py-2.5 px-4 rounded-lg transition-all border border-[#ffffff10]"
+              >
+                <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 19">
+                  <path fillRule="evenodd" d="M8.842 18.083a8.8 8.8 0 0 1-8.65-8.948 8.841 8.841 0 0 1 8.8-8.652h.153a8.464 8.464 0 0 1 5.7 2.257l-2.193 2.038A5.27 5.27 0 0 0 9.09 3.4a5.882 5.882 0 0 0-.2 11.76h.124a5.091 5.091 0 0 0 5.248-4.057L14.3 11H9V8h8.34c.066.543.095 1.09.088 1.636-.086 5.053-3.463 8.449-8.4 8.449l-.186-.002Z" clipRule="evenodd"/>
+                </svg>
+                Google
+              </button>
+            </div>
+            
+            <div className="mt-6 text-center text-sm">
+              <p className="text-[#b3b3b3]">
+                Don't have an account?{" "}
+                <Link 
+                  href="/SignUp" 
+                  className="text-[#c56cf0] hover:text-[#a569bd] font-medium transition-all hover:underline"
+                >
+                  Sign up now
+                </Link>
+              </p>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )
