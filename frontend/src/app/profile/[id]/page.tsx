@@ -57,6 +57,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
   useEffect(() => {
     setProfileImageError(false)
   }, [userData?.profilePictureUrl])
+
   useEffect(() => {
     if (userData && userData.isFriend) {
       fetchUserPosts()
@@ -92,7 +93,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
       setIsLoading(false)
     }
   }
-// HEYYYYYYYYYYYYYYYYYYYYYYYYYYY   NEED TO DO THIS MOHAMED
+
   const fetchFriendshipStatus = async (targetUserId: number) => {
     try {
       const response = await fetch(
@@ -182,7 +183,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
     setFriendshipLoading(true)
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/RemoveFriend?friendId=${userData.id}`, // Changed from userId to id
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/RemoveFriend?friendId=${userData.id}`,
         {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
@@ -358,18 +359,25 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
               Social Stats
             </h3>
             <div className="flex justify-around">
-              <button
-                onClick={() => {
-                  setActiveModal('friends')
-                  fetchUserFriends()
-                }}
-                className="flex flex-col items-center transition-transform hover:scale-105"
-              >
-                <span className="text-3xl font-bold mb-1">{userData.friendsCount ?? 0}</span> {/* Updated property name */}
-                <span className="text-sm text-light/70">Friends</span>
-              </button>
+              {userData.isFriend ? (
+                <button
+                  onClick={() => {
+                    setActiveModal('friends')
+                    fetchUserFriends()
+                  }}
+                  className="flex flex-col items-center transition-transform hover:scale-105 cursor-pointer"
+                >
+                  <span className="text-3xl font-bold mb-1">{userData.friendsCount ?? 0}</span> 
+                  <span className="text-sm text-light/70">Friends</span>
+                </button>
+              ) : (
+                <div className="flex flex-col items-center cursor-default">
+                  <span className="text-3xl font-bold mb-1">{userData.friendsCount ?? 0}</span> 
+                  <span className="text-sm text-light/70">Friends</span>
+                </div>
+              )}
               <div className="flex flex-col items-center">
-                <span className="text-3xl font-bold mb-1">{userData.postsCount ?? 0}</span> {/* Updated property name */}
+                <span className="text-3xl font-bold mb-1">{userData.postsCount ?? 0}</span> 
                 <span className="text-sm text-light/70">Posts</span>
               </div>
             </div>
@@ -384,12 +392,6 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
                 <span className="text-xl">👤</span>
                 <span className="text-light/90">
                   Member since {userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'joining'}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xl">🎭</span>
-                <span className="text-light/90">
-                  {userData.humorTypes?.length ?? 0} humor preferences
                 </span>
               </div>
               {userData.status && (
@@ -527,7 +529,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
           )}
         </div>
 
-        {/* Friends Modal */}
+        {/* Friends Modal - Only shown if isFriend is true */}
         <Transition appear show={activeModal === 'friends'} as={Fragment}>
           <Dialog
             as="div"
