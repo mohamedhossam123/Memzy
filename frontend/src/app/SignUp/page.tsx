@@ -81,8 +81,6 @@ export default function SignupPage() {
       }
       
       setSuccess('Account created successfully! Redirecting to login...')
-      
-      // Redirect to login page after successful signup
       setTimeout(() => {
         router.push('/login?registered=true')
       }, 2000)
