@@ -61,15 +61,13 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
     setProfileImageError(false)
   }, [userData?.profilePictureUrl])
 
-  // Fixed: Better dependency management for fetching posts
   useEffect(() => {
     if (userData && userData.isFriend) {
       fetchUserPosts()
     } else if (userData && !userData.isFriend) {
-      // Clear posts when user is no longer a friend
       setUserPosts([])
     }
-  }, [userData?.isFriend, userData?.id]) // Added userData?.id to ensure it triggers when user data is fully loaded
+  }, [userData?.isFriend, userData?.id])
 
   const fetchUserProfile = async () => {
     try {
@@ -471,7 +469,6 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-darker to-primary-dark text-light">
       <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 md:p-8">
-        {/* Back Button */}
         <button
           onClick={() => router.back()}
           className="mb-6 flex items-center gap-2 text-accent hover:text-accent/80 transition-colors"
@@ -481,40 +478,39 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
           </svg>
           Back
         </button>
+
         {/* Profile Header */}
         <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
-          {/* Profile Picture Section */}
           <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-accent overflow-hidden shadow-glow">
             <img
-              src={getProfileImageUrl(userData.profilePictureUrl)} 
-              alt={userData.name || 'User'}
+              src={getProfileImageUrl(userData?.profilePictureUrl)} 
+              alt={userData?.name || 'User'}
               onError={() => setProfileImageError(true)}
               className="w-full h-full object-cover"
             />
           </div>
 
-          {/* Profile Info Section */}
           <div className="flex-1 space-y-4 text-center md:text-left">
             <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
-              <h1 className="text-3xl font-bold text-glow">{userData.name}</h1>
+              <h1 className="text-3xl font-bold text-glow">{userData?.name}</h1>
               <div className="flex gap-3">
                 {renderFriendshipButtons()}
               </div>
             </div>
             
             <div className="text-light/70 text-lg">
-              @{userData.userName || 'username'}
+              @{userData?.userName || 'username'}
             </div>
             
             <div className="space-y-2">
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <span className="text-light/80">Humor style:</span>
                 <div className="badge-style bg-glass px-3 py-1 rounded-full">
-                  {userData.humorTypes?.map(ht => ht.humorTypeName).join(', ') || 'Not set'}
+                  {userData?.humorTypes?.map(ht => ht.humorTypeName).join(', ') || 'Not set'}
                 </div>
               </div>
 
-              {userData.bio && (
+              {userData?.bio && (
                 <div className="mt-4 max-w-2xl mx-auto md:mx-0">
                   <p className="text-light/90 text-lg italic p-4 bg-glass/20 rounded-xl">
                     {userData.bio}
@@ -532,7 +528,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
               Social Stats
             </h3>
             <div className="flex justify-around">
-              {userData.isFriend ? (
+              {userData?.isFriend ? (
                 <button
                   onClick={() => {
                     setActiveModal('friends')
@@ -545,12 +541,12 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
                 </button>
               ) : (
                 <div className="flex flex-col items-center cursor-default">
-                  <span className="text-3xl font-bold mb-1">{userData.friendsCount ?? 0}</span> 
+                  <span className="text-3xl font-bold mb-1">{userData?.friendsCount ?? 0}</span> 
                   <span className="text-sm text-light/70">Friends</span>
                 </div>
               )}
               <div className="flex flex-col items-center">
-                <span className="text-3xl font-bold mb-1">{userData.postsCount ?? 0}</span> 
+                <span className="text-3xl font-bold mb-1">{userData?.postsCount ?? 0}</span> 
                 <span className="text-sm text-light/70">Posts</span>
               </div>
             </div>
@@ -564,10 +560,10 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
               <div className="flex items-center gap-3">
                 <span className="text-xl">👤</span>
                 <span className="text-light/90">
-                  Member since {userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'joining'}
+                  Member since {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'joining'}
                 </span>
               </div>
-              {userData.status && (
+              {userData?.status && (
                 <div className="flex items-center gap-3">
                   <span className="text-xl">📝</span>
                   <span className="text-light/90">{userData.status}</span>
@@ -580,19 +576,18 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
         {/* Posts Section */}
         <div className="border-t border-glass/30 pt-16">
           <div className="mb-16 text-center">
-            <h2 className="text-3xl font-bold text-glow">{userData.name}'s Posts</h2>
+            <h2 className="text-3xl font-bold text-glow">{userData?.name}'s Posts</h2>
           </div>
 
-          {/* Friend-Only Posts Display */}
-          {!userData.isFriend ? (
+          {!userData?.isFriend ? (
             <div className="text-center py-12">
               <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-8 max-w-md mx-auto">
                 <div className="text-6xl mb-4">🔒</div>
                 <h3 className="text-2xl font-bold text-accent mb-4">Posts are Private</h3>
                 <p className="text-light/70 mb-6">
-                  You need to be friends with {userData.name} to see their posts.
+                  You need to be friends with {userData?.name} to see their posts.
                 </p>
-                {userData.hasPendingRequest ? (
+                {userData?.hasPendingRequest ? (
                   <div className="bg-yellow-500/20 text-yellow-400 px-4 py-2 rounded-lg">
                     Friend request pending...
                   </div>
@@ -609,91 +604,78 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
             </div>
           ) : userPosts.length > 0 ? (
             <div className="grid gap-6">
-              {userPosts.map((post) => {
-                const isVideoByType = post.mediaType === 'Video'
-                const isVideoByExtension = isVideoFile(post.filePath)
-                const isVideo = isVideoByType || isVideoByExtension
-                const mediaUrl = post.filePath ? getOptimizedMediaUrl(post.filePath, isVideo ? 'video' : 'image') : null
-
-                return (
-                  <div
-                    key={post.postId}
-                    className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 shadow-glow hover:shadow-glow/50 transition-all"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-accent/50">
-                        <img
-                          src={getProfileImageUrl(userData.profilePictureUrl)} 
-                          alt={userData.name}
-                          className="w-full h-full object-cover"
-                        />
+              {userPosts.map((post) => (
+                <div
+                  key={post.postId}
+                  className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 shadow-glow hover:shadow-glow/50 transition-all"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-accent/50">
+                      <img
+                        src={getProfileImageUrl(userData.profilePictureUrl)} 
+                        alt={userData.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-semibold text-light">{userData.name}</h3>
+                        <span className="text-light/60 text-sm">
+                          {new Date(post.createdAt).toLocaleDateString()}
+                        </span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          post.isApproved ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                        }`}>
+                          {post.isApproved ? 'Approved' : 'Pending'}
+                        </span>
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-light">{userData.name}</h3>
-                          <span className="text-light/60 text-sm">
-                            {new Date(post.createdAt).toLocaleDateString()}
+                      
+                      <p className="text-light/90 mb-3">{post.description}</p>
+                      
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {post.postHumors.map((humor, index) => (
+                          <span
+                            key={index}
+                            className={`px-2.5 py-1 text-xs font-medium rounded-full ${
+                              humor.humorType.id === 1
+                                ? 'bg-red-400/10 text-red-300'
+                                : 'bg-green-300/10 text-green-200'
+                            }`}
+                          >
+                            {getHumorLabelById(humor.humorType.id, humor.humorType.name)}
                           </span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            post.isApproved ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
-                          }`}>
-                            {post.isApproved ? 'Approved' : 'Pending'}
-                          </span>
+                        ))}
+                      </div>
+                      
+                      {post.filePath && (
+                        <div className="mb-3">
+                          {isVideoFile(post.filePath) ? (
+                            <video
+                              src={getOptimizedMediaUrl(post.filePath, 'video')}
+                              controls
+                              className="max-w-full h-auto rounded-lg max-h-96"
+                              preload="metadata"
+                            />
+                          ) : (
+                            <img
+                              src={getOptimizedMediaUrl(post.filePath, 'image')}
+                              alt={post.description}
+                              className="max-w-full h-auto rounded-lg max-h-96 object-cover"
+                            />
+                          )}
                         </div>
-                        
-                        {/* Post Description */}
-                        <p className="text-light/90 mb-3">{post.description}</p>
-                        
-                        {/* Humor Tags */}
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {post.postHumors.map((humor, index) => (
-                            <span
-                              key={index}
-                              className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-                                humor.humorType.id === 1
-                                  ? 'bg-red-400/10 text-red-300'
-                                  : 'bg-green-300/10 text-green-200'
-                              }`}
-                            >
-                              {getHumorLabelById(humor.humorType.id, humor.humorType.name)}
-                            </span>
-                          ))}
-                        </div>
-                        
-                        {/* Media Display */}
-                        {mediaUrl && (
-                          <div className="mb-3">
-                            {isVideo ? (
-                              <video
-                                src={mediaUrl}
-                                controls
-                                className="max-w-full h-auto rounded-lg max-h-96"
-                                preload="metadata"
-                              >
-                                Your browser does not support the video tag.
-                              </video>
-                            ) : (
-                              <img
-                                src={mediaUrl}
-                                alt={post.description || 'Post content'}
-                                className="max-w-full h-auto rounded-lg max-h-96 object-cover"
-                              />
-                            )}
-                          </div>
-                        )}
-                        
-                        {/* Post Stats */}
-                        <div className="flex items-center gap-4 text-sm text-light/70">
-                          <span>😂 {post.likeCounter || 0} likes</span>
-                          <span className="text-xs">
-                            {post.mediaType} • {new Date(post.createdAt).toLocaleTimeString()}
-                          </span>
-                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-4 text-sm text-light/70">
+                        <span>😂 {post.likeCounter || 0} likes</span>
+                        <span className="text-xs">
+                          {post.mediaType} • {new Date(post.createdAt).toLocaleTimeString()}
+                        </span>
                       </div>
                     </div>
                   </div>
-                )
-              })}
+                </div>
+              ))}
             </div>
           ) : (
             <div className="text-center text-light/60 py-12">
@@ -702,7 +684,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
           )}
         </div>
 
-        {/* Friends Modal - Only shown if isFriend is true */}
+        {/* Friends Modal */}
         <Transition appear show={activeModal === 'friends'} as={Fragment}>
           <Dialog
             as="div"
@@ -738,7 +720,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
                 <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl transform transition-all">
                   <div className="flex justify-between items-center mb-4">
                     <Dialog.Title className="text-2xl font-bold text-[#c56cf0]">
-                      {userData.name}'s Friends
+                      {userData?.name}'s Friends
                     </Dialog.Title>
                     <button
                       onClick={() => setActiveModal(null)}
@@ -751,19 +733,16 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
                   <div className="max-h-64 overflow-y-auto space-y-4">
                     {friendsList.length > 0 ? (
                       friendsList.map(friend => (
-                        <div key={friend.userId || friend.id} className="flex items-center gap-3 p-2 bg-glass/10 rounded-lg">
+                        <div key={friend.userId} className="flex items-center gap-3 p-2 bg-glass/10 rounded-lg">
                           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden">
                             <img
-                              src={getSearchResultImageUrl(friend.profilePic || friend.profilePictureUrl)}
+                              src={getSearchResultImageUrl(friend.profilePic)}
                               alt={friend.name}
-                              onError={(e) => {
-                                e.currentTarget.src = 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
-                              }}
                               className="w-full h-full object-cover"
                             />
                           </div>
                           <button
-                            onClick={() => router.push(`/profile/${friend.userId || friend.id}`)}
+                            onClick={() => router.push(`/profile/${friend.userId}`)}
                             className="text-light/90 hover:text-accent transition-colors"
                           >
                             {friend.name}
