@@ -1,6 +1,7 @@
 'use client'
 import { useState} from 'react'
 import { useAuth } from '@/Context/AuthContext'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { FiMail, FiLock, FiLogIn, FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi'
 
@@ -19,6 +20,8 @@ export default function LoginPage() {
     setError('')
     setSuccess('')
     setIsLoading(true)
+    setSuccess('')
+    setIsLoading(true)
     
     try {
       await login(email, password)
@@ -28,6 +31,7 @@ export default function LoginPage() {
       setIsLoading(false)
     }
   }
+
 
   
   return (
