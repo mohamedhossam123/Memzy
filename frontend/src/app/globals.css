@@ -50,7 +50,6 @@
     text-shadow: 0 0 10px var(--accent-glow);
   }
   
-  /* Better blur utility */
   .backdrop-blur-sm {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -68,8 +67,6 @@
   .animate-pulse-slow {
     animation: pulse 8s infinite ease-in-out;
   }
-
-  /* Conic gradient borders - scoped to specific classes */
   .conic-border::before {
     content: "";
     @apply z-[-2] text-center top-1/2 left-1/2 absolute w-[600px] h-[600px] bg-no-repeat bg-[0_0] transition-all duration-1000;

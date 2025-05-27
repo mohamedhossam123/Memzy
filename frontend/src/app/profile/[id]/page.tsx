@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useAuth } from '@/Context/AuthContext'
@@ -20,7 +21,9 @@ interface UserProfileData {
   email?: string 
   createdAt?: string 
   isFriend?: boolean 
-  hasPendingRequest?: boolean 
+  hasPendingRequest?: boolean
+  requestType?: string 
+  requestId?: number
 }
 
 interface UserProfilePageProps {
@@ -99,24 +102,23 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetFriendshipStatus/${targetUserId}`,
         { headers: { Authorization: `Bearer ${token}` } }
-      )
+      );
       
       if (response.ok) {
-        const status = await response.json()
-        return {
-          isFriend: status.isFriend,
-          hasPendingRequest: status.hasPendingRequest
-        }
+        return await response.json();
       }
+      return {
+        isFriend: false,
+        hasPendingRequest: false
+      };
     } catch (err) {
-      console.error('Error fetching friendship status:', err)
+      console.error('Error fetching friendship status:', err);
+      return {
+        isFriend: false,
+        hasPendingRequest: false
+      };
     }
-    
-    return {
-      isFriend: false,
-      hasPendingRequest: false
-    }
-  }
+  };
 
   const fetchUserPosts = async () => {
     try {
@@ -151,31 +153,147 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
   }
 
   const handleSendFriendRequest = async () => {
-    if (!userData) return
+    if (!userData) return;
     
-    setFriendshipLoading(true)
+    setFriendshipLoading(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/SendFriendRequest`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/SendRequest/${userData.id}`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ receiverId: userData.id }) 
+          }
         }
-      )
+      );
       
       if (response.ok) {
-        setUserData(prev => prev ? { ...prev, hasPendingRequest: true } : null)
+        const result = await response.json();
+        setUserData(prev => prev ? { 
+          ...prev, 
+          hasPendingRequest: true,
+          requestType: 'sent',
+          requestId: result.requestId,
+          isFriend: false 
+        } : null);
+      } else {
+        console.error('Failed to send friend request');
       }
     } catch (err) {
-      console.error('Error sending friend request:', err)
+      console.error('Error sending friend request:', err);
     } finally {
-      setFriendshipLoading(false)
+      setFriendshipLoading(false);
     }
-  }
+  };
+
+  const handleCancelFriendRequest = async () => {
+    if (!userData || !userData.requestId) return;
+    
+    setFriendshipLoading(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/cancelrequest/${userData.requestId}`,
+        {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}` 
+          }
+        }
+      );
+      
+      if (response.ok) {
+        setUserData(prev => prev ? { 
+          ...prev, 
+          hasPendingRequest: false,
+          requestType: undefined,
+          requestId: undefined,
+          isFriend: false 
+        } : null);
+        console.log('Friend request canceled successfully');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to cancel friend request:', errorData);
+      }
+    } catch (err) {
+      console.error('Error canceling friend request:', err);
+    } finally {
+      setFriendshipLoading(false);
+    }
+  };
+
+  const handleAcceptFriendRequest = async () => {
+    if (!userData || !userData.requestId) return;
+    
+    setFriendshipLoading(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/acceptRequest/${userData.requestId}`,
+        {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}` 
+          }
+        }
+      );
+      
+      if (response.ok) {
+        setUserData(prev => prev ? { 
+          ...prev, 
+          isFriend: true,
+          hasPendingRequest: false,
+          requestType: undefined,
+          requestId: undefined
+        } : null);
+        console.log('Friend request accepted successfully');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to accept friend request:', errorData);
+      }
+    } catch (err) {
+      console.error('Error accepting friend request:', err);
+    } finally {
+      setFriendshipLoading(false);
+    }
+  };
+
+  const handleRejectFriendRequest = async () => {
+    if (!userData || !userData.requestId) return;
+    
+    setFriendshipLoading(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/rejectrequest/${userData.requestId}`,
+        {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}` 
+          }
+        }
+      );
+      
+      if (response.ok) {
+        setUserData(prev => prev ? { 
+          ...prev, 
+          hasPendingRequest: false,
+          requestType: undefined,
+          requestId: undefined,
+          isFriend: false 
+        } : null);
+        console.log('Friend request rejected successfully');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to reject friend request:', errorData);
+      }
+    } catch (err) {
+      console.error('Error rejecting friend request:', err);
+    } finally {
+      setFriendshipLoading(false);
+    }
+  };
 
   const handleRemoveFriend = async () => {
     if (!userData) return
@@ -189,12 +307,13 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
           headers: { Authorization: `Bearer ${token}` }
         }
       )
-      
       if (response.ok) {
         setUserData(prev => prev ? { 
           ...prev, 
           isFriend: false,
-          hasPendingRequest: false 
+          hasPendingRequest: false,
+          requestType: undefined,
+          requestId: undefined
         } : null)
         setUserPosts([])
       }
@@ -204,6 +323,63 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
       setFriendshipLoading(false)
     }
   }
+
+  const renderFriendshipButtons = () => {
+    if (!userData) return null;
+    if (userData.isFriend) {
+      return (
+        <button
+          onClick={handleRemoveFriend}
+          disabled={friendshipLoading}
+          className="bg-red-500/20 text-red-400 hover:bg-red-500/30 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+        >
+          {friendshipLoading ? 'Removing...' : 'Remove Friend'}
+        </button>
+      );
+    }
+
+    if (userData.hasPendingRequest) {
+      if (userData.requestType === 'sent') {
+        return (
+          <button
+            onClick={handleCancelFriendRequest}
+            disabled={friendshipLoading}
+            className="bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+          >
+            {friendshipLoading ? 'Canceling...' : 'Cancel Request'}
+          </button>
+        );
+      } else if (userData.requestType === 'received') {
+        return (
+          <div className="flex gap-3">
+            <button
+              onClick={handleAcceptFriendRequest}
+              disabled={friendshipLoading}
+              className="bg-green-500/20 text-green-400 hover:bg-green-500/30 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {friendshipLoading ? 'Accepting...' : 'Accept Request'}
+            </button>
+            <button
+              onClick={handleRejectFriendRequest}
+              disabled={friendshipLoading}
+              className="bg-red-500/20 text-red-400 hover:bg-red-500/30 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {friendshipLoading ? 'Rejecting...' : 'Reject Request'}
+            </button>
+          </div>
+        );
+      }
+    }
+    return (
+      <button
+        onClick={handleSendFriendRequest}
+        disabled={friendshipLoading}
+        className="bg-accent hover:bg-accent/80 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+      >
+        {friendshipLoading ? 'Sending...' : 'Add Friend'}
+      </button>
+    );
+  };
 
   const getProfileImageUrl = (profilePic?: string) => {
     if (profileImageError || !profilePic) {
@@ -282,7 +458,6 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
           </svg>
           Back
         </button>
-
         {/* Profile Header */}
         <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
           {/* Profile Picture Section */}
@@ -299,33 +474,8 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
           <div className="flex-1 space-y-4 text-center md:text-left">
             <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
               <h1 className="text-3xl font-bold text-glow">{userData.name}</h1>
-              
-              {/* Friendship Actions */}
               <div className="flex gap-3">
-                {userData.isFriend ? (
-                  <button
-                    onClick={handleRemoveFriend}
-                    disabled={friendshipLoading}
-                    className="bg-red-500/20 text-red-400 hover:bg-red-500/30 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    {friendshipLoading ? 'Removing...' : 'Remove Friend'}
-                  </button>
-                ) : userData.hasPendingRequest ? (
-                  <button
-                    disabled
-                    className="bg-yellow-500/20 text-yellow-400 px-4 py-2 rounded-lg cursor-not-allowed"
-                  >
-                    Request Sent
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleSendFriendRequest}
-                    disabled={friendshipLoading}
-                    className="bg-accent hover:bg-accent/80 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    {friendshipLoading ? 'Sending...' : 'Add Friend'}
-                  </button>
-                )}
+                {renderFriendshipButtons()}
               </div>
             </div>
             
