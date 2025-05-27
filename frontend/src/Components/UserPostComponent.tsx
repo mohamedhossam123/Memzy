@@ -12,7 +12,7 @@ export interface Post {
   createdAt: string
   likeCounter: number
   isApproved: boolean
-  
+
   mediaType: 'Image' | 'Video'
   postHumors: {
     humorType: {
@@ -191,7 +191,6 @@ export default function PostFeed() {
         const imageLoadedState = imageLoaded.has(post.postId)
         const videoLoadedState = videoLoaded.has(post.postId)
         const mediaFailed = isVideo ? videoFailed : imageFailed
-        const mediaLoadedState = isVideo ? videoLoadedState : imageLoadedState
 
         return (
           <div key={post.postId} className="flex flex-col bg-gray-900 rounded-lg overflow-hidden">

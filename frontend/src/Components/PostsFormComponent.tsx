@@ -84,7 +84,7 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
         <select
           value={humorType}
           onChange={(e) => setHumorType(e.target.value)}
-          className="w-full p-3 bg-glass/5 border border-glass/20 rounded-xl text-color bg-black/90 focus:border-[#c56cf0] focus:ring-2 focus:ring-[#c56cf0]/30 outline-none transition"
+          className="w-full p-3 border border-glass/20 rounded-xl text-color bg-black/90 focus:border-[#c56cf0] focus:ring-2 focus:ring-[#c56cf0]/30 outline-none transition"
         >
           <option value="Dark">Dark Humor</option>
           <option value="Friendly">Friendly Humor</option>
