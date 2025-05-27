@@ -72,7 +72,7 @@
   /* Conic gradient borders - scoped to specific classes */
   .conic-border::before {
     content: "";
-    @apply z-[-2] text-center top-1/2 left-1/2 absolute w-[600px] h-[600px] bg-no-repeat bg-[0_0] transition-all duration-2000;
+    @apply z-[-2] text-center top-1/2 left-1/2 absolute w-[600px] h-[600px] bg-no-repeat bg-[0_0] transition-all duration-1000;
     transform: translate(-50%, -50%) rotate(83deg);
     background-image: conic-gradient(
       rgba(0, 0, 0, 0) 0%,
