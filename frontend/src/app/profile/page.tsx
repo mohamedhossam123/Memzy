@@ -143,8 +143,6 @@ export default function UserProfile() {
       console.error('Error rejecting post:', error)
     }
   }
-
-  // Fetch user humor preferences separately
   const fetchUserHumor = async () => {
     try {
       const response = await fetch(
@@ -154,15 +152,12 @@ export default function UserProfile() {
       if (!response.ok) throw new Error('Failed to fetch user humor')
       const data = await response.json()
       console.log('Fetched user humor data:', data)
-      
-      // Update userData with humor types
       setUserData(prev => ({
         ...prev,
         humorTypes: data.HumorTypes || data.humorTypes || []
       }))
     } catch (error) {
       console.error('Error fetching user humor:', error)
-      // If humor fetch fails, set empty array
       setUserData(prev => ({
         ...prev,
         humorTypes: []
@@ -171,75 +166,61 @@ export default function UserProfile() {
   }
 
   const fetchUserDetails = async () => {
-    if (!token) {
-      setIsLoading(false)
-      return
-    }
-
-    try {
-      setFetchError(null)
-      const [userResponse, pendingPostsResponse, approvedPostsResponse] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/getCurrentUser`, {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }),
-        fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/GetPendingPosts`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/GetApprovedPosts`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-      ])
-      
-      if (!userResponse.ok) {
-        const errorText = await userResponse.text()
-        throw new Error(`Failed to fetch user data: ${userResponse.status} - ${errorText}`)
-      }
-      
-      const userData = await userResponse.json()
-      let pendingCount = 0
-      let approvedCount = 0
-      
-      if (pendingPostsResponse.ok) {
-        const pendingPosts = await pendingPostsResponse.json()
-        pendingCount = Array.isArray(pendingPosts) ? pendingPosts.length : 0
-      }
-      
-      if (approvedPostsResponse.ok) {
-        const approvedPosts = await approvedPostsResponse.json()
-        approvedCount = Array.isArray(approvedPosts) ? approvedPosts.length : 0
-      }
-      
-      const totalPostCount = pendingCount + approvedCount
-      let processedData = userData
-      if (userData.data) processedData = userData.data
-      if (userData.Data) processedData = userData.Data
-      if (userData.user) processedData = userData.user
-      
-      const mappedUserData: FullUser = {
-        profilePic: processedData.profilePic || processedData.profilePictureUrl || processedData.ProfilePictureUrl,
-        name: processedData.name || processedData.Name,
-        bio: processedData.bio || processedData.Bio,
-        friendCount: processedData.friendCount || processedData.FriendCount || 0,
-        postCount: totalPostCount,
-        humorTypes: [], // Initialize as empty, will be populated by fetchUserHumor
-        userName: processedData.userName || processedData.UserName || processedData.username
-      }
-      
-      setUserData(mappedUserData)
-      
-      // Fetch humor preferences separately
-      await fetchUserHumor()
-      
-    } catch (err) {
-      console.error('Error in fetchUserDetails:', err)
-      setFetchError(err instanceof Error ? err.message : 'Unknown error occurred')
-    } finally {
-      setIsLoading(false)
-    }
+  if (!token) {
+    setIsLoading(false);
+    return;
   }
+
+  try {
+    setFetchError(null);
+    const [userResponse, friendsResponse] = await Promise.all([
+      fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/getCurrentUser`, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }),
+      fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/friend-post-count`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+    ]);
+    
+    if (!userResponse.ok) {
+      throw new Error('Failed to fetch user data');
+    }
+    
+    const userData = await userResponse.json();
+    let friendCount = 0;
+    let postCount = 0;
+    
+    if (friendsResponse.ok) {
+      const friendsData = await friendsResponse.json();
+      console.log('Friends data received:', friendsData); 
+      friendCount = friendsData.friendCount || friendsData.FriendCount || 0;
+      postCount = friendsData.postCount || friendsData.PostCount || userData.postCount || 0;
+    }
+    
+    const mappedUserData: FullUser = {
+      profilePic: userData.profilePictureUrl,
+      name: userData.name,
+      bio: userData.bio,
+      friendCount: friendCount, 
+      postCount: postCount, 
+      humorTypes: [],
+      userName: userData.userName
+    };
+    
+    console.log('Mapped user data:', mappedUserData); 
+    setUserData(mappedUserData);
+    await fetchUserHumor();
+    
+  } catch (err) {
+    console.error('Error in fetchUserDetails:', err);
+    setFetchError(err instanceof Error ? err.message : 'Unknown error occurred');
+  } finally {
+    setIsLoading(false);
+  }
+}
 
   const fetchFriends = async () => {
     try {

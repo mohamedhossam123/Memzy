@@ -107,8 +107,6 @@ namespace MyApiProject.Controllers
                 return HandleException(ex);
             }
         }
-
-        // FIXED: Updated cancel request endpoint
         [HttpPost("cancelrequest/{requestId}")]
         [Authorize]
         public async Task<IActionResult> CancelFriendRequest(int requestId)
@@ -136,8 +134,6 @@ namespace MyApiProject.Controllers
                 return StatusCode(500, new { Error = "Internal server error" });
             }
         }
-
-        // ADDED: New endpoint to cancel friend request by receiver ID (simpler approach)
         [HttpPost("cancelrequest-by-receiver/{receiverId}")]
         [Authorize]
         public async Task<IActionResult> CancelFriendRequestByReceiver(int receiverId)
