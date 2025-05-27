@@ -12,6 +12,7 @@ export interface Post {
   createdAt: string
   likeCounter: number
   isApproved: boolean
+  
   mediaType: 'Image' | 'Video'
   postHumors: {
     humorType: {

@@ -124,6 +124,51 @@ namespace MyApiProject.Controllers
                 return StatusCode(500, new { message = "An error occurred while unliking the post" });
             }
         }
+        [HttpGet("GetUserPosts/{userId}")]
+[Authorize]
+public async Task<IActionResult> GetUserPosts(int userId)
+{
+    try
+    {
+        var currentUserId = await _authService.GetAuthenticatedUserId();
+        
+        var posts = await _context.Posts
+            .Where(p => p.UserId == userId && p.IsApproved)
+            .Include(p => p.PostHumors)
+            .ThenInclude(ph => ph.HumorType)
+            .Include(p => p.User)
+            .Include(p => p.Likes)
+            .OrderByDescending(p => p.CreatedAt)
+            .AsNoTracking()
+            .ToListAsync();
+
+        var dtos = posts.Select(p => new PostDto
+        {
+            PostId = p.PostId,
+            MediaType = p.MediaType,
+            Description = p.Description,
+            FilePath = p.FilePath,
+            CreatedAt = p.CreatedAt,
+            LikeCounter = p.Likes.Count,
+            IsApproved = p.IsApproved,
+            HumorTypeIds = p.PostHumors.Select(ph => ph.HumorTypeId).ToList(),
+            HumorTypes = p.PostHumors.Select(ph => new HumorTypeDto 
+            { 
+                HumorTypeId = ph.HumorTypeId, 
+                HumorTypeName = ph.HumorType.HumorTypeName 
+            }).ToList(),
+            UserName = p.User?.UserName ?? p.User?.Name ?? "Anonymous",
+            IsLiked = p.Likes.Any(l => l.UserId == currentUserId),
+            ProfileImageUrl = p.User?.ProfilePictureUrl
+        }).ToList();
+
+        return Ok(dtos);
+    }
+    catch (Exception )
+    {
+        return StatusCode(500, new { message = "An error occurred while fetching user posts" });
+    }
+}
         [HttpGet("{postId}/like-status")]
         [Authorize]
         public async Task<IActionResult> GetLikeStatus(int postId)

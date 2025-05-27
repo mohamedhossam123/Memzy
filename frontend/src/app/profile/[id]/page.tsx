@@ -1,4 +1,4 @@
-
+// Dynamic profile
 'use client'
 
 import { useAuth } from '@/Context/AuthContext'
@@ -61,11 +61,15 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
     setProfileImageError(false)
   }, [userData?.profilePictureUrl])
 
+  // Fixed: Better dependency management for fetching posts
   useEffect(() => {
     if (userData && userData.isFriend) {
       fetchUserPosts()
+    } else if (userData && !userData.isFriend) {
+      // Clear posts when user is no longer a friend
+      setUserPosts([])
     }
-  }, [userData?.isFriend])
+  }, [userData?.isFriend, userData?.id]) // Added userData?.id to ensure it triggers when user data is fully loaded
 
   const fetchUserProfile = async () => {
     try {
@@ -85,10 +89,16 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
       
       const data = await response.json()
       const friendshipStatus = await fetchFriendshipStatus(data.id)
-      setUserData({
+      const combinedData = {
         ...data,
         ...friendshipStatus
-      })
+      }
+      setUserData(combinedData)
+      
+      // Fetch posts immediately if they're already friends
+      if (combinedData.isFriend) {
+        fetchUserPosts()
+      }
     } catch (err) {
       console.error('Error fetching user profile:', err)
       setError('Failed to load user profile')
@@ -121,20 +131,31 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
   };
 
   const fetchUserPosts = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetUserPosts/${userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      
-      if (response.ok) {
-        const posts = await response.json()
-        setUserPosts(posts)
+  try {
+    console.log('Fetching posts for user:', userId);
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetUserPosts/${userId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    
+    if (response.ok) {
+      const posts = await response.json();
+      console.log('Fetched posts:', posts);
+      setUserPosts(posts.map((post: Post) => ({
+  ...post,
+  postHumors: post.postHumors || [],
+})));
+    } else {
+      console.error('Failed to fetch posts, status:', response.status);
+      if (response.status === 401) {
+      } else if (response.status === 404) {
       }
-    } catch (err) {
-      console.error('Error fetching user posts:', err)
     }
+  } catch (err) {
+    console.error('Error fetching user posts:', err);
+    setError('Failed to load posts. Please try again later.');
   }
+};
 
   const fetchUserFriends = async () => {
     try {
@@ -240,13 +261,15 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
       );
       
       if (response.ok) {
-        setUserData(prev => prev ? { 
-          ...prev, 
+        const updatedUserData = { 
+          ...userData, 
           isFriend: true,
           hasPendingRequest: false,
           requestType: undefined,
           requestId: undefined
-        } : null);
+        };
+        setUserData(updatedUserData);
+        // Posts will be fetched automatically by the useEffect
         console.log('Friend request accepted successfully');
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -709,7 +732,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
                 enterFrom="opacity-0 scale-95"
                 enterTo="opacity-100 scale-100"
                 leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
+                leaveFrom="opacity-100 scale-100" 
                 leaveTo="opacity-0 scale-95"
               >
                 <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl transform transition-all">

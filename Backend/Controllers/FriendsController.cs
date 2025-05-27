@@ -16,7 +16,7 @@ namespace MyApiProject.Controllers
             _friendsService = friendsService;
             _authService = authService;
         }
-        
+
         [HttpGet("all-received-requests")]
         [Authorize]
         public async Task<IActionResult> GetAllReceivedRequests()
@@ -34,10 +34,10 @@ namespace MyApiProject.Controllers
             var result = await _friendsService.GetAllSentRequests(userId);
             return Ok(result);
         }
-        
+
         [HttpPost("SendRequest/{receiverId}")]
         [Authorize]
-        public async Task<IActionResult> SendFriendRequest(int receiverId) 
+        public async Task<IActionResult> SendFriendRequest(int receiverId)
         {
             try
             {
@@ -53,12 +53,12 @@ namespace MyApiProject.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
-            catch (Exception )
+            catch (Exception)
             {
                 return StatusCode(500, new { error = "An error occurred while processing your request" });
             }
         }
-        
+
         [HttpPost("acceptRequest/{requestId}")]
         [Authorize]
         public async Task<IActionResult> AcceptFriendRequest(int requestId)
@@ -78,7 +78,7 @@ namespace MyApiProject.Controllers
                 return HandleException(ex);
             }
         }
-        
+
         [HttpGet("GetFriendshipStatus/{userId}")]
         [Authorize]
         public async Task<IActionResult> GetFriendshipStatus(int userId)
@@ -96,7 +96,8 @@ namespace MyApiProject.Controllers
             {
                 var userId = await _authService.GetAuthenticatedUserId();
                 var result = await _friendsService.RejectFriendRequest(requestId, userId);
-                return Ok(new { 
+                return Ok(new
+                {
                     Request = result,
                     Message = "Friend request rejected"
                 });
@@ -108,7 +109,7 @@ namespace MyApiProject.Controllers
         }
 
         // FIXED: Updated cancel request endpoint
-        [HttpPost("cancelrequest/{requestId}")]  
+        [HttpPost("cancelrequest/{requestId}")]
         [Authorize]
         public async Task<IActionResult> CancelFriendRequest(int requestId)
         {
@@ -116,7 +117,8 @@ namespace MyApiProject.Controllers
             {
                 var userId = await _authService.GetAuthenticatedUserId();
                 var success = await _friendsService.CancelFriendRequest(requestId, userId);
-                return Ok(new { 
+                return Ok(new
+                {
                     Success = success,
                     Message = "Friend request canceled and removed permanently"
                 });
@@ -129,7 +131,7 @@ namespace MyApiProject.Controllers
             {
                 return Conflict(new { Error = ex.Message });
             }
-            catch (Exception )
+            catch (Exception)
             {
                 return StatusCode(500, new { Error = "Internal server error" });
             }
@@ -144,7 +146,8 @@ namespace MyApiProject.Controllers
             {
                 var userId = await _authService.GetAuthenticatedUserId();
                 var success = await _friendsService.CancelFriendRequestByReceiver(userId, receiverId);
-                return Ok(new { 
+                return Ok(new
+                {
                     Success = success,
                     Message = "Friend request canceled successfully"
                 });
@@ -190,20 +193,22 @@ namespace MyApiProject.Controllers
             }
             catch (ApplicationException ex)
             {
-                return StatusCode(500, new { 
+                return StatusCode(500, new
+                {
                     Error = "Friends retrieval failed",
                     Details = ex.Message
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { 
+                return StatusCode(500, new
+                {
                     Error = "Internal server error",
                     Details = ex.Message
                 });
             }
         }
-        
+
         [HttpDelete("RemoveFriend")]
         [Authorize]
         public async Task<IActionResult> RemoveFriend(int friendId)
@@ -212,5 +217,6 @@ namespace MyApiProject.Controllers
             var result = await _friendsService.RemoveFriend(userId, friendId);
             return Ok(result);
         }
+        
     }
 }

@@ -1,3 +1,4 @@
+// static page
 'use client'
 
 import { useAuth } from '@/Context/AuthContext'
@@ -26,7 +27,7 @@ export default function UserProfile() {
     bio?: string
     friendCount?: number
     postCount?: number
-    humorTypes?: string[] // Changed to string array for consistency
+    humorTypes?: string[] 
     userName?: string 
   }
 
