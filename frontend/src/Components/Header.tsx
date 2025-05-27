@@ -25,6 +25,15 @@ export function Header() {
   const [isUploading, setIsUploading] = useState(false)
   const [userName, setUserName] = useState<string>('')
 
+  const [hasFetchedUserName, setHasFetchedUserName] = useState(false)
+
+useEffect(() => {
+  if (user?.userId && !user.userName && !hasFetchedUserName) {
+    fetchUserName()
+    setHasFetchedUserName(true)
+  }
+}, [user, hasFetchedUserName])
+
   const debouncedSearch = useCallback(
     debounce((searchTerm: string) => {
       if (searchTerm.trim()) {
@@ -51,11 +60,6 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  useEffect(() => {
-    if (user?.userId && !user.userName) {
-      fetchUserName()
-    }
-  }, [user])
 
   const fetchUserName = async () => {
     if (!token) return

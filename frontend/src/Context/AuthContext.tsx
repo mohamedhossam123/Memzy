@@ -242,18 +242,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [token, logout]
   )
 
-  const value = useMemo(
-    () => ({
-      user,
-      token,
-      login,
-      logout,
-      loading,
-      updateUser: setUser,
-      api,
-    }),
-    [user, token, loading, login, logout, api]
-  )
+ const value = useMemo(() => ({
+  user,
+  token,
+  login,
+  logout,
+  loading,
+  updateUser: setUser,
+  api,
+}), [
+  JSON.stringify(user), 
+  token, 
+  loading, 
+  login, 
+  logout, 
+  api
+])
 
   return (
     <AuthContext.Provider value={value}>

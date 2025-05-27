@@ -125,7 +125,7 @@ export default function ModeratorDashboard() {
     fetchData()
   }, [activeTab, api, currentUser?.userId])
 
-  const handlePostAction = async (postId: number, action: 'approve' | 'reject' | 'delete') => {
+  const handlePostAction = async (postId: number, action: 'approve' | 'reject') => {
   try {
     const modId = currentUser?.userId
     if (!modId) throw new Error('Moderator ID missing')
@@ -136,14 +136,11 @@ export default function ModeratorDashboard() {
         response = await api.post('/api/Moderator/approvePost', { postId, modId })
         break
       case 'reject':
-        response = await api.post('/api/Moderator/rejectPost', { postId, modId })
-        break
-      case 'delete':
-        response = await api.delete('/api/Moderator/deletePost', {
-          body: JSON.stringify({ postId, modId }),
-          headers: { 'Content-Type': 'application/json' }
-        })
-        break
+  response = await api.delete('/api/Moderator/deletePost', {
+    body: JSON.stringify({ postId, modId }),
+    headers: { 'Content-Type': 'application/json' }
+  })
+  break
     }
     
     if (response?.ok) {
@@ -427,12 +424,6 @@ export default function ModeratorDashboard() {
                         className="bg-red-500/90 hover:bg-red-400 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md transition-colors"
                       >
                         Reject
-                      </button>
-                      <button
-                        onClick={() => handlePostAction(post.id, 'delete')}
-                        className="bg-glass/90 hover:bg-glass/70 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md transition-colors"
-                      >
-                        Delete
                       </button>
                     </div>
                   </div>

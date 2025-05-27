@@ -1,12 +1,13 @@
 'use client'
 
 import { BaseModal } from '../BaseModal'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface HumorModalProps {
   isOpen: boolean
   onClose: () => void
   initialHumorTypes: string[]
+  humorTypes: string[] 
   onConfirm: (selectedHumor: string[]) => Promise<void>
 }
 
@@ -14,10 +15,17 @@ export const HumorModal = ({
   isOpen, 
   onClose, 
   initialHumorTypes,
+  humorTypes,
   onConfirm 
 }: HumorModalProps) => {
   const [selectedHumor, setSelectedHumor] = useState<string[]>(initialHumorTypes)
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedHumor(initialHumorTypes)
+    }
+  }, [initialHumorTypes, isOpen])
 
   const toggleHumorType = (type: string) => {
     setSelectedHumor(prev => 
@@ -40,12 +48,11 @@ export const HumorModal = ({
   return (
     <BaseModal isOpen={isOpen} onClose={onClose} title="Select Your Humor Type">
       <div className="flex flex-col gap-3">
-        {['Dark Humor', 'Friendly Humor'].map((type) => (
+        {humorTypes.map((type) => (
           <button
             key={type}
             onClick={() => toggleHumorType(type)}
-            className={`
-              w-full text-left px-4 py-2 rounded-lg font-medium transition
+            className={`w-full text-left px-4 py-2 rounded-lg font-medium transition
               ${selectedHumor.includes(type)
                 ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white shadow-lg'
                 : 'bg-[rgba(255,255,255,0.05)] text-light/80 hover:bg-[rgba(255,255,255,0.1)]'}

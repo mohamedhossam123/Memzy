@@ -1,7 +1,6 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState} from 'react'
 import { useAuth } from '@/Context/AuthContext'
-import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { FiMail, FiLock, FiLogIn, FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi'
 
@@ -12,16 +11,9 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-
   const { login } = useAuth()
-  const searchParams = useSearchParams()
-  
-  useEffect(() => {
-    if (searchParams?.get('registered') === 'true') {
-      setSuccess('Account created successfully! Please log in with your credentials.')
-    }
-  }, [searchParams])
-  
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')

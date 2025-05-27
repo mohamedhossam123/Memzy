@@ -1,7 +1,7 @@
 // Components/Feed.tsx
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import PostCard, { PostProps } from '@/Components/PostCard'
 import { useAuth } from '@/Context/AuthContext'
 
@@ -43,7 +43,6 @@ function mapApiPostToPostProps(apiPost: ApiPost): PostProps {
     profileImageUrl: apiPost.profileImageUrl || null,
   }
 }
-
 
 function useInfiniteScroll({ loading, hasMore, onLoadMore }: { 
   loading: boolean
@@ -111,14 +110,17 @@ export default function Feed() {
     setInitialLoad(true)
   }, [user])
 
+  const endpoint = useMemo(() => 
+    user 
+      ? `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetFirst6BasedOnUser`
+      : `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetFirst6`,
+    [user]
+  )
+
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
-
-      const endpoint = user 
-        ? `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetFirst6BasedOnUser`
-        : `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetFirst6`
 
       const response = await api.post(
         endpoint,
@@ -158,11 +160,12 @@ export default function Feed() {
     } finally {
       setLoading(false)
     }
-  }, [user, api, page])
+  }, [user, api, page, endpoint])
 
   useEffect(() => {
     fetchPosts()
   }, [fetchPosts])
+
   const updatePostLike = useCallback((postId: number, isLiked: boolean, likeCount: number) => {
     setPosts(prev => prev.map(post => 
       post.id === postId 
@@ -171,7 +174,6 @@ export default function Feed() {
     ))
   }, [])
 
-  // Initial loading state
   if (loading && initialLoad) {
     return (
       <div className="text-center py-12">
@@ -183,7 +185,6 @@ export default function Feed() {
     )
   }
 
-  // Error state
   if (error && posts.length === 0) {
     return (
       <div className="text-center py-12">
@@ -205,7 +206,6 @@ export default function Feed() {
 
   return (
     <div className="space-y-6">
-      {/* Welcome message for authenticated users */}
       {user && (
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-glow mb-2">
@@ -214,7 +214,6 @@ export default function Feed() {
         </div>
       )}
 
-      {/* Login prompt for unauthenticated users */}
       {!user && (
         <div className="text-center mb-6 bg-glass/5 rounded-2xl p-6">
           <div className="text-4xl mb-2">👋</div>
@@ -231,7 +230,6 @@ export default function Feed() {
         </div>
       )}
       
-      {/* Posts or empty state */}
       {posts.length === 0 && !loading ? (
         <div className="text-center py-12 bg-glass/5 rounded-2xl">
           <div className="text-6xl mb-4">😅</div>
@@ -255,7 +253,6 @@ export default function Feed() {
         </div>
       ) : (
         <>
-          {/* Posts list */}
           {posts.map((post) => (
             <PostCard 
               key={`${post.id}-${post.isLiked}`} 
@@ -264,7 +261,6 @@ export default function Feed() {
             /> 
           ))}
 
-          {/* Loading more indicator */}
           <div ref={sentinelRef} className="text-center py-4">
             {loading && hasMore && (
               <>
@@ -274,7 +270,6 @@ export default function Feed() {
             )}
           </div>
 
-          {/* End of feed message */}
           {!hasMore && posts.length > 0 && (
             <div className="text-center py-6 bg-glass/5 rounded-2xl">
               <div className="text-2xl mb-2">🎉</div>
@@ -293,7 +288,6 @@ export default function Feed() {
             </div>
           )}
 
-          {/* Error state for pagination */}
           {error && posts.length > 0 && (
             <div className="text-center py-4 bg-red-500/10 rounded-lg border border-red-400/30">
               <p className="text-red-400 text-sm">Failed to load more posts</p>

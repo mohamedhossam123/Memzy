@@ -1,7 +1,13 @@
+// IHumorService.cs
 using Memzy_finalist.Models;
-public interface IHumorService
+
+namespace Memzy_finalist.Services
 {
-    Task<User> ChangeHumorAsync(int userId, List<string> humorTypes);
-    Task<User> AddHumorAsync(int userId, List<string> humorTypes);
-    Task RemoveHumorAsync(int userId);
+    public interface IHumorService
+    {
+        Task<User> ChangeHumorAsync(int userId, List<string> humorTypes);
+        Task RemoveHumorAsync(int userId);
+        Task<List<string>> GetUserHumorPreferencesAsync(int userId);
+        
+    }
 }

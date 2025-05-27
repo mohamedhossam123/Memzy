@@ -18,7 +18,7 @@ export default function UserProfile() {
   const { user, token } = useAuth()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
-  
+  const [fetchError, setFetchError] = useState<string | null>(null)
   
   interface FullUser {
     profilePic?: string
@@ -26,7 +26,7 @@ export default function UserProfile() {
     bio?: string
     friendCount?: number
     postCount?: number
-    humorTypes?: { humorTypeName: string }[]
+    humorTypes?: string[] // Changed to string array for consistency
     userName?: string 
   }
 
@@ -37,17 +37,33 @@ export default function UserProfile() {
   const [passwordError, setPasswordError] = useState('')
   const [profileImageError, setProfileImageError] = useState(false)
   
-
-
-   const [pendingPosts, setPendingPosts] = useState<Post[]>([])
+  const [pendingPosts, setPendingPosts] = useState<Post[]>([])
   const [approvedPosts, setApprovedPosts] = useState<Post[]>([])
-
-
 
   const friendTabs = ["friends", "requests"] as const
   const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>('friends')
   const [friendRequests, setFriendRequests] = useState<any[]>([])
   const [friendsList, setFriendsList] = useState<any[]>([])
+  const [availableHumorTypes, setAvailableHumorTypes] = useState<string[]>([])
+
+  useEffect(() => {
+    console.log('User humor types:', userData?.humorTypes)
+    console.log('Available humor types:', availableHumorTypes)
+  }, [userData, availableHumorTypes])
+
+  useEffect(() => {
+    const fetchHumorTypes = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Humor/GetHumorTypes`)
+        if (!response.ok) throw new Error('Failed to fetch humor types')
+        const data = await response.json()
+        setAvailableHumorTypes(data.map((ht: any) => ht.name))
+      } catch (error) {
+        console.error('Error fetching humor types:', error)
+      }
+    }
+    fetchHumorTypes()
+  }, [])
   
   useEffect(() => {
     setProfileImageError(false)
@@ -60,12 +76,8 @@ export default function UserProfile() {
       fetchUserDetails()
     }
   }, [user, router])
- 
 
-
-
-
-   useEffect(() => {
+  useEffect(() => {
     if (activeModal === 'posts') {
       fetchPendingPosts()
       fetchApprovedPosts()
@@ -131,17 +143,98 @@ export default function UserProfile() {
     }
   }
 
-  const fetchUserDetails = async () => {
+  // Fetch user humor preferences separately
+  const fetchUserHumor = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/getCurrentUser`,
-        { headers: { Authorization: `Bearer ${token}` }}
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/UserHumor/GetUserHumor`,
+        { headers: { Authorization: `Bearer ${token}` } }
       )
-      if (!response.ok) throw new Error('Failed to fetch')
+      if (!response.ok) throw new Error('Failed to fetch user humor')
       const data = await response.json()
-      setUserData(data)
+      console.log('Fetched user humor data:', data)
+      
+      // Update userData with humor types
+      setUserData(prev => ({
+        ...prev,
+        humorTypes: data.HumorTypes || data.humorTypes || []
+      }))
+    } catch (error) {
+      console.error('Error fetching user humor:', error)
+      // If humor fetch fails, set empty array
+      setUserData(prev => ({
+        ...prev,
+        humorTypes: []
+      }))
+    }
+  }
+
+  const fetchUserDetails = async () => {
+    if (!token) {
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      setFetchError(null)
+      const [userResponse, pendingPostsResponse, approvedPostsResponse] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/getCurrentUser`, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/GetPendingPosts`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/GetApprovedPosts`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ])
+      
+      if (!userResponse.ok) {
+        const errorText = await userResponse.text()
+        throw new Error(`Failed to fetch user data: ${userResponse.status} - ${errorText}`)
+      }
+      
+      const userData = await userResponse.json()
+      let pendingCount = 0
+      let approvedCount = 0
+      
+      if (pendingPostsResponse.ok) {
+        const pendingPosts = await pendingPostsResponse.json()
+        pendingCount = Array.isArray(pendingPosts) ? pendingPosts.length : 0
+      }
+      
+      if (approvedPostsResponse.ok) {
+        const approvedPosts = await approvedPostsResponse.json()
+        approvedCount = Array.isArray(approvedPosts) ? approvedPosts.length : 0
+      }
+      
+      const totalPostCount = pendingCount + approvedCount
+      let processedData = userData
+      if (userData.data) processedData = userData.data
+      if (userData.Data) processedData = userData.Data
+      if (userData.user) processedData = userData.user
+      
+      const mappedUserData: FullUser = {
+        profilePic: processedData.profilePic || processedData.profilePictureUrl || processedData.ProfilePictureUrl,
+        name: processedData.name || processedData.Name,
+        bio: processedData.bio || processedData.Bio,
+        friendCount: processedData.friendCount || processedData.FriendCount || 0,
+        postCount: totalPostCount,
+        humorTypes: [], // Initialize as empty, will be populated by fetchUserHumor
+        userName: processedData.userName || processedData.UserName || processedData.username
+      }
+      
+      setUserData(mappedUserData)
+      
+      // Fetch humor preferences separately
+      await fetchUserHumor()
+      
     } catch (err) {
-      console.error(err)
+      console.error('Error in fetchUserDetails:', err)
+      setFetchError(err instanceof Error ? err.message : 'Unknown error occurred')
     } finally {
       setIsLoading(false)
     }
@@ -238,7 +331,7 @@ export default function UserProfile() {
   const handleHumorUpdate = async (selectedHumor: string[]) => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Humor/ChangeHumor`, {
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Humor/SetHumor`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -247,10 +340,18 @@ export default function UserProfile() {
           body: JSON.stringify({ humorTypes: selectedHumor })
         }
       )
-      if (!res.ok) throw new Error('Failed to update humor preferences')
-      await fetchUserDetails()
+      
+      if (!res.ok) {
+        throw new Error('Failed to update humor preferences')
+      }
+      
+      // Wait a bit then refresh user humor
+      await new Promise(resolve => setTimeout(resolve, 500))
+      await fetchUserHumor()
+      
     } catch (err) {
-      console.error(err)
+      console.error('Error updating humor:', err)
+      await fetchUserHumor() // Still try to refresh even if update failed
     }
   }
 
@@ -338,30 +439,37 @@ export default function UserProfile() {
   }
 
   const getProfileImageUrl = (profilePic?: string) => {
-  const imageUrl = profilePic || user?.profilePictureUrl
-  
-  if (profileImageError || !imageUrl) {
-    return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
+    const imageUrl = profilePic || user?.profilePictureUrl
+    
+    if (profileImageError || !imageUrl) {
+      return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
+    }
+    return imageUrl.startsWith('http')
+      ? imageUrl
+      : `https://${imageUrl}`
   }
-  return imageUrl.startsWith('http')
-    ? imageUrl
-    : `https://${imageUrl}`
-}
 
   const getSearchResultImageUrl = (url?: string) => {
     if (!url) return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
     return url.startsWith('http') ? url : `https://${url}`
   }
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('UserData profilePic:', userData?.profilePic)
-    console.log('profileImageError:', profileImageError)
-    console.log('Final URL used:', getProfileImageUrl(userData?.profilePic))
-  }
-
   if (isLoading) return (
     <div className="flex items-center justify-center h-screen">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+    </div>
+  )
+
+  if (fetchError) return (
+    <div className="flex flex-col items-center justify-center h-screen text-center">
+      <div className="text-red-500 mb-4">Error loading profile data:</div>
+      <div className="text-red-400 mb-4">{fetchError}</div>
+      <button 
+        onClick={() => fetchUserDetails()} 
+        className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded"
+      >
+        Retry
+      </button>
     </div>
   )
 
@@ -374,43 +482,45 @@ export default function UserProfile() {
         <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
           {/* Profile Picture Section */}
           <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-accent overflow-hidden shadow-glow group">
-  <img
-    src={getProfileImageUrl(userData?.profilePic)}
-    alt={userData?.name || user.name || 'User'}
-    onError={() => setProfileImageError(true)}
-    className="w-full h-full object-cover"
-  />
-  <button
-    onClick={() => setActiveModal('profilePic')}
-    className="absolute bottom-0 right-0 transform -translate-x-2 -translate-y-2 bg-glass/90 backdrop-blur-lg rounded-full p-2 shadow-lg hover:bg-accent/80 transition-all duration-300 hover:scale-110"
-    aria-label="Edit profile picture"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-5 w-5 text-white"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-      />
-    </svg>
-  </button>
-</div>
+            <img
+              src={getProfileImageUrl(userData?.profilePic)}
+              alt={userData?.name || user.name || 'User'}
+              onError={() => setProfileImageError(true)}
+              className="w-full h-full object-cover"
+            />
+            <button
+              onClick={() => setActiveModal('profilePic')}
+              className="absolute bottom-0 right-0 transform -translate-x-2 -translate-y-2 bg-glass/90 backdrop-blur-lg rounded-full p-2 shadow-lg hover:bg-accent/80 transition-all duration-300 hover:scale-110"
+              aria-label="Edit profile picture"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-white"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </button>
+          </div>
 
           {/* Profile Info Section */}
           <div className="flex-1 space-y-4 text-center md:text-left">
             <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
-              <h1 className="text-3xl font-bold text-glow">{userData?.name || user.name}</h1>
+              <h1 className="text-3xl font-bold text-glow">
+                {userData?.name || user.name || 'Loading...'}
+              </h1>
               <button
                 onClick={() => setActiveModal('name')}
                 className="text-accent hover:text-accent/80 flex items-center gap-2 text-sm"
@@ -419,7 +529,7 @@ export default function UserProfile() {
               </button>
             </div>
             <div className="text-light/70 text-lg">
-              @{userData?.userName || 'username'}
+              @{userData?.userName || user.userName || 'Loading...'}
             </div>
             
             <div className="space-y-2">
@@ -429,7 +539,10 @@ export default function UserProfile() {
                   onClick={() => setActiveModal('humor')}
                   className="badge-style bg-glass px-3 py-1 rounded-full hover:bg-glass/80 transition-colors"
                 >
-                  {userData?.humorTypes?.map(ht => ht.humorTypeName).join(', ') || 'Not set'}
+                  {userData?.humorTypes && userData.humorTypes.length > 0 ? 
+                    userData.humorTypes.join(', ') : 
+                    'Click to set humor preferences'
+                  }
                 </button>
               </div>
 
@@ -452,27 +565,29 @@ export default function UserProfile() {
 
         {/* Stats & Security Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-        <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 shadow-glow hover:shadow-glow/50 transition-all">
-          <h3 className="text-xl font-semibold mb-4 text-accent border-b border-glass pb-2">
-            Social Stats
-          </h3>
-          <div className="flex justify-around">
-            <button
-              onClick={() => setActiveModal('friends')}
-              className="flex flex-col items-center transition-transform hover:scale-105"
-            >
-              <span className="text-3xl font-bold mb-1">{userData?.friendCount ?? 0}</span>
-              <span className="text-sm text-light/70">Friends</span>
-            </button>
-            <button
-              onClick={() => setActiveModal('posts')}
-              className="flex flex-col items-center transition-transform hover:scale-105"
-            >
-              <span className="text-3xl font-bold mb-1">{userData?.postCount ?? 0}</span>
-              <span className="text-sm text-light/70">Posts</span>
-            </button>
+          <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 shadow-glow hover:shadow-glow/50 transition-all">
+            <h3 className="text-xl font-semibold mb-4 text-accent border-b border-glass pb-2">
+              Social Stats
+            </h3>
+            <div className="flex justify-around">
+              <button
+                onClick={() => setActiveModal('friends')}
+                className="flex flex-col items-center transition-transform hover:scale-105"
+              >
+                <span className="text-3xl font-bold mb-1">{userData?.friendCount ?? 0}</span>
+                <span className="text-sm text-light/70">Friends</span>
+              </button>
+              <button
+                onClick={() => setActiveModal('posts')}
+                className="flex flex-col items-center transition-transform hover:scale-105"
+              >
+                <span className="text-3xl font-bold mb-1">
+                  {userData?.postCount ?? 0}
+                </span>
+                <span className="text-sm text-light/70">Posts</span>
+              </button>
+            </div>
           </div>
-        </div>
 
           <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 shadow-glow hover:shadow-glow/50 transition-all">
             <h3 className="text-xl font-semibold mb-4 text-accent border-b border-glass pb-2">
@@ -517,8 +632,9 @@ export default function UserProfile() {
         {/* Modals */}
         <HumorModal
           isOpen={activeModal === 'humor'}
+          humorTypes={availableHumorTypes}
           onClose={() => setActiveModal(null)}
-          initialHumorTypes={userData?.humorTypes?.map(ht => ht.humorTypeName) || []}
+          initialHumorTypes={userData?.humorTypes || []}
           onConfirm={handleHumorUpdate}
         />
 
@@ -549,14 +665,16 @@ export default function UserProfile() {
           onConfirm={handlePasswordChange}
           error={passwordError}
         />
+        
         <PostsModal
-        isOpen={activeModal === 'posts'}
-        onClose={() => setActiveModal(null)}
-        pendingPosts={pendingPosts}
-        approvedPosts={approvedPosts}
-        onApprove={handleApprovePost}
-        onReject={handleRejectPost}
-      />
+          isOpen={activeModal === 'posts'}
+          onClose={() => setActiveModal(null)}
+          pendingPosts={pendingPosts}
+          approvedPosts={approvedPosts}
+          onApprove={handleApprovePost}
+          onReject={handleRejectPost}
+        />
+
         {/* Create Post Modal */}
         <Transition appear show={activeModal === 'createPost'} as={Fragment}>
           <Dialog
@@ -671,7 +789,6 @@ export default function UserProfile() {
                       </button>
                     ))}
                   </div>
-
                   {/* Tab Content */}
                   <div className="max-h-64 overflow-y-auto space-y-4">
                     {activeFriendsTab === 'friends' ? (

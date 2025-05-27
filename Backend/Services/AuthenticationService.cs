@@ -87,9 +87,13 @@ public class AuthenticationService : IAuthenticationService
     {
         return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
     }
-    public async Task<GetUserDto> GetUserDtoByIdAsync(int userId)
+   public async Task<GetUserDto> GetUserDtoByIdAsync(int userId)
 {
-    var user = await _context.Users.FindAsync(userId);
+    var user = await _context.Users
+        .Include(u => u.UserHumorTypes)
+        .ThenInclude(uht => uht.HumorType)
+        .FirstOrDefaultAsync(u => u.UserId == userId);
+
     if (user == null)
         return null;
 
@@ -107,9 +111,16 @@ public class AuthenticationService : IAuthenticationService
         ProfilePictureUrl = user.ProfilePictureUrl ?? string.Empty,
         Bio = user.Bio ?? string.Empty,
         FriendsCount = friendCount,
-        PostsCount = postCount
+        PostsCount = postCount,
+        HumorTypes = user.UserHumorTypes
+            .Select(uht => new HumorTypeDto
+            {
+                HumorTypeId = uht.HumorType.HumorTypeId,
+                HumorTypeName = uht.HumorType.HumorTypeName
+            }).ToList()
     };
 }
+
 
     public async Task<User> VerifyUserAsync(string email, string password)
     {

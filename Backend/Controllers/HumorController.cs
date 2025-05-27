@@ -1,107 +1,42 @@
 using Memzy_finalist.Models;
+using Memzy_finalist.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
 namespace Memzy_finalist.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class HumorController : ControllerBase
+    public class UserHumorController : ControllerBase
     {
         private readonly IHumorService _humorService;
-        private readonly MemzyContext _context;
         private readonly IAuthenticationService _authService;
-        private readonly ILogger _logger;
+        private readonly ILogger<UserHumorController> _logger;
 
-        public HumorController(IHumorService humorService, IAuthenticationService authService, ILogger<HumorController> logger, MemzyContext context)
+        public UserHumorController(
+            IHumorService humorService, 
+            IAuthenticationService authService,
+            ILogger<UserHumorController> logger)
         {
-            _context = context;
-        
-            _logger = logger;
             _humorService = humorService;
             _authService = authService;
+            _logger = logger;
         }
-        
-        [HttpPost("AddHumor")]
+
+        [HttpGet("GetUserHumor")]
         [Authorize]
-        public async Task<IActionResult> AddHumor([FromBody] HumorPreferenceDto humorPreference)
+        public async Task<IActionResult> GetUserHumor()
         {
             try
             {
                 var userId = await _authService.GetAuthenticatedUserId();
-                var user = await _humorService.ChangeHumorAsync(userId, humorPreference.HumorTypes);
-                if (user == null)
-                {
-                    return NotFound("User not found");
-                }
-                return Ok(new { Message = "Humor preference added successfully", UserId = user.UserId });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
-        }
-        
-        [HttpPut("ChangeHumor")]
-[Authorize]
-public async Task<IActionResult> ChangeHumor([FromBody] HumorPreferenceDto humorPreference)
-{
-    try
-    {
-        var userId = await _authService.GetAuthenticatedUserId();
-        var user = await _humorService.AddHumorAsync(userId, humorPreference.HumorTypes);
+                var humorPreferences = await _humorService.GetUserHumorPreferencesAsync(userId);
 
-        if (user == null)
-        {
-            return NotFound("User not found");
-        }
-        return Ok(new { Message = "Humor preference updated successfully", UserId = user.UserId });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"An error occurred: {ex.Message}");
-    }
-}
-        [HttpGet("GetHumorTypes")]
-        public async Task<IActionResult> GetHumorTypes()
-        {
-            try
-            {
-                _logger.LogInformation("Fetching all humor types");
-                var humorTypes = await _context.HumorTypes
-                    .Select(ht => new
-                    {
-                        id = ht.HumorTypeId,
-                        name = ht.HumorTypeName
-                    })
-                    .ToListAsync();
-
-                return Ok(humorTypes);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching humor types");
-                return StatusCode(500, "An error occurred while fetching humor types");
-            }
-        }
-
-        [HttpDelete("RemoveHumor")]
-        [Authorize]
-        public async Task<IActionResult> RemoveHumor()
-        {
-            try
-            {
-                var userId = await _authService.GetAuthenticatedUserId();
-                await _humorService.RemoveHumorAsync(userId);
-                return Ok(new { Message = "Humor preference removed successfully", UserId = userId });
+                return Ok(new { 
+                    UserId = userId,
+                    HumorTypes = humorPreferences 
+                });
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -113,14 +48,33 @@ public async Task<IActionResult> ChangeHumor([FromBody] HumorPreferenceDto humor
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
+                _logger.LogError(ex, "Error fetching user humor preferences");
+                return StatusCode(500, "An error occurred while fetching humor preferences");
+            }
+        }
+
+        [HttpGet("GetUserHumor/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> GetUserHumorById()
+        {
+            try
+            {
+                var userid = await _authService.GetAuthenticatedUserId();
+                var humorPreferences = await _humorService.GetUserHumorPreferencesAsync(userid);
+
+                return Ok(new { 
+                    userid = userid,
+                    HumorTypes = humorPreferences 
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception )
+            {
+                return StatusCode(500, "An error occurred while fetching humor preferences");
             }
         }
     }
-    
-    public class HumorPreferenceDto
-{
-    public List<string> HumorTypes { get; set; }
-}
-
 }

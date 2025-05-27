@@ -10,4 +10,9 @@ public class GetUserDto
     public string Bio { get; set; } = string.Empty;
     public int FriendsCount { get; set; }
     public int PostsCount { get; set; }
+
+    // Add this:
+    public List<HumorTypeDto> HumorTypes { get; set; } = new();
 }
+
+
