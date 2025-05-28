@@ -34,6 +34,8 @@ builder.Services.AddScoped<IFeedService, FeedService>();
 builder.Services.AddScoped<ICreatingPostsService, CreatingPostsService>();
 builder.Services.AddScoped<IFriendsService, FriendsService>();
 builder.Services.AddScoped<IMessagingService, MessagingService>();
+builder.Services.AddSingleton<WebSocketConnectionManager>();
+
 
 /*** Database Configuration ***/
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 

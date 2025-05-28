@@ -108,7 +108,6 @@ namespace Memzy_finalist.Services
                 throw;
             }
         }
-
         public async Task<List<string>> GetUserHumorPreferencesAsync(int userId)
         {
             try
