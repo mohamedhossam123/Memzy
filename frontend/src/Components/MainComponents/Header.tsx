@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { useSearch } from '../Context/SearchContext'
-import { useAuth } from '../Context/AuthContext'
+import { useSearch } from '../../Context/SearchContext'
+import { useAuth } from '../../Context/AuthContext'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import debounce from 'lodash.debounce'
@@ -81,7 +81,8 @@ useEffect(() => {
       
       setUserName(data.userName)
       if (user && typeof user.userId === 'number') {
-        updateUser({ ...user, userName: data.userName })
+        // FIXED: Use callback function for updateUser
+        updateUser(prevUser => prevUser ? { ...prevUser, userName: data.userName } : null)
       }
 
     } catch (err) {
@@ -109,7 +110,8 @@ useEffect(() => {
       
       if (data.Url && user) {
         setProfileImageError(false)
-        updateUser({ ...user, profilePictureUrl: data.Url })
+        // FIXED: Use callback function for updateUser
+        updateUser(prevUser => prevUser ? { ...prevUser, profilePictureUrl: data.Url } : null)
       }
     } catch (error) {
       console.error('Upload failed:', error)

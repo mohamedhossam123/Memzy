@@ -1,6 +1,6 @@
 'use client'
 
-import { BaseModal } from '../BaseModal'
+import { BaseModal } from './BaseModal'
 import { useState, useEffect } from 'react'
 
 interface ProfilePictureModalProps {

@@ -3,8 +3,8 @@
 
 import React from 'react'
 import { useAuth } from '@/Context/AuthContext'
-import { Header } from '@/Components/Header'
-import { Sidebar } from '@/Components/Sidebar'
+import { Header } from '@/Components/MainComponents/Header'
+import { Sidebar } from '@/Components/MainComponents/Sidebar'
 import { motion } from 'framer-motion'
 import { useSidebar } from '@/Context/SidebarContext'
 

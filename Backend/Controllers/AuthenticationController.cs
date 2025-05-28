@@ -72,14 +72,6 @@ namespace MyApiProject.Controllers
 
             return Ok(result.Data);
         }
-
-        [HttpPost("logout")]
-        [Authorize]
-        public IActionResult Logout()
-        {
-            return Ok(new { message = "Logged out successfully" });
-        }
-
         [HttpGet("refresh")]
         [Authorize]
         public async Task<IActionResult> RefreshToken()

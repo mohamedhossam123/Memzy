@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/Context/AuthContext'
-import { AuthLayout } from '@/Components/Authlayout'
+import { AuthLayout } from '@/Components/Auth/Authlayout'
 import { SearchProvider } from '@/Context/SearchContext'
 import { SidebarProvider } from '@/Context/SidebarContext'
 
@@ -19,12 +19,15 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  
   return (
     <html lang="en">
-      <link rel="icon" href="/memzyiconcopyyy.jpg" />
-      <link rel="apple-touch-icon" href="/memzyiconcopyyy.jpg" />
-      <body className={`${inter.className} bg-gradient-to-br from-darker to-primary-dark text-light min-h-screen leading-relaxed overflow-x-hidden`}>
+      <head>
+        <link rel="icon" href="/memzyiconcopyyy.jpg" />
+        <link rel="apple-touch-icon" href="/memzyiconcopyyy.jpg" />
+      </head>
+      <body
+        className={`${inter.className} bg-gradient-to-br from-darker to-primary-dark text-light min-h-screen leading-relaxed overflow-x-hidden`}
+      >
         <AuthProvider>
           <SearchProvider>
             <SidebarProvider>

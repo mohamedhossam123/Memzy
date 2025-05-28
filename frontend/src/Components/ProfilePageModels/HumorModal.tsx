@@ -1,22 +1,22 @@
 'use client'
 
-import { BaseModal } from '../BaseModal'
+import { BaseModal } from './BaseModal'
 import { useState, useEffect } from 'react'
 
 interface HumorModalProps {
   isOpen: boolean
   onClose: () => void
   initialHumorTypes: string[]
-  humorTypes: string[] 
   onConfirm: (selectedHumor: string[]) => Promise<void>
+  humorTypes: string[] 
 }
 
 export const HumorModal = ({ 
   isOpen, 
   onClose, 
   initialHumorTypes,
-  humorTypes,
-  onConfirm 
+  onConfirm,
+  humorTypes 
 }: HumorModalProps) => {
   const [selectedHumor, setSelectedHumor] = useState<string[]>(initialHumorTypes)
   const [isLoading, setIsLoading] = useState(false)
@@ -48,9 +48,9 @@ export const HumorModal = ({
   return (
     <BaseModal isOpen={isOpen} onClose={onClose} title="Select Your Humor Type">
       <div className="flex flex-col gap-3">
-        {humorTypes.map((type) => (
+        {humorTypes.map((type, index) => (
           <button
-            key={type}
+            key={`humor-${index}-${type}`}
             onClick={() => toggleHumorType(type)}
             className={`w-full text-left px-4 py-2 rounded-lg font-medium transition
               ${selectedHumor.includes(type)

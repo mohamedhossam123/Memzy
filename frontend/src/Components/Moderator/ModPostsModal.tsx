@@ -3,7 +3,7 @@
 
 import { Transition, Dialog } from '@headlessui/react'
 import { Fragment, useState } from 'react' 
-import { Post } from '@/Components/UserPostComponent' 
+import { Post } from '@/Components/ProfilePageModels/ProfilePostsComponent' 
 
 interface PostsModalProps {
   isOpen: boolean

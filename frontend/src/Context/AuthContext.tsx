@@ -35,7 +35,7 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<void>
   logout: () => void
   loading: boolean
-  updateUser: (user: User | null) => void
+  updateUser: (updater: (prev: User | null) => User | null) => void
   api: {
     fetch: (url: string, options?: ApiOptions) => Promise<Response | null>
     get: (url: string, options?: ApiOptions) => Promise<Response | null>
@@ -65,20 +65,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  useEffect(() => {
-    const storedToken = getStoredToken()
-    if (storedToken) {
-      setToken(storedToken)
-      checkAuth(storedToken)
-    } else {
-      setLoading(false)
-    }
-  }, [])
 
-  const checkAuth = async (currentToken: string) => {
+  const updateUser = useCallback(
+    (updater: (prev: User | null) => User | null) => {
+      setUser(updater)
+    },
+    []
+  )
+
+  const checkAuth = useCallback(async (currentToken: string) => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/validate`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/auth/validate`,
         {
           headers: {
             Authorization: `Bearer ${currentToken}`,
@@ -89,16 +87,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         const response = await res.json()
         console.log('Validate response:', response)
-        const userData =
-          response.Data || response.data || response.user || response
-
+        const userData = response?.user || response?.data || response;
+        
         if (userData?.userId) {
           setUser({
             userId: userData.userId,
             name: userData.name || '',
             email: userData.email || '',
             profilePictureUrl: userData.profilePictureUrl,
-            bio: userData.bio,
+            bio: userData.bio || '',
             userName: userData.userName || userData.UserName || '',
             humorTypeId: userData.humorTypeId,
             createdAt: userData.createdAt,
@@ -121,12 +118,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const login = async (email: string, password: string) => {
+  useEffect(() => {
+    const storedToken = getStoredToken()
+    if (storedToken) {
+      setToken(storedToken)
+      checkAuth(storedToken)
+    } else {
+      setLoading(false)
+    }
+  }, [checkAuth])
+
+  const login = useCallback(async (email: string, password: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/login`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/auth/login`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -141,23 +148,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json()
       console.log('Login response data:', data)
-      if (!data.token || !data.user?.userId) {
+
+      const userResponse = data?.user || data?.User || data;
+      
+      if (!data.token || !userResponse?.userId) {
         throw new Error('Invalid server response format')
       }
 
       const newToken = data.token
       setToken(newToken)
       setStoredToken(newToken)
+      
       setUser({
-        userId: data.user.userId,
-        name: data.user.name,
-        email: data.user.email,
-        profilePictureUrl: data.user.profilePictureUrl,
-        bio: data.user.bio,
-        userName: data.user.userName || data.user.UserName || '',
-        humorTypeId: data.user.humorTypeId,
-        createdAt: data.user.createdAt,
-        status: data.user.status
+        userId: userResponse.userId,
+        name: userResponse.name || '',
+        email: userResponse.email || '',
+        profilePictureUrl: userResponse.profilePictureUrl,
+        bio: userResponse.bio || '',
+        userName: userResponse.userName || userResponse.UserName || '',
+        humorTypeId: userResponse.humorTypeId,
+        createdAt: userResponse.createdAt,
+        status: userResponse.status
       })
 
       router.push('/')
@@ -165,13 +176,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Login error:', error)
       throw error
     }
-  }
+  }, [router])
 
   const logout = useCallback(async () => {
     setLoading(true)
     try {
       if (token) {
-        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/logout`, {
+        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/auth/logout`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -242,22 +253,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [token, logout]
   )
 
- const value = useMemo(() => ({
-  user,
-  token,
-  login,
-  logout,
-  loading,
-  updateUser: setUser,
-  api,
-}), [
-  JSON.stringify(user), 
-  token, 
-  loading, 
-  login, 
-  logout, 
-  api
-])
+  // FIXED: Proper memoization without JSON.stringify
+  const value = useMemo(() => ({
+    user,
+    token,
+    login,
+    logout,
+    loading,
+    updateUser,
+    api,
+  }), [user, token, login, logout, loading, updateUser, api])
 
   return (
     <AuthContext.Provider value={value}>

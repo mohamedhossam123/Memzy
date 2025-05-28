@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
-import { Post } from '@/Components/UserPostComponent'
+import { Post } from '@/Components/ProfilePageModels/ProfilePostsComponent'
 
 interface UserProfileData {
   id: number 
@@ -667,7 +667,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
                       )}
                       
                       <div className="flex items-center gap-4 text-sm text-light/70">
-                        <span>😂 {post.likeCounter || 0} likes</span>
+                        <span>😂 {post.likeCount || 0} likes</span>
                         <span className="text-xs">
                           {post.mediaType} • {new Date(post.createdAt).toLocaleTimeString()}
                         </span>

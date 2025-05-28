@@ -5,9 +5,11 @@ namespace Memzy_finalist.Services
 {
     public interface IHumorService
     {
+        
         Task<User> ChangeHumorAsync(int userId, List<string> humorTypes);
+            Task<User> SetHumorAsync(int userId, List<string> humorTypes);
         Task RemoveHumorAsync(int userId);
         Task<List<string>> GetUserHumorPreferencesAsync(int userId);
-        
+        Task<List<string>> GetAllHumorTypesAsync();
     }
 }

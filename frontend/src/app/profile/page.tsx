@@ -6,21 +6,21 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
-import { HumorModal } from '@/Components/SettingsModals/HumorModal'
-import { ProfilePictureModal } from '@/Components/SettingsModals/ProfilePictureModal'
-import { NameModal } from '@/Components/SettingsModals/NameModal'
-import { BioModal } from '@/Components/SettingsModals/BioModal'
-import { PasswordModal } from '@/Components/SettingsModals/PasswordModal'
-import PostForm from '@/Components/PostsFormComponent'
-import PostFeed, { Post } from '@/Components/UserPostComponent'
-import PostsModal from '@/Components/SettingsModals/PostsModal'
+import { HumorModal } from '@/Components/ProfilePageModels/HumorModal'
+import { ProfilePictureModal } from '@/Components/ProfilePageModels/ProfilePictureModal'
+import { NameModal } from '@/Components/ProfilePageModels/NameModal'
+import { BioModal } from '@/Components/ProfilePageModels/BioModal'
+import { PasswordModal } from '@/Components/ProfilePageModels/PasswordModal'
+import PostForm from '@/Components/ProfilePageModels/CreatePostComponent'
+import PostFeed, { Post } from '@/Components/ProfilePageModels/ProfilePostsComponent'
+import PostsModal from '@/Components/Moderator/ModPostsModal'
+
 
 export default function UserProfile() {
   const { user, token } = useAuth()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
-  
   interface FullUser {
     profilePic?: string
     name?: string
@@ -53,18 +53,27 @@ export default function UserProfile() {
   }, [userData, availableHumorTypes])
 
   useEffect(() => {
-    const fetchHumorTypes = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Humor/GetHumorTypes`)
-        if (!response.ok) throw new Error('Failed to fetch humor types')
-        const data = await response.json()
-        setAvailableHumorTypes(data.map((ht: any) => ht.name))
-      } catch (error) {
-        console.error('Error fetching humor types:', error)
-      }
+  const fetchHumorTypes = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/UserHumor/GetAllHumorTypes`, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (!response.ok) throw new Error('Failed to fetch humor types');
+      const data = await response.json();
+      const humorTypeNames = data.humorTypes || [];
+      console.log('Available humor types:', humorTypeNames); 
+      setAvailableHumorTypes(humorTypeNames);
+    } catch (error) {
+      console.error('Error fetching humor types:', error);
+      setAvailableHumorTypes([]); 
     }
-    fetchHumorTypes()
-  }, [])
+  };
+  
+  if (token) fetchHumorTypes();
+}, [token]);
+
   
   useEffect(() => {
     setProfileImageError(false)
@@ -144,26 +153,32 @@ export default function UserProfile() {
     }
   }
   const fetchUserHumor = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/UserHumor/GetUserHumor`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      if (!response.ok) throw new Error('Failed to fetch user humor')
-      const data = await response.json()
-      console.log('Fetched user humor data:', data)
-      setUserData(prev => ({
-        ...prev,
-        humorTypes: data.HumorTypes || data.humorTypes || []
-      }))
-    } catch (error) {
-      console.error('Error fetching user humor:', error)
-      setUserData(prev => ({
-        ...prev,
-        humorTypes: []
-      }))
-    }
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/UserHumor/GetUserHumor`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    
+    if (!response.ok) throw new Error('Failed to fetch user humor');
+    const data = await response.json();
+    
+    console.log('User humor data:', data); 
+    const userHumorTypes = Array.isArray(data) 
+      ? data 
+      : data.humorTypes || data.HumorTypes || [];
+    
+    setUserData(prev => ({
+      ...prev,
+      humorTypes: userHumorTypes
+    }));
+  } catch (error) {
+    console.error('Error fetching user humor:', error);
+    setUserData(prev => ({
+      ...prev,
+      humorTypes: []
+    }));
   }
+};
 
   const fetchUserDetails = async () => {
   if (!token) {
@@ -189,28 +204,27 @@ export default function UserProfile() {
       throw new Error('Failed to fetch user data');
     }
     
-    const userData = await userResponse.json();
+    const userDataResponse = await userResponse.json();
+    const userData = userDataResponse.user || userDataResponse; 
+    
     let friendCount = 0;
     let postCount = 0;
-    
+
     if (friendsResponse.ok) {
       const friendsData = await friendsResponse.json();
-      console.log('Friends data received:', friendsData); 
       friendCount = friendsData.friendCount || friendsData.FriendCount || 0;
-      postCount = friendsData.postCount || friendsData.PostCount || userData.postCount || 0;
+      postCount = friendsData.postCount || friendsData.PostCount || 0;
     }
-    
     const mappedUserData: FullUser = {
       profilePic: userData.profilePictureUrl,
       name: userData.name,
-      bio: userData.bio,
-      friendCount: friendCount, 
-      postCount: postCount, 
+      bio: userData.bio || userData.Bio || '', 
+      friendCount,
+      postCount,
       humorTypes: [],
-      userName: userData.userName
+      userName: userData.userName || userData.UserName || ''
     };
     
-    console.log('Mapped user data:', mappedUserData); 
     setUserData(mappedUserData);
     await fetchUserHumor();
     
@@ -221,6 +235,9 @@ export default function UserProfile() {
     setIsLoading(false);
   }
 }
+
+
+
 
   const fetchFriends = async () => {
     try {
@@ -313,8 +330,8 @@ export default function UserProfile() {
   const handleHumorUpdate = async (selectedHumor: string[]) => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Humor/SetHumor`, {
-          method: 'PUT',
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/UserHumor/SetHumor`, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
@@ -326,14 +343,12 @@ export default function UserProfile() {
       if (!res.ok) {
         throw new Error('Failed to update humor preferences')
       }
-      
-      // Wait a bit then refresh user humor
       await new Promise(resolve => setTimeout(resolve, 500))
       await fetchUserHumor()
       
     } catch (err) {
       console.error('Error updating humor:', err)
-      await fetchUserHumor() // Still try to refresh even if update failed
+      await fetchUserHumor() 
     }
   }
 
@@ -612,13 +627,15 @@ export default function UserProfile() {
         </div>
 
         {/* Modals */}
-        <HumorModal
-          isOpen={activeModal === 'humor'}
-          humorTypes={availableHumorTypes}
-          onClose={() => setActiveModal(null)}
-          initialHumorTypes={userData?.humorTypes || []}
-          onConfirm={handleHumorUpdate}
-        />
+        {activeModal === 'humor' && (
+  <HumorModal
+    isOpen
+    humorTypes={availableHumorTypes}
+    onClose={() => setActiveModal(null)}
+    initialHumorTypes={userData?.humorTypes || []}
+    onConfirm={handleHumorUpdate}
+  />
+)}
 
         <ProfilePictureModal
           isOpen={activeModal === 'profilePic'}
@@ -635,11 +652,11 @@ export default function UserProfile() {
         />
 
         <BioModal
-          isOpen={activeModal === 'bio'}
-          onClose={() => setActiveModal(null)}
-          bio={userData?.bio || ''}
-          onSave={handleBioUpdate}
-        />
+  isOpen={activeModal === 'bio'}
+  onClose={() => setActiveModal(null)}
+  bio={userData?.bio || user?.bio || ''}
+  onSave={handleBioUpdate}
+/>
 
         <PasswordModal
           isOpen={activeModal === 'password'}

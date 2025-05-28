@@ -1,5 +1,7 @@
 using System.Text;
-using System.IO;
+using Microsoft.AspNetCore.WebSockets;
+using System.Net.WebSockets;
+using Microsoft.AspNetCore.Http; 
 using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -133,10 +135,64 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
+app.UseWebSockets();
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Memzy API v1"));
+
+
+
+
+app.Map("/ws", async (HttpContext context) => 
+{
+    if (context.WebSockets.IsWebSocketRequest)
+    {
+        var token = context.Request.Query["access_token"];
+        if (string.IsNullOrEmpty(token))
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsync("Access token is required");
+            return;
+        }
+
+        var authService = context.RequestServices.GetRequiredService<IAuthenticationService>();
+        var validationResult = await authService.ValidateTokenAsync();
+        
+        if (!validationResult.Success)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsync(validationResult.Message);
+            return;
+        }
+        using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+        async Task HandleConnection(WebSocket webSocket)
+        {
+            var buffer = new byte[1024 * 4];
+            var receiveResult = await webSocket.ReceiveAsync(
+                new ArraySegment<byte>(buffer), CancellationToken.None);
+            while (!receiveResult.CloseStatus.HasValue)
+            {
+                await webSocket.SendAsync(
+                    new ArraySegment<byte>(buffer, 0, receiveResult.Count),
+                    receiveResult.MessageType,
+                    receiveResult.EndOfMessage,
+                    CancellationToken.None);
+                receiveResult = await webSocket.ReceiveAsync(
+                    new ArraySegment<byte>(buffer), CancellationToken.None);
+            }
+            await webSocket.CloseAsync(
+                receiveResult.CloseStatus.Value,
+                receiveResult.CloseStatusDescription,
+                CancellationToken.None);
+        }
+
+        await HandleConnection(webSocket);
+    }
+    else
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+    }
+});
 
 app.Urls.Add("http://localhost:5001"); 
 app.UseExceptionHandler("/error");

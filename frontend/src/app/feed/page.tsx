@@ -3,7 +3,7 @@
 import { useAuth } from '@/Context/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import Feed from '@/Components/Feed'
+import Feed from '@/Components/Feed/Feed'
 
 export default function Home() {
   const { user } = useAuth()

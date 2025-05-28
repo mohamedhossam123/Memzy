@@ -18,7 +18,7 @@ export default {
         'glass-dark': 'rgba(0, 0, 0, 0.3)',
       },
       transitionDuration: {
-        2000: '2000ms', // ✅ Support duration-2000
+        2000: '2000ms', 
       },
       animation: {
         typing: 'typing 3s steps(5) infinite',
