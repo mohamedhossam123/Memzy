@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.DataProtection;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using MyApiProject.Services;
+using Microsoft.AspNetCore.SignalR;
+using Memzy_finalist.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,8 +35,12 @@ builder.Services.AddScoped<IHumorService, HumorService>();
 builder.Services.AddScoped<IFeedService, FeedService>();
 builder.Services.AddScoped<ICreatingPostsService, CreatingPostsService>();
 builder.Services.AddScoped<IFriendsService, FriendsService>();
-builder.Services.AddSingleton<WebSocketConnectionManager>();
-builder.Services.AddSingleton<IMessagingService, MessagingService>();
+builder.Services.AddScoped<IMessagingService, MessagingService>();
+builder.Services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
+
+builder.Services.AddSignalR();
+
+
 
 /*** Database Configuration ***/
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
@@ -64,8 +70,6 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
-
-    // Removed cookie handling event
 });
 
 /*** Exception Handling ***/
@@ -136,62 +140,13 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-app.UseWebSockets();
-    app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Memzy API v1"));
+
+app.UseDeveloperExceptionPage();
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Memzy API v1"));
 
 
-app.Map("/ws", async (HttpContext context) => 
-{
-    if (context.WebSockets.IsWebSocketRequest)
-    {
-        var token = context.Request.Query["access_token"];
-        if (string.IsNullOrEmpty(token))
-        {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsync("Access token is required");
-            return;
-        }
-
-        var authService = context.RequestServices.GetRequiredService<IAuthenticationService>();
-        var validationResult = await authService.ValidateTokenAsync();
-        
-        if (!validationResult.Success)
-        {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsync(validationResult.Message);
-            return;
-        }
-        using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-        async Task HandleConnection(WebSocket webSocket)
-        {
-            var buffer = new byte[1024 * 4];
-            var receiveResult = await webSocket.ReceiveAsync(
-                new ArraySegment<byte>(buffer), CancellationToken.None);
-            while (!receiveResult.CloseStatus.HasValue)
-            {
-                await webSocket.SendAsync(
-                    new ArraySegment<byte>(buffer, 0, receiveResult.Count),
-                    receiveResult.MessageType,
-                    receiveResult.EndOfMessage,
-                    CancellationToken.None);
-                receiveResult = await webSocket.ReceiveAsync(
-                    new ArraySegment<byte>(buffer), CancellationToken.None);
-            }
-            await webSocket.CloseAsync(
-                receiveResult.CloseStatus.Value,
-                receiveResult.CloseStatusDescription,
-                CancellationToken.None);
-        }
-
-        await HandleConnection(webSocket);
-    }
-    else
-    {
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-    }
-});
+app.MapHub<ChatHub>("/hub/chat");
 
 app.Urls.Add("http://localhost:5001"); 
 app.UseExceptionHandler("/error");

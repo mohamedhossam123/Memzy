@@ -87,39 +87,39 @@ public class AuthenticationService : IAuthenticationService
     {
         return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
     }
-   public async Task<GetUserDto> GetUserDtoByIdAsync(int userId)
-{
-    var user = await _context.Users
-        .Include(u => u.UserHumorTypes)
-        .ThenInclude(uht => uht.HumorType)
-        .FirstOrDefaultAsync(u => u.UserId == userId);
-
-    if (user == null)
-        return null;
-
-    var friendCount = await GetFriendCountAsync(userId);
-    var postCount = await GetPostCountAsync(userId);
-
-    return new GetUserDto
+    public async Task<GetUserDto> GetUserDtoByIdAsync(int userId)
     {
-        Id = user.UserId,
-        Name = user.Name,
-        Email = user.Email,
-        UserName = user.UserName,
-        Status = user.Status,
-        CreatedAt = user.CreatedAt,
-        ProfilePictureUrl = user.ProfilePictureUrl ?? string.Empty,
-        Bio = user.Bio ?? string.Empty,
-        FriendsCount = friendCount,
-        PostsCount = postCount,
-        HumorTypes = user.UserHumorTypes
-            .Select(uht => new HumorTypeDto
-            {
-                HumorTypeId = uht.HumorType.HumorTypeId,
-                HumorTypeName = uht.HumorType.HumorTypeName
-            }).ToList()
-    };
-}
+        var user = await _context.Users
+            .Include(u => u.UserHumorTypes)
+            .ThenInclude(uht => uht.HumorType)
+            .FirstOrDefaultAsync(u => u.UserId == userId);
+
+        if (user == null)
+            return null;
+
+        var friendCount = await GetFriendCountAsync(userId);
+        var postCount = await GetPostCountAsync(userId);
+
+        return new GetUserDto
+        {
+            Id = user.UserId,
+            Name = user.Name,
+            Email = user.Email,
+            UserName = user.UserName,
+            Status = user.Status,
+            CreatedAt = user.CreatedAt,
+            ProfilePictureUrl = user.ProfilePictureUrl ?? string.Empty,
+            Bio = user.Bio ?? string.Empty,
+            FriendsCount = friendCount,
+            PostsCount = postCount,
+            HumorTypes = user.UserHumorTypes
+                .Select(uht => new HumorTypeDto
+                {
+                    HumorTypeId = uht.HumorType.HumorTypeId,
+                    HumorTypeName = uht.HumorType.HumorTypeName
+                }).ToList()
+        };
+    }
 
 
     public async Task<User> VerifyUserAsync(string email, string password)
@@ -141,58 +141,58 @@ public class AuthenticationService : IAuthenticationService
             .CountAsync(p => p.UserId == userId);
         return PostsCount;
     }
-    
-
-public async Task<(bool Success, string Message, User User)> SignUpUserAsync(UserCreateDto dto)
-{
-    var existingEmailUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-if (existingEmailUser != null)
-    return (false, "Email already registered", null);
 
 
-    var existingUsername = await GetUserByUsernameAsync(dto.UserName);
-    if (existingUsername != null)
-        return (false, "Username already taken", null);
-
-    var user = new User
+    public async Task<(bool Success, string Message, User User)> SignUpUserAsync(UserCreateDto dto)
     {
-        Name = dto.Name,
-        Email = dto.Email,
-        PasswordHash = HashPassword(dto.Password),
-        CreatedAt = DateTime.UtcNow,
-        UserName = dto.UserName,
-        Status =dto.Status
-    };
+        var existingEmailUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        if (existingEmailUser != null)
+            return (false, "Email already registered", null);
 
-    var createdUser = await CreateUserAsync(user);
-    return (true, "User created", createdUser);
-}
 
-public async Task<(bool Success, string Message, string Token, object User)> LoginAsync(LoginDto dto)
-{
-    
-    var user = await VerifyUserAsync(dto.Email, dto.Password);
-    if (user == null)
-        return (false, "Invalid credentials", null, null);
+        var existingUsername = await GetUserByUsernameAsync(dto.UserName);
+        if (existingUsername != null)
+            return (false, "Username already taken", null);
 
-    var token = await GenerateJwtToken(user);
-Console.WriteLine($"User status during login: {user.Status}");
-    return (true, "Login successful", token, new
+        var user = new User
+        {
+            Name = dto.Name,
+            Email = dto.Email,
+            PasswordHash = HashPassword(dto.Password),
+            CreatedAt = DateTime.UtcNow,
+            UserName = dto.UserName,
+            Status = dto.Status
+        };
+
+        var createdUser = await CreateUserAsync(user);
+        return (true, "User created", createdUser);
+    }
+
+    public async Task<(bool Success, string Message, string Token, object User)> LoginAsync(LoginDto dto)
     {
-        user.UserId,
-        user.Name,
-        user.Email,
-        user.ProfilePictureUrl,
-        user.Bio,
-        Username = user.UserName,
-        Status = user.Status
-    });
-}
 
-public async Task<(bool Success, string Message, object Data)> ValidateTokenAsync()
-{
-    
-    try
+        var user = await VerifyUserAsync(dto.Email, dto.Password);
+        if (user == null)
+            return (false, "Invalid credentials", null, null);
+
+        var token = await GenerateJwtToken(user);
+        Console.WriteLine($"User status during login: {user.Status}");
+        return (true, "Login successful", token, new
+        {
+            user.UserId,
+            user.Name,
+            user.Email,
+            user.ProfilePictureUrl,
+            user.Bio,
+            Username = user.UserName,
+            Status = user.Status
+        });
+    }
+
+    public async Task<(bool Success, string Message, object Data)> ValidateTokenAsync()
+    {
+
+        try
         {
             var userId = await GetAuthenticatedUserId();
             var user = await GetUserByIdAsync(userId);
@@ -221,86 +221,134 @@ public async Task<(bool Success, string Message, object Data)> ValidateTokenAsyn
         {
             return (false, $"Token validation error: {ex.Message}", null);
         }
-}
+    }
 
-public async Task<(bool Success, string Message, string Token)> RefreshTokenAsync()
+    public async Task<(bool Success, string Message, string Token)> RefreshTokenAsync()
+    {
+        try
+        {
+            var userId = await GetAuthenticatedUserId();
+            var user = await GetUserByIdAsync(userId);
+            if (user == null)
+                return (false, "Invalid user", null);
+
+            var token = await GenerateJwtToken(user);
+            return (true, "Token refreshed", token);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Token refresh error: {ex.Message}", null);
+        }
+    }
+
+    public async Task<(bool Success, string Message, object Data)> GetCurrentUserInfoAsync()
+    {
+        try
+        {
+            var userId = await GetAuthenticatedUserId();
+            var user = await _context.Users
+                .Include(u => u.UserHumorTypes)
+                .ThenInclude(uht => uht.HumorType)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+                return (false, "Invalid user", null);
+
+            var humorTypes = user.UserHumorTypes.Select(uht => uht.HumorType).Select(ht => new
+            {
+                ht.HumorTypeId,
+                ht.HumorTypeName
+            });
+
+            var friendCount = await GetFriendCountAsync(userId);
+            var postCount = await GetPostCountAsync(userId);
+            var userDto = new GetUserDto
+            {
+                Id = user.UserId,
+                Name = user.Name,
+                Email = user.Email,
+                UserName = user.UserName,
+                Status = user.Status,
+                CreatedAt = user.CreatedAt,
+                ProfilePictureUrl = user.ProfilePictureUrl ?? string.Empty,
+                Bio = user.Bio ?? string.Empty,
+                FriendsCount = friendCount,
+                PostsCount = postCount
+            };
+
+            return (true, "User info fetched", new
+            {
+                User = userDto,
+                HumorTypes = humorTypes
+            });
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Error retrieving current user: {ex.Message}", null);
+        }
+    }
+    public async Task<(bool Success, string Message, object Data)> GetFriendAndPostCountAsync()
+    {
+        try
+        {
+            var userId = await GetAuthenticatedUserId();
+            var friendCount = await GetFriendCountAsync(userId);
+            var postCount = await GetPostCountAsync(userId);
+
+            return (true, "Counts retrieved", new { FriendCount = friendCount, PostCount = postCount });
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Error retrieving counts: {ex.Message}", null);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+public int? ValidateTokenAndGetUserId(string token)
 {
     try
     {
-        var userId = await GetAuthenticatedUserId();
-        var user = await GetUserByIdAsync(userId);
-        if (user == null)
-            return (false, "Invalid user", null);
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
 
-        var token = await GenerateJwtToken(user);
-        return (true, "Token refreshed", token);
-    }
-    catch (Exception ex)
-    {
-        return (false, $"Token refresh error: {ex.Message}", null);
-    }
-}
-
-public async Task<(bool Success, string Message, object Data)> GetCurrentUserInfoAsync()
-{
-    try
-    {
-        var userId = await GetAuthenticatedUserId();
-        var user = await _context.Users
-            .Include(u => u.UserHumorTypes)
-            .ThenInclude(uht => uht.HumorType)
-            .FirstOrDefaultAsync(u => u.UserId == userId);
-
-        if (user == null)
-            return (false, "Invalid user", null);
-
-        var humorTypes = user.UserHumorTypes.Select(uht => uht.HumorType).Select(ht => new
+        var validationParameters = new TokenValidationParameters
         {
-            ht.HumorTypeId,
-            ht.HumorTypeName
-        });
-
-        var friendCount = await GetFriendCountAsync(userId);
-        var postCount = await GetPostCountAsync(userId);
-        var userDto = new GetUserDto
-        {
-            Id = user.UserId,
-            Name = user.Name,
-            Email = user.Email,
-            UserName = user.UserName,
-            Status = user.Status,
-            CreatedAt = user.CreatedAt,
-            ProfilePictureUrl = user.ProfilePictureUrl ?? string.Empty,
-            Bio = user.Bio ?? string.Empty,
-            FriendsCount = friendCount,
-            PostsCount = postCount
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero,
+            ValidIssuer = _configuration["Jwt:Issuer"],
+            ValidAudience = _configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(key)
         };
 
-        return (true, "User info fetched", new
-        {
-            User = userDto,
-            HumorTypes = humorTypes
-        });
-    }
-    catch (Exception ex)
-    {
-        return (false, $"Error retrieving current user: {ex.Message}", null);
-    }
-}
-public async Task<(bool Success, string Message, object Data)> GetFriendAndPostCountAsync()
-{
-    try
-    {
-        var userId = await GetAuthenticatedUserId();
-        var friendCount = await GetFriendCountAsync(userId);
-        var postCount = await GetPostCountAsync(userId);
+        var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
+        var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
 
-        return (true, "Counts retrieved", new { FriendCount = friendCount, PostCount = postCount });
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId))
+        {
+            return userId;
+        }
     }
-    catch (Exception ex)
+    catch
     {
-        return (false, $"Error retrieving counts: {ex.Message}", null);
+        
     }
+
+    return null;
 }
 
 

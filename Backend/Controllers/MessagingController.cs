@@ -24,63 +24,17 @@ namespace MyApiProject.Controllers
             _friendsService = friendsService;
         }
 
-        [HttpPost("SendMessage")]
-    [Authorize]
-    public async Task<IActionResult> SendMessage([FromBody] MessageDto messageDto)
-    {
-        try
-        {
-            var userId = await _authService.GetAuthenticatedUserId();
-            var messageId = await _messagingService.SendMessageAsync(userId, messageDto.ReceiverId, messageDto.Content);
-            return Ok(new { MessageId = messageId, Status = "Message sent successfully" });
-        }
-        
-    catch (ArgumentException ex)
-    {
-        _logger.LogError(ex, "Argument error in SendMessage");
-        return BadRequest(new { Error = ex.Message });
-    }
-    catch (InvalidOperationException ex)
-    {
-        _logger.LogWarning(ex, "Invalid operation in SendMessage");
-        return BadRequest(new { Error = ex.Message });
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Unexpected error in SendMessage");
-        return StatusCode(500, new { 
-            Error = "Internal server error",
-            Details = ex.Message 
-        });
-    }
-}
+
         [HttpGet("GetMessages")]
-    [Authorize]
-    public async Task<IActionResult> GetMessages(
-        [FromQuery] int contactId,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 50)
-    {
-        try
+        [Authorize]
+        public async Task<IActionResult> GetMessages(int contactId, int page = 1, int pageSize = 50)
         {
             var userId = await _authService.GetAuthenticatedUserId();
             var messages = await _messagingService.GetMessagesAsync(userId, contactId, page, pageSize);
-            return Ok(new { Count = messages.Count, Messages = messages });
+            return Ok(messages);
         }
-    catch (ArgumentException ex)
-    {
-        _logger.LogError(ex, "Argument error in GetMessages");
-        return BadRequest(new { Error = ex.Message });
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Unexpected error in GetMessages");
-        return StatusCode(500, new { 
-            Error = "Internal server error",
-            Details = ex.Message 
-        });
-    }
-}
+
+
 
         [HttpDelete("DeleteMessage")]
     [Authorize]
