@@ -72,54 +72,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     []
   )
-
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
   const checkAuth = useCallback(async (currentToken: string) => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/auth/validate`,
-        {
-          headers: {
-            Authorization: `Bearer ${currentToken}`,
-          },
-        }
-      )
-
-      if (res.ok) {
-        const response = await res.json()
-        console.log('Validate response:', response)
-        const userData = response?.user || response?.data || response;
-        
-        if (userData?.userId) {
-          setUser({
-            userId: userData.userId,
-            name: userData.name || '',
-            email: userData.email || '',
-            profilePictureUrl: userData.profilePictureUrl,
-            bio: userData.bio || '',
-            userName: userData.userName || userData.UserName || '',
-            humorTypeId: userData.humorTypeId,
-            createdAt: userData.createdAt,
-            status: userData.status
-          })
-        } else {
-          console.warn('Invalid user data structure in token validation')
-          setToken(null)
-          setStoredToken(null)
-        }
-      } else {
-        console.warn('Token validation failed')
-        setToken(null)
-        setStoredToken(null)
+  try {
+    const res = await fetch(
+      `${BACKEND_URL}/api/Auth/validate`,
+      {
+        headers: {
+          Authorization: `Bearer ${currentToken}`,
+        },
       }
-    } catch (error) {
-      console.error('Auth check failed:', error)
-      setToken(null)
-      setStoredToken(null)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+    )
 
+    if (res.ok) {
+      const response = await res.json()
+      console.log('Validation response:', response) 
+      const userData = response?.user || response?.User || response?.data || response;
+      
+      if (userData?.userId) {
+        setUser({
+          userId: userData.userId,
+          name: userData.name || '',
+          email: userData.email || '',
+          profilePictureUrl: userData.profilePictureUrl,
+          bio: userData.bio || '',
+          userName: userData.userName || userData.UserName || '',
+          humorTypeId: userData.humorTypeId,
+          createdAt: userData.createdAt,
+          status: userData.status
+        })
+        return true;
+      }
+    }
+    console.warn('Token validation failed')
+    setToken(null)
+    setStoredToken(null)
+    return false;
+  } catch (error) {
+    console.error('Auth check failed:', error)
+    setToken(null)
+    setStoredToken(null)
+    return false;
+  } finally {
+    setLoading(false)
+  }
+}, [])
   useEffect(() => {
     const storedToken = getStoredToken()
     if (storedToken) {
@@ -130,59 +127,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [checkAuth])
 
+
   const login = useCallback(async (email: string, password: string) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/auth/login`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        }
-      )
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || 'Login failed')
+  try {
+    const response = await fetch(
+      `${BACKEND_URL}/api/Auth/login`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       }
+    );
 
-      const data = await response.json()
-      console.log('Login response data:', data)
+    const data = await response.json();
 
-      const userResponse = data?.user || data?.User || data;
-      
-      if (!data.token || !userResponse?.userId) {
-        throw new Error('Invalid server response format')
-      }
-
-      const newToken = data.token
-      setToken(newToken)
-      setStoredToken(newToken)
-      
-      setUser({
-        userId: userResponse.userId,
-        name: userResponse.name || '',
-        email: userResponse.email || '',
-        profilePictureUrl: userResponse.profilePictureUrl,
-        bio: userResponse.bio || '',
-        userName: userResponse.userName || userResponse.UserName || '',
-        humorTypeId: userResponse.humorTypeId,
-        createdAt: userResponse.createdAt,
-        status: userResponse.status
-      })
-
-      router.push('/')
-    } catch (error) {
-      console.error('Login error:', error)
-      throw error
+    if (!response.ok) {
+      console.error('Login failed with:', data);
+      throw new Error(data?.message || 'Login failed');
     }
-  }, [router])
+
+    if (!data.token) {
+      throw new Error('No token received');
+    }
+
+    const userData = data.user || data.User || data;
+
+    if (!userData?.userId) {
+      throw new Error('Invalid user data in response');
+    }
+
+    const newToken = data.token;
+    setToken(newToken);
+    setStoredToken(newToken);
+
+    setUser({
+      userId: userData.userId,
+      name: userData.name || '',
+      email: userData.email || '',
+      profilePictureUrl: userData.profilePictureUrl,
+      bio: userData.bio || '',
+      userName: userData.userName || userData.UserName || '',
+      humorTypeId: userData.humorTypeId,
+      createdAt: userData.createdAt,
+      status: userData.status,
+    });
+
+    router.push('/');
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
+  }
+}, [router]);
+
 
   const logout = useCallback(async () => {
     setLoading(true)
     try {
       if (token) {
-        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/auth/logout`, {
+        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/logout`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -253,7 +255,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [token, logout]
   )
 
-  // FIXED: Proper memoization without JSON.stringify
   const value = useMemo(() => ({
     user,
     token,

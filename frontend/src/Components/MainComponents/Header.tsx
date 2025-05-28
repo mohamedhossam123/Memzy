@@ -23,16 +23,14 @@ export function Header() {
   const searchRef = useRef<HTMLDivElement>(null)
   const [profileImageError, setProfileImageError] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [userName, setUserName] = useState<string>('')
-
   const [hasFetchedUserName, setHasFetchedUserName] = useState(false)
 
-useEffect(() => {
-  if (user?.userId && !user.userName && !hasFetchedUserName) {
-    fetchUserName()
-    setHasFetchedUserName(true)
-  }
-}, [user, hasFetchedUserName])
+  useEffect(() => {
+    if (user?.userId && !user.userName && !hasFetchedUserName) {
+      fetchUserName()
+      setHasFetchedUserName(true)
+    }
+  }, [user, hasFetchedUserName])
 
   const debouncedSearch = useCallback(
     debounce((searchTerm: string) => {
@@ -60,7 +58,6 @@ useEffect(() => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-
   const fetchUserName = async () => {
     if (!token) return
 
@@ -79,9 +76,7 @@ useEffect(() => {
       
       const data = await response.json()
       
-      setUserName(data.userName)
-      if (user && typeof user.userId === 'number') {
-        // FIXED: Use callback function for updateUser
+      if (data.userName && user && typeof user.userId === 'number') {
         updateUser(prevUser => prevUser ? { ...prevUser, userName: data.userName } : null)
       }
 
@@ -110,7 +105,6 @@ useEffect(() => {
       
       if (data.Url && user) {
         setProfileImageError(false)
-        // FIXED: Use callback function for updateUser
         updateUser(prevUser => prevUser ? { ...prevUser, profilePictureUrl: data.Url } : null)
       }
     } catch (error) {
@@ -194,7 +188,7 @@ useEffect(() => {
               <div className="flex flex-col">
                 <span className="text-[#f5f5f5] font-semibold">{user.name}</span>
                 <span className="text-[#f5f5f5]/70 text-xs">
-                  @{userName || user.userName || 'username'}
+                  @{user.userName || 'username'}
                 </span>
               </div>
             </div>
@@ -277,22 +271,94 @@ useEffect(() => {
       </div>
 
       {/* Right Section - Logo */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-[#c56cf0] relative overflow-hidden">
-          <Image
-            src="/memzyiconcopyyy.jpg"
-            alt="Memzy Logo"
-            fill
-            className="object-cover"
-            priority
+<div className="flex items-center gap-3">
+  {/* Animated Logo Container */}
+  <div className="relative group">
+    {/* Glowing orb background */}
+    <div className="absolute -inset-2 rounded-lg bg-[#c56cf0] opacity-20 blur-md group-hover:opacity-40 transition-all duration-500"></div>
+    
+    {/* Main logo container with gradient shine */}
+    <div className="relative w-10 h-10 rounded-lg overflow-hidden">
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#c56cf0] via-[#8e44ad] to-[#5d2a7e] animate-[pulse_6s_ease-in-out_infinite]"></div>
+      
+      {/* Moving shine effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+      
+      {/* Subtle particle effect */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(8)].map((_, i) => (
+          <div 
+            key={i}
+            className="absolute rounded-full bg-white/20"
+            style={{
+              width: `${Math.random() * 4 + 2}px`,
+              height: `${Math.random() * 4 + 2}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animation: `float ${Math.random() * 6 + 4}s ease-in-out infinite`,
+              animationDelay: `${Math.random() * 2}s`
+            }}
           />
-        </div>
-        <div className="relative w-[136px] h-[40px] flex items-center">
-          <h1 className="text-3xl font-bold text-[#c56cf0] drop-shadow-[0_0_15px_rgba(197,108,240,0.3)]">
-            Memzy
-          </h1>
-        </div>
+        ))}
       </div>
+      
+      {/* Logo image with 3D tilt effect */}
+      <Image
+        src="/memzyiconcopyyy.jpg"
+        alt="Memzy Logo"
+        fill
+        className="object-cover relative z-10 group-hover:rotate-[5deg] group-hover:scale-105 transition-all duration-300"
+        priority
+      />
+    </div>
+  </div>
+
+  {/* Text logo with enhanced animations */}
+  <div className="relative group cursor-pointer">
+    {/* Glow effect */}
+    <div className="absolute -inset-2 rounded-lg bg-[#c56cf0] opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-500"></div>
+    
+    {/* Text with individual character animations */}
+    <h1 className="text-3xl font-bold relative">
+      {['M', 'e', 'm', 'z', 'y'].map((letter, i) => (
+        <span 
+          key={i}
+          className="inline-block text-[#c56cf0] drop-shadow-[0_0_8px_rgba(197,108,240,0.5)]"
+          style={{
+            animation: `bounce 2s ease-in-out infinite`,
+            animationDelay: `${i * 0.1}s`,
+            transformOrigin: 'bottom center'
+          }}
+        >
+          {letter}
+        </span>
+      ))}
+    </h1>
+    
+    {/* Underline effect */}
+    <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-gradient-to-r from-[#c56cf0] to-[#ff6b9d] group-hover:w-full transition-all duration-500 ease-out"></div>
+    
+    {/* Floating sparkles */}
+    <div className="absolute -top-2 -right-2 w-16 h-16 pointer-events-none">
+      {[...Array(5)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full bg-white"
+          style={{
+            width: `${Math.random() * 3 + 1}px`,
+            height: `${Math.random() * 3 + 1}px`,
+            animation: `sparkle ${Math.random() * 3 + 2}s linear infinite`,
+            animationDelay: `${Math.random() * 2}s`,
+            left: `${Math.random() * 60}%`,
+            top: `${Math.random() * 60}%`,
+            opacity: 0
+          }}
+        />
+      ))}
+    </div>
+  </div>
+</div>
     </header>
   )
 }

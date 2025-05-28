@@ -46,21 +46,24 @@ namespace MyApiProject.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
-                return BadRequest("Email and password are required.");
+                return BadRequest(new { message = "Email and password are required." });
 
             var result = await _authService.LoginAsync(dto);
             if (!result.Success)
-                return Unauthorized(result.Message);
-            
+                return Unauthorized(new { message = result.Message });
+
             return Ok(new
             {
                 token = result.Token,
                 user = result.User
             });
         }
+
+
 
         [HttpGet("validate")]
         [Authorize]
