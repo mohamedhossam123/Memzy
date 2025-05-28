@@ -24,7 +24,6 @@ namespace Memzy_finalist.Controllers
             _logger = logger;
         }
 
-        // Get all available humor types (for dropdown/selection)
         [HttpGet("GetAllHumorTypes")]
         public async Task<IActionResult> GetAllHumorTypes()
         {
@@ -42,7 +41,6 @@ namespace Memzy_finalist.Controllers
             }
         }
 
-        // Get user's selected humor preferences
         [HttpGet("GetUserHumor")]
         [Authorize]
         public async Task<IActionResult> GetUserHumor()
