@@ -141,8 +141,6 @@ app.UseWebSockets();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Memzy API v1"));
 
 
-
-
 app.Map("/ws", async (HttpContext context) => 
 {
     if (context.WebSockets.IsWebSocketRequest)
