@@ -1,3 +1,5 @@
+
+// ChatPage.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -7,19 +9,34 @@ import { useMediaQuery } from 'react-responsive'
 
 const ChatPage = () => {
   const [selectedFriend, setSelectedFriend] = useState<{
-    id: number
-    name: string
-    username?: string
-    status?: 'online' | 'offline' | 'away'
-  } | null>(null)
+  id: number;
+  name: string;
+  username: string;
+  profilePictureUrl?: string; 
+} | null>(null);
+
   
   const isMobile = useMediaQuery({ maxWidth: 768 })
   const [showFriendsList, setShowFriendsList] = useState(true)
 
-  const handleSelectFriend = (friendId: number, friendName: string, username?: string, status?: 'online' | 'offline' | 'away') => {
-    setSelectedFriend({ id: friendId, name: friendName, username, status })
-    if (isMobile) setShowFriendsList(false)
-  }
+  const handleSelectFriend = (
+  friendId: number,
+  friendName: string,
+  username: string,
+  profilePictureUrl?: string
+) => {
+  setSelectedFriend({ 
+    id: friendId, 
+    name: friendName, 
+    username, 
+    profilePictureUrl 
+  });
+  if (isMobile) setShowFriendsList(false);
+};
+
+
+  
+
 
   const handleBackToFriends = () => {
     setSelectedFriend(null)
@@ -36,7 +53,6 @@ const ChatPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark to-darker">
       <div className="flex h-screen">
-        {/* Friends List Sidebar - Matching moderator dashboard style */}
         <div className={`${showFriendsList ? 'block' : 'hidden'} md:block w-full md:w-80 bg-glass/10 backdrop-blur-lg border-r border-glass/30 shadow-glow transition-all duration-300 z-10`}>
           <FriendsList 
             onSelectFriend={handleSelectFriend}
@@ -48,7 +64,6 @@ const ChatPage = () => {
         <div className="flex-1 flex flex-col bg-glass/5 backdrop-blur-sm">
           {selectedFriend ? (
             <>
-              {/* Enhanced Chat Header - Matching moderator dashboard header */}
               <div className="bg-glass/10 backdrop-blur-lg border-b border-glass/30 px-4 py-3 md:px-6 md:py-4 shadow-glow">
                 <div className="flex items-center">
                   {isMobile && (
@@ -66,16 +81,18 @@ const ChatPage = () => {
                   <div className="flex items-center gap-3">
                     {/* Profile Avatar with Status */}
                     <div className="relative">
-                      <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center border-2 border-glass/30 shadow-lg">
-                        <span className="text-light font-bold text-md md:text-lg">
-                          {selectedFriend.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      {selectedFriend.status && (
-                        <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-dark
-                          ${selectedFriend.status === 'online' ? 'bg-green-500' : 
-                            selectedFriend.status === 'away' ? 'bg-yellow-500' : 'bg-gray-500'}`}
+                      {selectedFriend.profilePictureUrl ? (
+                        <img
+                          src={selectedFriend.profilePictureUrl}
+                          alt={selectedFriend.name}
+                          className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-glass/30 shadow-md"
                         />
+                      ) : (
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center border-2 border-glass/30 shadow-lg">
+                          <span className="text-light font-bold text-md md:text-lg shadow-sm">
+                            {selectedFriend.name ? selectedFriend.name.charAt(0).toUpperCase() : '?'}
+                          </span>
+                        </div>
                       )}
                     </div>
                     
@@ -89,14 +106,11 @@ const ChatPage = () => {
                           @{selectedFriend.username}
                         </p>
                       )}
-                      
-                      
                     </div>
                   </div>
                   
                   {/* Action Buttons */}
                   <div className="ml-auto flex space-x-2">
-                    
                     <button className="p-2 rounded-full hover:bg-glass/20 transition-colors text-light">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />

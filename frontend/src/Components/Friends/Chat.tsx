@@ -221,13 +221,6 @@ const Chat = ({ contactId, contactName }: Props) => {
                 </div>
               </button>
             </div>
-            
-            {/* Typing indicator placeholder */}
-            <div className="mt-2 h-4">
-              <p className="text-xs text-light/40">
-                Press Shift+Enter for new line, Enter to send
-              </p>
-            </div>
           </div>
         </div>
       </div>

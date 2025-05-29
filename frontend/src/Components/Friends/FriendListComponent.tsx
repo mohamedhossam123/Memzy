@@ -1,3 +1,4 @@
+// FriendListComponent.tsx
 'use client'
 
 import { useAuth } from '@/Context/AuthContext'
@@ -14,9 +15,15 @@ interface Friend {
 }
 
 interface Props {
-  onSelectFriend: (friendId: number, friendName: string, username: string, status: 'online' | 'offline') => void
+  onSelectFriend: (
+    friendId: number,
+    friendName: string,
+    username: string,
+    profilePictureUrl?: string
+  ) => void
   selectedFriendId?: number
 }
+
 
 const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
   const { token } = useAuth()
@@ -35,15 +42,11 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
       const response = await axios.get(`${backendUrl}/api/Friends/GetFriends`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      
-      // Transform response to include name and username
       const friendsData = response.data.map((friend: any) => ({
         userId: friend.userId,
         name: friend.name,
         username: friend.username,
         profilePicture: friend.profilePictureUrl,
-        isOnline: friend.isOnline,
-        lastSeen: friend.lastSeen
       }))
       
       setFriends(friendsData || [])
@@ -75,21 +78,6 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
     }
   }, [searchTerm, friends])
 
-  const getStatusText = (friend: Friend) => {
-    if (friend.isOnline) return 'Online'
-    
-    if (friend.lastSeen) {
-      const lastSeenDate = new Date(friend.lastSeen)
-      const diffHours = Math.abs(Date.now() - lastSeenDate.getTime()) / 36e5
-      
-      if (diffHours < 24) {
-        return `Last seen ${lastSeenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-      }
-      return `Last seen ${lastSeenDate.toLocaleDateString()}`
-    }
-    
-    return 'Offline'
-  }
 
   if (loading) {
     return (
@@ -131,7 +119,7 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark to-darker p-8">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header - Matching moderator dashboard style */}
+        {/* Header*/}
         <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-glow">
@@ -157,7 +145,7 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
           
           <p className="text-light/70 mb-4">chat with your friends</p>
           
-          {/* Search Bar - Matching moderator dashboard search */}
+          {/* Search Bar */}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg className="h-5 w-5 text-light/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,20 +195,17 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
                   <div className="text-4xl mb-4">👥</div>
                   <h3 className="text-xl font-medium mb-2">Your friends list is empty</h3>
                   <p className="text-light/70 mb-6">Add friends to start chatting and connecting</p>
-                  <button className="bg-gradient-to-r from-primary to-accent text-light font-medium px-6 py-3 rounded-lg transition-all hover:shadow-glow shadow-md">
-                    Find Friends
-                  </button>
+
                 </>
               )}
             </div>
           ) : (
-            /* Friends List - Matching moderator dashboard card style */
             <div className="p-6">
               <div className="space-y-3">
                 {filteredFriends.map((friend) => (
                   <div
                     key={friend.userId}
-                    onClick={() => onSelectFriend(friend.userId, friend.name, friend.username, friend.isOnline ? 'online' : 'offline')}
+                    onClick={() => onSelectFriend(friend.userId, friend.name, friend.username, friend.profilePicture)}
                     className={`bg-glass/10 backdrop-blur-lg rounded-xl p-4 cursor-pointer transition-all duration-300 border hover:shadow-md ${
                       selectedFriendId === friend.userId 
                         ? 'border-accent/50 shadow-glow bg-glass/20 shadow-accent/20'
@@ -242,10 +227,7 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
                             </span>
                           </div>
                         )}
-                        {/* Online Status Indicator */}
-                        <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-dark shadow-sm ${
-                          friend.isOnline ? 'bg-green-400' : 'bg-gray-500'
-                        }`} />
+
                       </div>
                       
                       {/* Friend Info */}
@@ -254,21 +236,11 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
                           <h3 className="font-semibold text-light truncate text-lg">
                             {friend.name}
                           </h3>
-                          {friend.isOnline && (
-                            <span className="px-2 py-1 text-xs text-green-400 font-medium bg-green-400/20 rounded-full border border-green-400/30">
-                              Online
-                            </span>
-                          )}
                         </div>
                         <div className="flex items-center justify-between">
                           <p className="text-sm text-light/70 truncate">
                             @{friend.username}
                           </p>
-                          {!friend.isOnline && (
-                            <span className="text-xs text-light/50 truncate max-w-[60%]">
-                              {getStatusText(friend)}
-                            </span>
-                          )}
                         </div>
                       </div>
 
@@ -283,12 +255,6 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
                 ))}
               </div>
 
-              {/* Summary Footer */}
-              <div className="mt-6 pt-4 border-t border-glass/30 text-center">
-                <p className="text-light/60 text-sm">
-                  {filteredFriends.filter(f => f.isOnline).length} online • {filteredFriends.length} total friends
-                </p>
-              </div>
             </div>
           )}
         </div>
