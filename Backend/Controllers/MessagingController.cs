@@ -31,24 +31,24 @@ namespace MyApiProject.Controllers
         {
             var userId = await _authService.GetAuthenticatedUserId();
             var messages = await _messagingService.GetMessagesAsync(userId, contactId, page, pageSize);
-            return Ok(messages);
+            return Ok(new { messages });
         }
 
 
 
         [HttpDelete("DeleteMessage")]
-    [Authorize]
-    public async Task<IActionResult> DeleteMessage([FromQuery] int messageId)
-    {
-        try
+        [Authorize]
+        public async Task<IActionResult> DeleteMessage([FromQuery] int messageId)
         {
-            var userId = await _authService.GetAuthenticatedUserId();
-            var result = await _messagingService.DeleteMessageAsync(messageId, userId);
-            
-            return result ? 
-                Ok(new { Status = "Message deleted successfully" }) : 
-                NotFound(new { Error = "Message not found" });
-        }
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+                var result = await _messagingService.DeleteMessageAsync(messageId, userId);
+
+                return result ?
+                    Ok(new { Status = "Message deleted successfully" }) :
+                    NotFound(new { Error = "Message not found" });
+            }
             catch (ArgumentException ex)
             {
                 _logger.LogError(ex, "Argument error in DeleteMessage");
@@ -57,10 +57,43 @@ namespace MyApiProject.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error in DeleteMessage");
-                return StatusCode(500, new { 
+                return StatusCode(500, new
+                {
                     Error = "Internal server error",
-                    Details = ex.Message 
+                    Details = ex.Message
                 });
+            }
+        }
+        [HttpPost("SendMessage")]
+        [Authorize]
+        public async Task<IActionResult> SendMessage([FromBody] MessageDto request)
+        {
+            try
+            {
+                if (request == null || string.IsNullOrWhiteSpace(request.Content) || request.ReceiverId <= 0)
+                {
+                    return BadRequest(new { Error = "Invalid message data" });
+                }
+
+                var senderId = await _authService.GetAuthenticatedUserId();
+                if (senderId <= 0)
+                {
+                    return Unauthorized(new { Error = "User not authenticated" });
+                }
+
+                var friendshipStatus = await _friendsService.GetFriendshipStatus(senderId, request.ReceiverId);
+                if (!friendshipStatus.IsFriend && !friendshipStatus.HasPendingRequest)
+                {
+                    return BadRequest(new { Error = "You can only send messages to friends or pending requests" });
+                }
+
+                var messageId = await _messagingService.SendMessageAsync(senderId, request.ReceiverId, request.Content);
+                return Ok(new { MessageId = messageId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending message");
+                return StatusCode(500, new { Error = "Internal server error", Details = ex.Message });
             }
         }
     }

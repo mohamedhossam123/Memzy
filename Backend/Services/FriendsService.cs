@@ -62,7 +62,6 @@ namespace Memzy_finalist.Models
             if (userId1 == userId2)
                 return new FriendshipStatusDto { IsFriend = false, HasPendingRequest = false };
 
-            // Check if they are already friends
             var friendship = await _context.Friendships
                 .FirstOrDefaultAsync(f =>
                     (f.User1Id == userId1 && f.User2Id == userId2) ||
@@ -70,8 +69,6 @@ namespace Memzy_finalist.Models
 
             if (friendship != null)
                 return new FriendshipStatusDto { IsFriend = true, HasPendingRequest = false };
-
-            // Check if userId1 sent a request to userId2 (outgoing request)
             var sentRequest = await _context.FriendRequests
                 .FirstOrDefaultAsync(fr =>
                     fr.SenderId == userId1 && fr.ReceiverId == userId2 &&
@@ -84,8 +81,6 @@ namespace Memzy_finalist.Models
                     RequestType = "sent", 
                     RequestId = sentRequest.RequestId
                 };
-
-            // Check if userId2 sent a request to userId1 (incoming request)
             var receivedRequest = await _context.FriendRequests
                 .FirstOrDefaultAsync(fr =>
                     fr.SenderId == userId2 && fr.ReceiverId == userId1 &&
@@ -95,7 +90,7 @@ namespace Memzy_finalist.Models
                 return new FriendshipStatusDto { 
                     IsFriend = false, 
                     HasPendingRequest = true,
-                    RequestType = "received", // You received the request
+                    RequestType = "received", 
                     RequestId = receivedRequest.RequestId
                 };
 
@@ -200,8 +195,8 @@ namespace Memzy_finalist.Models
         {
             return await _context.Friendships
             .Where(f => f.User1Id == userId || f.User2Id == userId)
-            .Include(f => f.User1) // Load User1
-            .Include(f => f.User2) // Load User2
+            .Include(f => f.User1) 
+            .Include(f => f.User2) 
             .Select(f => f.User1Id == userId ? f.User2 : f.User1)
             .ToListAsync();
         }

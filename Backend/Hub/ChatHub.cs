@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Memzy_finalist.Hubs
 {
-    [Authorize]  // Require authentication
+    [Authorize] 
     public class ChatHub : Hub
 {
     private readonly IMessagingService _messagingService;
@@ -14,7 +14,17 @@ namespace Memzy_finalist.Hubs
     {
         var senderId = int.Parse(Context.UserIdentifier);
         await _messagingService.SendMessageAsync(senderId, receiverId, message);
-        await Clients.User(receiverId.ToString()).SendAsync("ReceiveMessage", senderId, message);
+        var savedMessageId = await _messagingService.SendMessageAsync(senderId, receiverId, message);
+            var fullMessage = new
+            {
+                MessageId = savedMessageId,
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                Content = message,
+                Timestamp = DateTime.UtcNow
+            };
+            await Clients.User(receiverId.ToString()).SendAsync("ReceiveMessage", fullMessage);
+
     }
         public override async Task OnConnectedAsync()
         {
