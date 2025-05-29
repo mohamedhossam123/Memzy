@@ -134,6 +134,8 @@ namespace MyApiProject.Controllers
                 return StatusCode(500, new { Error = "Internal server error" });
             }
         }
+
+
         [HttpPost("cancelrequest-by-receiver/{receiverId}")]
         [Authorize]
         public async Task<IActionResult> CancelFriendRequestByReceiver(int receiverId)
@@ -168,14 +170,27 @@ namespace MyApiProject.Controllers
             };
         }
 
-        [HttpGet("get-received-requests")]
+        [HttpGet("GetFriendRequests")]
         [Authorize]
-        public async Task<IActionResult> GetReceivedFriendRequests()
+        public async Task<IActionResult> GetFriendRequests()
         {
-            var userId = await _authService.GetAuthenticatedUserId();
-            var result = await _friendsService.GetPendingFriendRequests(userId);
-            return Ok(result);
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+                var requests = await _friendsService.GetPendingFriendRequests(userId);
+                return Ok(requests);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    error = "An error occurred",
+                    details = ex.Message
+                });
+            }
         }
+
+
 
         [HttpGet("GetFriends")]
         [Authorize]

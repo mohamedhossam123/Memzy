@@ -12,5 +12,5 @@ public interface IFriendsService
     Task<bool> CancelFriendRequest(int requestId, int userId);
     Task<bool> RemoveFriend(int userId, int friendId);
     Task<IEnumerable<User>> GetFriends(int userId);
-    Task<IEnumerable<FriendRequest>> GetPendingFriendRequests(int userId);
+    Task<List<FriendRequestDTO>> GetPendingFriendRequests(int userId);
 }

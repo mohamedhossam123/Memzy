@@ -728,137 +728,108 @@ export default function UserProfile() {
 
         {/* Friends Modal */}
         <Transition appear show={activeModal === 'friends'} as={Fragment}>
-          <Dialog
-            as="div"
-            className="fixed inset-0 z-50 overflow-y-auto"
-            onClose={() => setActiveModal(null)}
-          >
-            <div className="min-h-screen px-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0"
-                enterTo="opacity-50"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-50"
-                leaveTo="opacity-0"
-              >
-                <div className="fixed inset-0 bg-black bg-opacity-50" aria-hidden="true" />
-              </Transition.Child>
-              
-              <span className="inline-block h-screen align-middle" aria-hidden="true">
-                &#8203;
-              </span>
+  <Dialog as="div" className="relative z-10" onClose={() => setActiveModal(null)}>
+    <Transition.Child
+      as={Fragment}
+      enter="ease-out duration-300"
+      enterFrom="opacity-0"
+      enterTo="opacity-100"
+      leave="ease-in duration-200"
+      leaveFrom="opacity-100"
+      leaveTo="opacity-0"
+    >
+      <div className="fixed inset-0 bg-black bg-opacity-25" />
+    </Transition.Child>
 
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl transform transition-all">
-                  <div className="flex justify-between items-center mb-4">
-                    <Dialog.Title className="text-2xl font-bold text-[#c56cf0]">
-                      Friends Management
-                    </Dialog.Title>
-                    <button
-                      onClick={() => setActiveModal(null)}
-                      className="text-light/50 hover:text-light/80 transition-colors"
-                    >
-                      ✕
-                    </button>
-                  </div>
+    <div className="fixed inset-0 overflow-y-auto">
+      <div className="flex min-h-full items-center justify-center p-4 text-center">
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0 scale-95"
+          enterTo="opacity-100 scale-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100 scale-100"
+          leaveTo="opacity-0 scale-95"
+        >
+          <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-dark p-6 text-left align-middle shadow-xl transition-all">
+            <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-light mb-4">
+              {activeFriendsTab === 'friends' ? 'Your Friends' : 'Friend Requests'}
+            </Dialog.Title>
 
-                  {/* Tab Buttons */}
-                  <div className="flex gap-2 mb-4">
-                    {friendTabs.map(tab => (
-                      <button
-                        key={tab}
-                        onClick={() => setActiveFriendsTab(tab)}
-                        className={`px-4 py-2 rounded-lg font-medium transition ${
-                          activeFriendsTab === tab
-                            ? 'bg-gradient-to-r from-[#8e2de2] to-[#4a00e0] text-white'
-                            : 'bg-[rgba(255,255,255,0.05)] text-light/80 hover:bg-[rgba(255,255,255,0.1)]'
-                        }`}
-                      >
-                        {tab === 'friends' ? 'Friends' : 'Requests'}
-                      </button>
-                    ))}
-                  </div>
-                  {/* Tab Content */}
-                  <div className="max-h-64 overflow-y-auto space-y-4">
-                    {activeFriendsTab === 'friends' ? (
-                      friendsList.length > 0 ? (
-                        friendsList.map(friend => (
-                          <div key={friend.userId} className="flex items-center gap-3 p-2 bg-glass/10 rounded-lg">
-                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden">
-                              <img
-                                src={getSearchResultImageUrl(friend.profilePic)}
-                                alt={friend.name}
-                                onError={(e) => {
-                                  e.currentTarget.src = 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
-                                }}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <span className="text-light/90">{friend.name}</span>
-                            <button
-                              onClick={() => handleRemoveFriend(friend.userId)}
-                              className="ml-auto text-red-400 hover:text-red-300 transition-colors"
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-center text-light/60">No friends yet</p>
-                      )
-                    ) : (
-                      friendRequests.length > 0 ? (
-                        friendRequests.map(request => (
-                          <div key={request.requestId} className="flex items-center justify-between p-2 bg-glass/10 rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden">
-                                <img
-                                  src={getSearchResultImageUrl(request.sender?.profilePic)}
-                                  alt={request.sender?.name}
-                                  onError={(e) => {
-                                    e.currentTarget.src = 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
-                                  }}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <span className="text-light/90">{request.sender?.name}</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <button 
-                                onClick={() => handleAcceptRequest(request.requestId)}
-                                className="text-sm px-3 py-1 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30"
-                              >
-                                Accept
-                              </button>
-                              <button 
-                                onClick={() => handleRejectRequest(request.requestId)}
-                                className="text-sm px-3 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"
-                              >
-                                Decline
-                              </button>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-center text-light/60">No pending requests</p>
-                      )
-                    )}
-                  </div>
-                </div>
-              </Transition.Child>
+            <div className="flex space-x-4 mb-4">
+              <button
+                onClick={() => setActiveFriendsTab('friends')}
+                className={`px-4 py-2 rounded ${activeFriendsTab === 'friends' ? 'bg-primary' : 'bg-gray-700'}`}
+              >
+                Friends
+              </button>
+              <button
+                onClick={() => setActiveFriendsTab('requests')}
+                className={`px-4 py-2 rounded ${activeFriendsTab === 'requests' ? 'bg-primary' : 'bg-gray-700'}`}
+              >
+                Requests
+              </button>
             </div>
-          </Dialog>
-        </Transition>
+
+            {activeFriendsTab === 'friends' ? (
+              <ul className="space-y-2">
+                {friendsList.length === 0 ? (
+                  <p className="text-sm text-gray-400">You have no friends yet.</p>
+                ) : (
+                  friendsList.map(friend => (
+                    <li key={friend.id} className="flex justify-between items-center">
+                      <div className="flex items-center space-x-3">
+                        <img src={getSearchResultImageUrl(friend.profilePictureUrl)} className="w-8 h-8 rounded-full" />
+                        <span>{friend.name}</span>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveFriend(friend.id)}
+                        className="text-red-400 hover:text-red-600 text-sm"
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))
+                )}
+              </ul>
+            ) : (
+              <ul className="space-y-2">
+                {friendRequests.length === 0 ? (
+                  <p className="text-sm text-gray-400">No pending friend requests.</p>
+                ) : (
+                  friendRequests.map(request => (
+                    <li key={request.id} className="flex justify-between items-center">
+                      <div className="flex items-center space-x-3">
+                        <img src={getSearchResultImageUrl(request.profilePictureUrl)} className="w-8 h-8 rounded-full" />
+                        <span>{request.name}</span>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleAcceptRequest(request.id)}
+                          className="text-green-400 hover:text-green-600 text-sm"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => handleRejectRequest(request.id)}
+                          className="text-red-400 hover:text-red-600 text-sm"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </li>
+                  ))
+                )}
+              </ul>
+            )}
+          </Dialog.Panel>
+        </Transition.Child>
+      </div>
+    </div>
+  </Dialog>
+</Transition>
+
       </div>
     </div>
   )

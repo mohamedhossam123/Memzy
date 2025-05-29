@@ -201,14 +201,26 @@ namespace Memzy_finalist.Models
             .ToListAsync();
         }
         
-        public async Task<IEnumerable<FriendRequest>> GetPendingFriendRequests(int userId)
-        {
-            return await _context.FriendRequests
-                .Where(fr => fr.ReceiverId == userId && fr.Status == FriendRequestStatus.Pending)
-                .Include(fr => fr.Sender)
-                .OrderByDescending(fr => fr.CreatedAt)
-                .ToListAsync();
-        }
+        public async Task<List<FriendRequestDTO>> GetPendingFriendRequests(int userId)
+    {
+        return await _context.FriendRequests
+            .Where(fr => fr.ReceiverId == userId && fr.Status == FriendRequestStatus.Pending)
+            .Include(fr => fr.Sender)
+            .Select(fr => new FriendRequestDTO
+            {
+                RequestId = fr.RequestId,
+                SenderId = fr.SenderId,
+                SenderName = fr.Sender.Name,
+                SenderProfileImageUrl = fr.Sender.ProfilePictureUrl ?? "",
+                ReceiverId = fr.ReceiverId,
+                Status = fr.Status,
+                CreatedAt = fr.CreatedAt,
+                RespondedAt = fr.RespondedAt,
+                Message = fr.Message
+            })
+            .AsNoTracking()
+            .ToListAsync();
+    }
 
         public async Task<IEnumerable<FriendRequest>> GetAllReceivedRequests(int userId)
         {

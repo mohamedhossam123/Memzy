@@ -29,7 +29,8 @@ namespace Memzy_finalist.Services
                 HumorTypeIds = p.PostHumors.Select(ph => ph.HumorTypeId).ToList(),
                 UserName = p.User?.UserName ?? p.User?.Name ?? "Anonymous",
                 IsLiked = currentUserId.HasValue && p.Likes.Any(l => l.UserId == currentUserId.Value),
-                ProfileImageUrl = p.User?.ProfilePictureUrl
+                ProfileImageUrl = p.User?.ProfilePictureUrl,
+                Name=p.User?.Name
             }).ToList();
         }
 

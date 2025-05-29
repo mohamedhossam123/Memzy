@@ -8,6 +8,7 @@ import { useAuth } from '@/Context/AuthContext'
 interface ApiPost {
   postId: number
   mediaType: number
+  name: string 
   description: string
   filePath: string
   createdAt: string
@@ -17,6 +18,8 @@ interface ApiPost {
   humorTypeIds: number[]
   userName: string
   isLiked: boolean;
+  authorName?: string  
+  userId?: number      
   onLikeUpdate?: (postId: number, isLiked: boolean, likeCount: number) => void;
 }
 
@@ -33,6 +36,8 @@ function mapApiPostToPostProps(apiPost: ApiPost): PostProps {
   return {
     id: apiPost.postId, 
     author: apiPost.userName || 'Anonymous',
+    authorName: apiPost.name,
+    authorId: apiPost.userId?.toString() || undefined,
     content: apiPost.description,
     mediaType: apiPost.mediaType === 0 ? 'image' : apiPost.mediaType === 1 ? 'video' : null,
     mediaUrl: apiPost.filePath || null,

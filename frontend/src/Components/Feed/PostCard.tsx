@@ -2,12 +2,16 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/Context/AuthContext'
+import Link from 'next/link'
+
 
 export interface PostProps {
   id: number
   author: string
   content: string
   mediaType?: 'image' | 'video' | null
+  authorName?: string 
+  authorId?:string
   mediaUrl?: string | null
   timestamp: string
   humorType: 'Dark Humor' | 'Friendly Humor' 
@@ -27,6 +31,8 @@ export default function PostCard({
   humorType,
   likes: initialLikes,
   isLiked: initialIsLiked = false,
+  authorId = "", 
+  authorName ,
   profileImageUrl, 
 }: PostProps) 
  {
@@ -89,6 +95,16 @@ export default function PostCard({
       setIsLikeLoading(false)
     }
   }
+ useEffect(() => {
+    console.log('PostCard Props Debug:', {
+      id,
+      author,
+      authorName,
+      authorId,
+      profileImageUrl
+    });
+  }, [id, author, authorName, authorId, profileImageUrl]);
+
 
   useEffect(() => {
   const videoElement = videoRef.current
@@ -124,21 +140,30 @@ export default function PostCard({
     <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow hover:shadow-glow/50 transition-all space-y-4">
       <div className="flex items-center justify-between">
   <div className="flex items-center gap-3">
-    {profileImageUrl ? (
-      <img
-        src={profileImageUrl}
-        alt={`${author}'s profile`}
-        className="w-9 h-9 rounded-full object-cover border border-glass"
-      />
-    ) : (
-      <div className="w-9 h-9 rounded-full bg-glass flex items-center justify-center text-sm text-light/60 border border-glass">
-        👤
+  {profileImageUrl ? (
+    <img
+      src={profileImageUrl}
+      alt={`${author}'s profile`}
+      className="w-9 h-9 rounded-full object-cover border border-glass"
+    />
+  ) : (
+    <div className="w-9 h-9 rounded-full bg-glass flex items-center justify-center text-sm text-light/60 border border-glass">
+      👤
+    </div>
+  )}
+
+  <div className="flex flex-col">
+            <Link href={`/profile/${authorId}`} className="text-base text-glow font-semibold hover:underline">
+              {authorName || author} 
+            </Link>
+            <Link href={`/profile/${authorId}`} className="text-sm text-light/60 hover:underline">
+              @{author}
+            </Link>
+          </div>
+        </div>
+
+        <p className="text-sm text-light/50">{timestamp}</p>
       </div>
-    )}
-    <h3 className="text-lg font-semibold text-glow">{author}</h3>
-  </div>
-  <p className="text-sm text-light/50">{timestamp}</p>
-</div>
 
       {/* Content */}
       <p className="text-light/90 whitespace-pre-line">{content}</p>
