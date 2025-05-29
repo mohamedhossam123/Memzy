@@ -16,16 +16,15 @@
     --glass-dark: rgba(0, 0, 0, 0.3);
   }
 
-  /* Better scoped scrollbar styles */
   * {
     &::-webkit-scrollbar {
       @apply w-2 h-2;
     }
-    
+
     &::-webkit-scrollbar-track {
       @apply bg-darker;
     }
-    
+
     &::-webkit-scrollbar-thumb {
       @apply bg-primary rounded;
       &:hover {
@@ -36,64 +35,23 @@
 }
 
 @layer utilities {
-  /* Gradient utilities */
   .bg-radial-gradient {
     background: radial-gradient(circle, var(--tw-gradient-from) 0%, var(--tw-gradient-to) 70%);
   }
-  
-  /* Glow effects */
+
   .shadow-glow {
     box-shadow: 0 0 15px var(--accent-glow);
   }
-  
+
   .text-glow {
     text-shadow: 0 0 10px var(--accent-glow);
   }
-  
+
   .backdrop-blur-sm {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
-  @keyframes pulse {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; }
-}
 
-@keyframes bounce {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-5px) scale(1.1); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translate(0, 0); }
-  25% { transform: translate(5px, -5px); }
-  50% { transform: translate(0, -10px); }
-  75% { transform: translate(-5px, -5px); }
-}
-
-@keyframes sparkle {
-  0% { transform: scale(0); opacity: 0; }
-  50% { transform: scale(1); opacity: 0.8; }
-  100% { transform: scale(0); opacity: 0; }
-}
-
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-  /* Animation utilities */
-  .animate-float {
-    animation: float 15s infinite ease-in-out;
-  }
-  
-  .animate-float-reverse {
-    animation: float-reverse 20s infinite ease-in-out;
-  }
-  
-  .animate-pulse-slow {
-    animation: pulse 8s infinite ease-in-out;
-  }
   .conic-border::before {
     content: "";
     @apply z-[-2] text-center top-1/2 left-1/2 absolute w-[600px] h-[600px] bg-no-repeat bg-[0_0] transition-all duration-1000;
@@ -120,15 +78,10 @@
   }
 }
 
-/* Keyframes - properly scoped */
-@keyframes float {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(40px, 40px); }
-}
-
-@keyframes float-reverse {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-40px, -40px); }
+/* Keyframes */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-5px) scale(1.1); }
 }
 
 @keyframes pulse {
@@ -149,27 +102,10 @@
 }
 
 @keyframes smooth-typing {
-  0% {
-    width: 0;
-    opacity: 0;
-  }
-  20% {
-    width: 100%;
-    opacity: 1;
-  }
-  80% {
-    width: 100%;
-    opacity: 1;
-  }
-  100% {
-    width: 0;
-    opacity: 0;
-  }
-}
-
-/* Fix for your animation conflicts */
-.animate-spin {
-  animation: spin 1s linear infinite;
+  0% { width: 0; opacity: 0; }
+  20% { width: 100%; opacity: 1; }
+  80% { width: 100%; opacity: 1; }
+  100% { width: 0; opacity: 0; }
 }
 
 @keyframes spin {
@@ -177,7 +113,55 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Scoped hover effects for specific components */
+@keyframes shimmer {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(200%) skewX(-15deg); }
+}
+
+@keyframes holographic {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Animations */
+.animate-spin-slow {
+  animation: spin 10s linear infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-bounce-custom {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.animate-holographic {
+  animation: holographic 4s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(197,108,240,0.3); }
+  50% { box-shadow: 0 0 30px rgba(197,108,240,0.7), 0 0 45px rgba(197,108,240,0.4); }
+}
+
+/* Scoped hover effects */
 #poda {
   &:hover, &:focus-within {
     .conic-border::before {
@@ -187,7 +171,7 @@
       transform: translate(-50%, -50%) rotate(-98deg);
     }
   }
-  
+
   &:focus-within {
     .conic-border::before {
       transition: all 4s;
@@ -195,17 +179,16 @@
   }
 }
 
-/* Add to your global CSS */
+/* Video/image */
 video {
   aspect-ratio: 16/9;
-  oobject-fit: contain ;
+  object-fit: contain;
   background: black;
 }
 
 img {
   object-fit: cover;
 }
-
 
 /* Input mask transitions */
 #main {
@@ -214,10 +197,46 @@ img {
       @apply hidden;
     }
   }
-  
+
   &:hover {
     #pink-mask {
       @apply opacity-0;
     }
   }
+}
+
+/* Utility classes */
+.ripple-effect {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 10%, transparent 70%);
+  border-radius: inherit;
+  animation: ripple 0.6s ease-out;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(15px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #c56cf0 0%, #ff6b9d 30%, #4ecdc4 70%, #c56cf0 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: holographic 4s ease-in-out infinite;
+}
+
+.logo-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.magnetic-pull {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

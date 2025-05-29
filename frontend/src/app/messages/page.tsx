@@ -35,8 +35,6 @@ const ChatPage = () => {
 };
 
 
-  
-
 
   const handleBackToFriends = () => {
     setSelectedFriend(null)
