@@ -13,4 +13,6 @@ public interface IFriendsService
     Task<bool> RemoveFriend(int userId, int friendId);
     Task<IEnumerable<User>> GetFriends(int userId);
     Task<List<FriendRequestDTO>> GetPendingFriendRequests(int userId);
+
+
 }

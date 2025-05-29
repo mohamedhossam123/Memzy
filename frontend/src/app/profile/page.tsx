@@ -41,7 +41,6 @@ export default function UserProfile() {
   const [pendingPosts, setPendingPosts] = useState<Post[]>([])
   const [approvedPosts, setApprovedPosts] = useState<Post[]>([])
 
-  const friendTabs = ["friends", "requests"] as const
   const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>('friends')
   const [friendRequests, setFriendRequests] = useState<any[]>([])
   const [friendsList, setFriendsList] = useState<any[]>([])
