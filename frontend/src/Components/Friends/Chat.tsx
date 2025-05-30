@@ -24,7 +24,7 @@ interface Props {
 type MessageAction = 
   | { type: 'add'; payload: Message[] }
   | { type: 'prepend'; payload: Message[] }
-  | { type: 'set'; payload: Message[] }  // Added new action type
+  | { type: 'set'; payload: Message[] }  
 
 const messageReducer = (state: Message[], action: MessageAction): Message[] => {
   switch (action.type) {
@@ -32,7 +32,7 @@ const messageReducer = (state: Message[], action: MessageAction): Message[] => {
       return [...state, ...action.payload]
     case 'prepend':
       return [...action.payload, ...state]
-    case 'set':  // Handle new action type
+    case 'set':  
       return action.payload
     default:
       return state
@@ -70,8 +70,6 @@ const Chat = ({ contactId }: Props) => {
           minute: '2-digit'
         })
       }))
-      
-      // Set messages or prepend based on page number
       if (pageNum === 1) {
         dispatch({ type: 'set', payload: formatted })
       } else {
@@ -79,8 +77,6 @@ const Chat = ({ contactId }: Props) => {
       }
       
       setHasMore(fetchedMessages.length === 50)
-
-      // Scroll to bottom when first page loads
       if (pageNum === 1 && listRef.current && formatted.length > 0) {
         setTimeout(() => {
           listRef.current?.scrollToItem(formatted.length - 1, 'end')
@@ -116,8 +112,6 @@ const Chat = ({ contactId }: Props) => {
         }]
       })
       setNewMessage('')
-      
-      // Scroll to bottom after sending
       setTimeout(() => {
         if (listRef.current && messages.length > 0) {
           listRef.current.scrollToItem(messages.length, 'end')
@@ -132,8 +126,6 @@ const Chat = ({ contactId }: Props) => {
 
   useEffect(() => {
     if (!token || !user) return
-
-    // Reset state when contact changes
     dispatch({ type: 'set', payload: [] })
     setPage(1)
     setHasMore(true)
@@ -157,8 +149,6 @@ const Chat = ({ contactId }: Props) => {
             formattedTime: formatTime(message.timestamp)
           }]
         })
-        
-        // Scroll to bottom when receiving new message
         setTimeout(() => {
           if (listRef.current && messages.length > 0) {
             listRef.current.scrollToItem(messages.length, 'end')
