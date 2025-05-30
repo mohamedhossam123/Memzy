@@ -8,4 +8,5 @@ public interface IModeratorService
     Task<bool> DeletePostAsync(int postId, int modId);
     Task DeleteUserAsync(int id);
     Task<List<object>> GetPendingPostsAsync();
+    Task<bool> MakeUserModeratorAsync(int userId, int requestedById);
 }

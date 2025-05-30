@@ -73,24 +73,36 @@ public class ModeratorService : IModeratorService
             await _context.SaveChangesAsync();
         }
     }
+    public async Task<bool> MakeUserModeratorAsync(int userId, int requestedById)
+{
+    if (!await IsUserModeratorAsync(requestedById)) return false;
+
+    var user = await _context.Users.FindAsync(userId);
+    if (user == null) return false;
+
+    user.Status = "moderator";
+    await _context.SaveChangesAsync();
+    return true;
+}
+
     public async Task<List<object>> GetPendingPostsAsync()
     {
         var posts = await _context.Posts
             .Where(p => !p.IsApproved)
             .Include(p => p.PostHumors)
-                .ThenInclude(ph => ph.HumorType) 
-                .Include(p => p.Likes) 
+                .ThenInclude(ph => ph.HumorType)
+                .Include(p => p.Likes)
             .Include(p => p.User)
             .ToListAsync();
 
         return posts.Select(p => new
         {
             id = p.PostId,
-            content = p.Description ?? "",  
-            mediaType = p.MediaType.ToString().ToLower(),  
-            mediaUrl = p.FilePath,  
-            timestamp = p.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),  
-            humorType = p.PostHumors?.FirstOrDefault()?.HumorType?.HumorTypeName ?? "Dark Humor", 
+            content = p.Description ?? "",
+            mediaType = p.MediaType.ToString().ToLower(),
+            mediaUrl = p.FilePath,
+            timestamp = p.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+            humorType = p.PostHumors?.FirstOrDefault()?.HumorType?.HumorTypeName ?? "Dark Humor",
             likes = p.Likes.Count,
             status = p.IsApproved ? "approved" : "pending",
             userId = p.UserId,

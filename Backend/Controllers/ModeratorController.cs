@@ -82,7 +82,7 @@ namespace MyApiProject.Controllers
         }
 
         [HttpDelete("deletePost")]
-        [Authorize] 
+        [Authorize]
         public async Task<IActionResult> DeletePost([FromBody] PostActionRequest request)
         {
             try
@@ -101,7 +101,7 @@ namespace MyApiProject.Controllers
         }
 
         [HttpGet("users")]
-        [Authorize] 
+        [Authorize]
         public async Task<IActionResult> GetAllUsers()
         {
             try
@@ -112,6 +112,25 @@ namespace MyApiProject.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { Message = "Failed to retrieve users", Error = ex.Message });
+            }
+        }
+
+        [HttpPost("makeModerator")]
+        [Authorize]
+        public async Task<IActionResult> MakeUserModerator([FromBody] MakeModeratorRequest request)
+        {
+            try
+            {
+                var result = await _moderatorService.MakeUserModeratorAsync(request.UserId, request.RequestedById);
+                if (result)
+                {
+                    return Ok(new { Message = "User promoted to moderator successfully" });
+                }
+                return BadRequest(new { Message = "Failed to promote user to moderator" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while promoting user", Error = ex.Message });
             }
         }
     }

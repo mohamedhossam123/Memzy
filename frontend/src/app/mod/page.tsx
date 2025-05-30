@@ -61,7 +61,34 @@ export default function ModeratorDashboard() {
     
     return null
   }
+const handleMakeModerator = async (userId: number) => {
+  try {
+    const requestedById = currentUser?.userId;
+    if (!requestedById) throw new Error('Your user ID is missing');
 
+    const response = await api.post('/api/Moderator/makeModerator', {
+      userId,
+      requestedById,
+    });
+
+    if (response?.ok) {
+      showMessage('success', 'User promoted to moderator successfully');
+      setAllUsers(users =>
+        users.map(user =>
+          user.id === userId ? { ...user, status: 'moderator' } : user
+        )
+      );
+    } else {
+      const errorData = await response?.json();
+      throw new Error(errorData?.Message || 'Failed to promote user');
+    }
+  } catch (err) {
+    showMessage('error', err instanceof Error ? err.message : 'Action failed');
+  }
+};
+
+
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -328,207 +355,184 @@ export default function ModeratorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-dark to-darker p-8">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow">
-          <h1 className="text-2xl font-bold text-glow mb-2">Moderator Dashboard</h1>
-          <p className="text-light/70">Welcome back, {currentUser?.name}</p>
+  <div className="min-h-screen bg-gradient-to-b from-dark to-darker p-8">
+    <div className="max-w-6xl mx-auto space-y-8">
+      {/* Header */}
+      <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow">
+        <h1 className="text-2xl font-bold text-glow mb-2">Moderator Dashboard</h1>
+        <p className="text-light/70">Welcome back, {currentUser?.name}</p>
+      </div>
+
+      {/* Action Message */}
+      {actionMessage && (
+        <div className={`bg-glass/10 backdrop-blur-lg rounded-2xl p-4 border ${
+          actionMessage.type === 'success' 
+            ? 'border-green-400/30 text-green-400' 
+            : 'border-red-400/30 text-red-400'
+        }`}>
+          {actionMessage.text}
         </div>
+      )}
 
-        {/* Action Message */}
-        {actionMessage && (
-          <div className={`bg-glass/10 backdrop-blur-lg rounded-2xl p-4 border ${
-            actionMessage.type === 'success' 
-              ? 'border-green-400/30 text-green-400' 
-              : 'border-red-400/30 text-red-400'
-          }`}>
-            {actionMessage.text}
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-4 border border-red-400/30 text-red-400">
-            {error}
-          </div>
-        )}
-
-        {/* Tabs */}
-        <div className="flex border-b border-glass/30">
-          <button
-            onClick={() => {
-              setActiveTab('posts')
-              setSearchTerm('')
-            }}
-            className={`px-4 py-2 font-medium ${
-              activeTab === 'posts' 
-                ? 'text-accent border-b-2 border-accent' 
-                : 'text-light/70 hover:text-light'
-            }`}
-          >
-            Pending Posts ({pendingPosts.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('users')}
-            className={`px-4 py-2 font-medium ${
-              activeTab === 'users' 
-                ? 'text-accent border-b-2 border-accent' 
-                : 'text-light/70 hover:text-light'
-            }`}
-          >
-            User Management ({allUsers.length})
-          </button>
+      {/* Error Message */}
+      {error && (
+        <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-4 border border-red-400/30 text-red-400">
+          {error}
         </div>
+      )}
 
-        {/* Content Area */}
-        {activeTab === 'posts' ? (
-          pendingPosts.length === 0 ? (
-            <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow text-center py-16">
-              <p className="text-xl">🎉</p>
-              <p className="mt-4">No pending posts to review!</p>
-            </div>
-          ) : (
-            <div className="grid gap-6">
-              {pendingPosts.map(post => (
-                <div key={post.id} className="relative bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow">
-                  {/* Post Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      {post.user.profilePictureUrl ? (
-                        <img 
-                          src={post.user.profilePictureUrl} 
-                          alt={post.user.name} 
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-glass/20 flex items-center justify-center">
-                          {post.user.name.charAt(0)}
-                        </div>
-                      )}
-                      <div>
-                        <h3 className="font-semibold">{post.user.name}</h3>
-                        <p className="text-xs text-light/50">@{post.user.userName}</p>
-                        <p className="text-xs text-light/50">{new Date(post.timestamp).toLocaleString()}</p>
+      {/* Tabs */}
+      <div className="flex border-b border-glass/30">
+        <button
+          onClick={() => {
+            setActiveTab('posts')
+            setSearchTerm('')
+          }}
+          className={`px-4 py-2 font-medium ${
+            activeTab === 'posts' 
+              ? 'text-accent border-b-2 border-accent' 
+              : 'text-light/70 hover:text-light'
+          }`}
+        >
+          Pending Posts ({pendingPosts.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('users')}
+          className={`px-4 py-2 font-medium ${
+            activeTab === 'users' 
+              ? 'text-accent border-b-2 border-accent' 
+              : 'text-light/70 hover:text-light'
+          }`}
+        >
+          User Management ({allUsers.length})
+        </button>
+      </div>
+
+      {/* Content Area */}
+      {activeTab === 'posts' ? (
+        pendingPosts.length === 0 ? (
+          <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow text-center py-16">
+            <p className="text-xl">🎉</p>
+            <p className="mt-4">No pending posts to review!</p>
+          </div>
+        ) : (
+          <div className="grid gap-6">
+            {pendingPosts.map(post => (
+              <div key={post.id} className="relative bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow">
+                {/* Post Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    {post.user.profilePictureUrl ? (
+                      <img 
+                        src={post.user.profilePictureUrl} 
+                        alt={post.user.name} 
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-glass/20 flex items-center justify-center">
+                        {post.user.name.charAt(0)}
                       </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handlePostAction(post.id, 'approve')}
-                        className="bg-green-500/90 hover:bg-green-400 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md transition-colors"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handlePostAction(post.id, 'reject')}
-                        className="bg-red-500/90 hover:bg-red-400 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md transition-colors"
-                      >
-                        Reject
-                      </button>
+                    )}
+                    <div>
+                      <h3 className="font-semibold">{post.user.name}</h3>
+                      <p className="text-xs text-light/50">@{post.user.userName}</p>
+                      <p className="text-xs text-light/50">{new Date(post.timestamp).toLocaleString()}</p>
                     </div>
                   </div>
-
-                  {/* Post Content */}
-                  <p className="mb-4 whitespace-pre-line">{post.content}</p>
-
-                  {/* Media Display */}
-                  <MediaDisplay post={post} />
-
-                  {/* Post Footer */}
-                  <div className="flex items-center justify-between pt-4 border-t border-glass/30">
-                    <span className={`px-3 py-1 text-sm rounded-full font-medium ${
-                      post.humorType === 'Dark Humor' 
-                        ? 'bg-red-400/20 text-red-400' 
-                        : 'bg-green-400/20 text-green-400'
-                    }`}>
-                      {post.humorType}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-light/70">{post.likes} likes</span>
-                    </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handlePostAction(post.id, 'approve')}
+                      className="bg-green-500/90 hover:bg-green-400 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md transition-colors"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handlePostAction(post.id, 'reject')}
+                      className="bg-red-500/90 hover:bg-red-400 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md transition-colors"
+                    >
+                      Reject
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          )
-        ) : (
-          <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow">
-            {/* User Search */}
-            <div className="mb-6">
-              <input
-                type="text"
-                placeholder="Search users..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-glass/20 border border-glass/30 rounded-lg px-4 py-2 text-light focus:outline-none focus:ring-2 focus:ring-accent/50"
-              />
-            </div>
 
-            {/* Users Table */}
-            {filteredUsers.length === 0 ? (
-              <div className="text-center py-16">
-                <p className="text-xl">👤</p>
-                <p className="mt-4">No users found</p>
+                {/* Post Content */}
+                <p className="mb-4 whitespace-pre-line">{post.content}</p>
+
+                {/* Media Display */}
+                <MediaDisplay post={post} />
+
+                {/* Post Footer */}
+                <div className="flex items-center justify-between pt-4 border-t border-glass/30">
+                  <span className={`px-3 py-1 text-sm rounded-full font-medium ${
+                    post.humorType === 'Dark Humor' 
+                      ? 'bg-red-400/20 text-red-400' 
+                      : 'bg-green-400/20 text-green-400'
+                  }`}>
+                    {post.humorType}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-light/70">{post.likes} likes</span>
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-glass/30">
-                      <th className="text-left py-3 px-4">User</th>
-                      <th className="text-left py-3 px-4">Username</th>
-                      <th className="text-left py-3 px-4">Email</th>
-                      <th className="text-left py-3 px-4">Status</th>
-                      <th className="text-right py-3 px-4">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredUsers.map(user => (
-                      <tr key={user.id} className="border-b border-glass/10 hover:bg-glass/5">
-                        <td className="py-3 px-4 flex items-center gap-3">
-                          {user.profilePictureUrl ? (
-                            <img 
-                              src={user.profilePictureUrl} 
-                              alt={user.name}
-                              className="w-8 h-8 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-glass/20 flex items-center justify-center">
-                              {user.name.charAt(0)}
-                            </div>
-                          )}
-                          {user.name}
-                        </td>
-                        <td className="py-3 px-4">@{user.userName}</td>
-                        <td className="py-3 px-4">{user.email}</td>
-                        <td className="py-3 px-4">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            user.status === 'moderator' 
-                              ? 'bg-blue-400/20 text-blue-400' 
-                              : 'bg-glass/20 text-light'
-                          }`}>
-                            {user.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <button
-                            onClick={() => handleDeleteUser(user.id)}
-                            className="bg-red-500/90 hover:bg-red-400 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md transition-colors"
-                            disabled={user.status === 'moderator'}
-                            title={user.status === 'moderator' ? "Cannot delete moderators" : ""}
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            ))}
           </div>
-        )}
-      </div>
+        )
+      ) : (
+        <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow">
+          {/* User Search */}
+          <div className="mb-6">
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-glass/20 border border-glass/30 rounded-lg px-4 py-2 text-light focus:outline-none focus:ring-2 focus:ring-accent/50"
+            />
+          </div>
+
+          {/* Users Grid with Make Moderator and Delete Buttons */}
+          <div className="grid gap-4">
+            {filteredUsers.map(user => (
+              <div key={user.id} className="flex items-center justify-between p-4 bg-glass/10 rounded-xl shadow-glow">
+                <div className="flex items-center gap-3">
+                  {user.profilePictureUrl ? (
+                    <img src={user.profilePictureUrl} alt={user.name} className="w-12 h-12 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center text-lg font-bold text-light">
+                      {user.name[0]?.toUpperCase() || '?'}
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-semibold">{user.name}</p>
+                    <p className="text-sm text-light/70">{user.userName}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                  disabled={user.status === 'moderator'}
+                  onClick={() => handleMakeModerator(user.id)}
+                  className={`px-3 py-1 rounded text-white text-sm ${
+                    user.status === 'moderator' ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
+                >
+                  Make Moderator
+                </button>
+
+                  <button
+                    onClick={() => handleDeleteUser(user.id)}
+                    className="px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
-  )
+  </div>
+)
+
 }
