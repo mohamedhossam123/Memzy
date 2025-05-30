@@ -2,7 +2,7 @@
 'use client'
 
 import { Transition, Dialog } from '@headlessui/react'
-import { Fragment, useState } from 'react' 
+import { Fragment, useState, useRef, useEffect } from 'react' 
 import { Post } from '@/Components/ProfilePageModels/ProfilePostsComponent' 
 
 interface PostsModalProps {
@@ -28,12 +28,98 @@ export default function PostsModal({
   const [activeTab, setActiveTab] = useState<typeof postTabs[number]>('pending')
 
   const getOptimizedMediaUrl = (url: string, type: 'image' | 'video') => {
-    if (!url.includes('cloudinary.com')) return url
-    const transformations = type === 'image' 
-      ? 'q_auto,f_auto,w_800,c_limit' 
-      : 'q_auto,w_800,c_limit'
-    return url.replace('/upload/', `/upload/${transformations}/`)
+  if (!url.includes('cloudinary.com')) return url;
+  const transformations = type === 'image' 
+    ? 'q_auto,f_auto,w_800,c_limit' 
+    : 'q_auto,w_800,f_auto'; 
+  const uploadIndex = url.indexOf('/upload/');
+  if (uploadIndex !== -1) {
+    return url.substring(0, uploadIndex + 8) + 
+           transformations + 
+           url.substring(uploadIndex + 7);
   }
+  
+  return url;
+};
+  const VideoPreview = ({ post }: { post: Post }) => {
+    const [videoError, setVideoError] = useState(false)
+    const videoRef = useRef<HTMLVideoElement>(null)
+
+    const handleVideoEnd = () => {
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0
+        videoRef.current.play()
+      }
+    }
+
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (videoRef.current) {
+              if (entry.isIntersecting) {
+                videoRef.current.play().catch(() => {
+                })
+              } else {
+                videoRef.current.pause()
+                videoRef.current.currentTime = 0
+              }
+            }
+          })
+        },
+        { threshold: 0.5 }
+      )
+
+      if (videoRef.current) {
+        observer.observe(videoRef.current)
+      }
+
+      return () => {
+        if (videoRef.current) {
+          observer.unobserve(videoRef.current)
+        }
+      }
+    }, [])
+
+    if (videoError) {
+      return (
+        <div className="w-24 h-24 bg-glass/5 rounded-lg border border-red-400/30 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-lg">🎥</div>
+            <p className="text-red-400 text-xs">Failed</p>
+          </div>
+        </div>
+      )
+    }
+
+    if (!post.filePath) {
+      return (
+        <div className="w-24 h-24 bg-glass/5 rounded-lg border border-gray-400/30 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-lg">🎥</div>
+            <p className="text-gray-400 text-xs">No video</p>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <video
+        ref={videoRef}
+        className="w-24 h-24 object-cover rounded-lg"
+        muted
+        playsInline
+        preload="metadata"
+        controls={false}
+        onEnded={handleVideoEnd}
+        onError={() => setVideoError(true)}
+        onClick={(e) => e.preventDefault()} 
+      >
+        <source src={getOptimizedMediaUrl(post.filePath || '', 'video')} type="video/mp4" />
+      </video>
+    )
+  }
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="fixed inset-0 z-50 overflow-y-auto" onClose={onClose}>
@@ -66,7 +152,7 @@ export default function PostsModal({
             <div className="inline-block w-full max-w-4xl p-6 my-8 overflow-hidden text-left align-middle bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl transform transition-all">
               <div className="flex justify-between items-center mb-4">
                 <Dialog.Title className="text-2xl font-bold text-[#c56cf0]">
-                  Post Management
+                  Posts
                 </Dialog.Title>
                 <button
                   onClick={onClose}
@@ -100,21 +186,15 @@ export default function PostsModal({
                     <div className="flex gap-4">
                       {/* Media Preview */}
                       {post.filePath && (
-                        <div className="w-24 h-24 rounded-lg overflow-hidden">
+                        <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
                           {post.mediaType === 'Video' ? (
-                            <video
-                              className="w-full h-full object-cover"
-                              muted
-                              playsInline
-                              preload="metadata"
-                            >
-                              <source src={getOptimizedMediaUrl(post.filePath, 'video')} type="video/mp4" />
-                            </video>
+                            <VideoPreview post={post} />
                           ) : (
                             <img
                               src={getOptimizedMediaUrl(post.filePath, 'image')}
                               alt="Post preview"
                               className="w-full h-full object-cover"
+                              loading="lazy"
                             />
                           )}
                         </div>
@@ -139,13 +219,13 @@ export default function PostsModal({
                           {post.description}
                         </p>
                         
-                        <div className="flex flex-wrap gap-2">
-                          {post.postHumors.map((humor: { humorType: { name: string } }, index: number) => (
+                        <div className="flex flex-wrap gap-1">
+                          {post.postHumors?.map?.((humor: { humorType: { name: string } }, index: number) => (
                             <span
                               key={index}
                               className="px-2 py-1 text-xs rounded-full bg-glass/20"
                             >
-                              {humor.humorType.name}
+                              {humor.humorType?.name ?? 'Unknown'}
                             </span>
                           ))}
                         </div>
@@ -157,13 +237,13 @@ export default function PostsModal({
                       <div className="flex gap-2 mt-4">
                         <button
                           onClick={() => onApprove(post.postId)}
-                          className="px-3 py-1 text-sm bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30"
+                          className="px-3 py-1 text-sm bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors"
                         >
                           Approve
                         </button>
                         <button
                           onClick={() => onReject(post.postId)}
-                          className="px-3 py-1 text-sm bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"
+                          className="px-3 py-1 text-sm bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
                         >
                           Reject
                         </button>

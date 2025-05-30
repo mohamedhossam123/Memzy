@@ -145,49 +145,70 @@ public async Task<IActionResult> UploadProfilePicture([FromForm] ProfilePictureD
                 return StatusCode(500, new { Error = "Password change failed", ex.Message });
             }
         }
-        [HttpGet("GetPendingPosts")]
-        [Authorize]
-        public async Task<IActionResult> GetPendingPosts()
-        {
-            try
-            {
-                var userId = await _authService.GetAuthenticatedUserId();
-                
-                var posts = await _context.Posts
-                    .Where(p => p.UserId == userId && !p.IsApproved)
-                    .Include(p => p.PostHumors)
-                        .ThenInclude(ph => ph.HumorType)
-                    .ToListAsync();
-
-                return Ok(posts);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
         [HttpGet("GetApprovedPosts")]
-        [Authorize]
-        public async Task<IActionResult> GetApprovedPosts()
-        {
-            try
-            {
-                var userId = await _authService.GetAuthenticatedUserId();
+[Authorize]
+public async Task<IActionResult> GetApprovedPosts()
+{
+    try
+    {
+        var userId = await _authService.GetAuthenticatedUserId();
 
-                var posts = await _context.Posts
-                    .Where(p => p.UserId == userId && p.IsApproved)
-                    .Include(p => p.PostHumors)
-                        .ThenInclude(ph => ph.HumorType)
-                    .ToListAsync();
-
-                return Ok(posts);
-            }
-            catch (Exception ex)
+        var posts = await _context.Posts
+            .Where(p => p.UserId == userId && p.IsApproved)
+            .Select(p => new PostUserDto
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
+                PostId = p.PostId,
+                Description = p.Description,
+                FilePath = p.FilePath,
+                ContentType = p.ContentType,
+                IsApproved = p.IsApproved,
+                CreatedAt = p.CreatedAt,
+                HumorTypes = p.PostHumors
+                    .Select(ph => ph.HumorType.HumorTypeName)
+                    .ToList()
+            })
+            .ToListAsync();
+
+        return Ok(posts);
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, $"Internal server error: {ex.Message}");
+    }
+}
+
+[HttpGet("GetPendingPosts")]
+[Authorize]
+public async Task<IActionResult> GetPendingPosts()
+{
+    try
+    {
+        var userId = await _authService.GetAuthenticatedUserId();
+
+        var posts = await _context.Posts
+            .Where(p => p.UserId == userId && !p.IsApproved)
+            .Select(p => new PostUserDto
+            {
+                PostId = p.PostId,
+                Description = p.Description,
+                FilePath = p.FilePath,
+                ContentType = p.ContentType,
+                IsApproved = p.IsApproved,
+                CreatedAt = p.CreatedAt,
+                HumorTypes = p.PostHumors
+                    .Select(ph => ph.HumorType.HumorTypeName)
+                    .ToList()
+            })
+            .ToListAsync();
+
+        return Ok(posts);
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, $"Internal server error: {ex.Message}");
+    }
+}
+
         [HttpPost("UpdateUserBio")]
         [Authorize]
         public async Task<IActionResult> UpdateUserBio([FromBody] string newBio)

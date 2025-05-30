@@ -13,7 +13,7 @@ import { BioModal } from '@/Components/ProfilePageModels/BioModal'
 import { PasswordModal } from '@/Components/ProfilePageModels/PasswordModal'
 import PostForm from '@/Components/ProfilePageModels/CreatePostComponent'
 import PostFeed, { Post } from '@/Components/ProfilePageModels/ProfilePostsComponent'
-import PostsModal from '@/Components/Moderator/ModPostsModal'
+import PostsModal from '@/Components/ProfilePageModels/ProfileInsiderPostsModal'
 
 
 export default function UserProfile() {
@@ -134,38 +134,8 @@ export default function UserProfile() {
     }
   }
 
-  const handleApprovePost = async (postId: number) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/ApprovePost/${postId}`,
-        {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      )
-      if (!response.ok) throw new Error('Failed to approve post')
-      fetchPendingPosts()
-      fetchApprovedPosts()
-    } catch (error) {
-      console.error('Error approving post:', error)
-    }
-  }
 
-  const handleRejectPost = async (postId: number) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/RejectPost/${postId}`,
-        {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      )
-      if (!response.ok) throw new Error('Failed to reject post')
-      fetchPendingPosts()
-    } catch (error) {
-      console.error('Error rejecting post:', error)
-    }
-  }
+  
   const fetchUserHumor = async () => {
   try {
     const response = await fetch(
@@ -632,7 +602,6 @@ export default function UserProfile() {
             </div>
           </button>
 
-          {/* Posts Feed Header */}
           <div className="mb-16 text-center">
             <h2 className="text-3xl font-bold text-glow">My Posts</h2>
           </div>
@@ -681,13 +650,13 @@ export default function UserProfile() {
         />
         
         <PostsModal
-          isOpen={activeModal === 'posts'}
-          onClose={() => setActiveModal(null)}
-          pendingPosts={pendingPosts}
-          approvedPosts={approvedPosts}
-          onApprove={handleApprovePost}
-          onReject={handleRejectPost}
-        />
+  isOpen={activeModal === 'posts'}
+  onClose={() => setActiveModal(null)}
+  pendingPosts={pendingPosts}
+  approvedPosts={approvedPosts}
+  onApprove={undefined}
+  onReject={undefined}
+/>
 
         {/* Create Post Modal */}
         <Transition appear show={activeModal === 'createPost'} as={Fragment}>
