@@ -31,6 +31,20 @@ export default function UserProfile() {
     userName?: string 
   }
 
+  interface FriendRequestDTO {
+  requestId: number
+  senderId: number
+  senderName: string
+  senderUserName: string
+  senderProfileImageUrl: string
+  receiverId: number
+  status: string
+  createdAt: string
+  respondedAt?: string
+  message: string
+}
+
+
   const [userData, setUserData] = useState<FullUser | null>(null)
   const [activeModal, setActiveModal] = useState<
     'humor' | 'profilePic' | 'name' | 'bio' | 'password' | 'friends' | 'createPost' | 'posts' | null
@@ -42,7 +56,8 @@ export default function UserProfile() {
   const [approvedPosts, setApprovedPosts] = useState<Post[]>([])
 
   const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>('friends')
-  const [friendRequests, setFriendRequests] = useState<any[]>([])
+  const [friendRequests, setFriendRequests] = useState<FriendRequestDTO[]>([])
+
   const [friendsList, setFriendsList] = useState<any[]>([])
   const [availableHumorTypes, setAvailableHumorTypes] = useState<string[]>([])
 
@@ -253,18 +268,19 @@ export default function UserProfile() {
   }
 
   const fetchFriendRequests = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetFriendRequests`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      if (!response.ok) throw new Error('Failed to fetch requests')
-      const data = await response.json()
-      setFriendRequests(data)
-    } catch (error) {
-      console.error('Error fetching requests:', error)
-    }
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetFriendRequests`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    if (!response.ok) throw new Error('Failed to fetch requests')
+    const data: FriendRequestDTO[] = await response.json()
+    setFriendRequests(data)
+  } catch (error) {
+    console.error('Error fetching requests:', error)
   }
+}
+
 
   useEffect(() => {
     if (activeModal === 'friends') {
@@ -794,32 +810,27 @@ export default function UserProfile() {
               </ul>
             ) : (
               <ul className="space-y-2">
-                {friendRequests.length === 0 ? (
-                  <p className="text-sm text-gray-400">No pending friend requests.</p>
-                ) : (
-                  friendRequests.map(request => (
-                    <li key={request.id} className="flex justify-between items-center">
-                      <div className="flex items-center space-x-3">
-                        <img src={getSearchResultImageUrl(request.profilePictureUrl)} className="w-8 h-8 rounded-full" />
-                        <span>{request.name}</span>
-                      </div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleAcceptRequest(request.id)}
-                          className="text-green-400 hover:text-green-600 text-sm"
-                        >
-                          Accept
-                        </button>
-                        <button
-                          onClick={() => handleRejectRequest(request.id)}
-                          className="text-red-400 hover:text-red-600 text-sm"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </li>
-                  ))
-                )}
+                {friendRequests.map((req) => (
+  <div key={req.requestId} className="flex items-center justify-between p-2 border-b">
+    <div className="flex items-center space-x-2">
+      <img
+        src={getSearchResultImageUrl(req.senderProfileImageUrl)}
+        alt={req.senderUserName}
+        className="w-10 h-10 rounded-full"
+      />
+      <div>
+        <div className="font-semibold">{req.senderName}</div>
+        <div className="text-sm text-gray-500">@{req.senderUserName}</div>
+        <div className="text-xs text-gray-400">{new Date(req.createdAt).toLocaleString()}</div>
+        {req.message && <div className="text-sm italic mt-1">"{req.message}"</div>}
+      </div>
+    </div>
+    <div className="flex space-x-2">
+      <button onClick={() => handleAcceptRequest(req.requestId)} className="bg-green-500 text-white px-2 py-1 rounded">Accept</button>
+      <button onClick={() => handleRejectRequest(req.requestId)} className="bg-red-500 text-white px-2 py-1 rounded">Reject</button>
+    </div>
+            </div>
+            ))}
               </ul>
             )}
           </Dialog.Panel>

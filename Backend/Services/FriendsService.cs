@@ -211,12 +211,14 @@ namespace Memzy_finalist.Models
                 RequestId = fr.RequestId,
                 SenderId = fr.SenderId,
                 SenderName = fr.Sender.Name,
+                SenderUserName =fr.Sender.UserName,
                 SenderProfileImageUrl = fr.Sender.ProfilePictureUrl ?? "",
                 ReceiverId = fr.ReceiverId,
                 Status = fr.Status,
                 CreatedAt = fr.CreatedAt,
                 RespondedAt = fr.RespondedAt,
                 Message = fr.Message
+
             })
             .AsNoTracking()
             .ToListAsync();
