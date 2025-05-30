@@ -19,6 +19,7 @@ namespace Memzy_finalist.Models
         {
 
             PostHumors = new List<PostHumor>();
+            Comments = new List<Comment>();
         }
 
         [Key]
@@ -54,6 +55,7 @@ namespace Memzy_finalist.Models
 
         public virtual User User { get; set; }
         public virtual ICollection<PostHumor> PostHumors { get; set; }
+        public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public virtual ICollection<PostLike> Likes { get; set; } = new List<PostLike>();
 
     }

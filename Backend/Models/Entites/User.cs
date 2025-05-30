@@ -20,6 +20,8 @@ namespace Memzy_finalist.Models
             MessagesReceived = new HashSet<Message>();
             UserHumorTypes = new HashSet<UserHumorType>();
             Posts = new HashSet<Post>();
+            Comments = new HashSet<Comment>();
+            CommentLikes = new HashSet<CommentLike>();
         }
 
         [Key]
@@ -29,7 +31,8 @@ namespace Memzy_finalist.Models
         public string Name { get; set; } = null!;
 
         [Required, MaxLength(50)]
-public string UserName { get; set; } = null!;
+        public string UserName { get; set; } = null!;
+
 
         [Required, MaxLength(255), EmailAddress]
         public string Email { get; set; } = null!;
@@ -60,6 +63,8 @@ public string UserName { get; set; } = null!;
         public virtual ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();
 
         public virtual ICollection<Post> Posts { get; set; }
+public virtual ICollection<CommentLike> CommentLikes { get; set; }
+        public virtual ICollection<Comment> Comments { get; set; }
 
         [NotMapped]
         public IEnumerable<User> Friends =>

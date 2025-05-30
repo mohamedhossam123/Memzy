@@ -36,6 +36,7 @@ builder.Services.AddScoped<IFeedService, FeedService>();
 builder.Services.AddScoped<ICreatingPostsService, CreatingPostsService>();
 builder.Services.AddScoped<IFriendsService, FriendsService>();
 builder.Services.AddScoped<IMessagingService, MessagingService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
 
 builder.Services.AddSignalR();
@@ -71,7 +72,6 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
 
-    // 👇 Allow JWT token in query string for SignalR
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
