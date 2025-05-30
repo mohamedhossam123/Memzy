@@ -28,19 +28,16 @@ export default function PostsModal({
   const [activeTab, setActiveTab] = useState<typeof postTabs[number]>('pending')
 
   const getOptimizedMediaUrl = (url: string, type: 'image' | 'video') => {
-  if (!url.includes('cloudinary.com')) return url;
-  const transformations = type === 'image' 
-    ? 'q_auto,f_auto,w_800,c_limit' 
-    : 'q_auto,w_800,f_auto'; 
-  const uploadIndex = url.indexOf('/upload/');
-  if (uploadIndex !== -1) {
-    return url.substring(0, uploadIndex + 8) + 
-           transformations + 
-           url.substring(uploadIndex + 7);
+    if (!url.includes('cloudinary.com')) return url
+    
+    if (type === 'image') {
+      return url.replace('/upload/', '/upload/q_auto,f_auto,w_800,c_limit/')
+    } else if (type === 'video') {
+      return url.replace('/upload/', '/upload/q_auto,w_800,c_limit/')
+    }
+    
+    return url
   }
-  
-  return url;
-};
   const VideoPreview = ({ post }: { post: Post }) => {
     const [videoError, setVideoError] = useState(false)
     const videoRef = useRef<HTMLVideoElement>(null)

@@ -19,6 +19,7 @@ export interface Post {
       name: string
     }
   }[]
+  userId: string
 }
 
 export default function PostFeed() {
@@ -38,6 +39,32 @@ export default function PostFeed() {
     const videoExtensions = ['.mp4', '.webm', '.ogg', '.avi', '.mov', '.wmv', '.flv', '.mkv']
     return videoExtensions.some(ext => url.toLowerCase().includes(ext))
   }
+
+const handleDeletePost = async (postId: number) => {
+  if (!confirm('Are you sure you want to delete this post?')) return
+
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/DeleteMyPost/${postId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!res.ok) {
+      throw new Error('Failed to delete post.')
+    }
+
+    setPosts(prev => prev.filter(post => post.postId !== postId))
+  } catch (err) {
+    console.error(err)
+    alert('Failed to delete post.')
+  }
+}
+
+
+
+
 
   const getOptimizedMediaUrl = (url: string | null, type: 'image' | 'video') => {
     if (!url) return ''
@@ -64,7 +91,6 @@ export default function PostFeed() {
       }
     }
 
-    // Listen for fullscreen changes
     document.addEventListener('fullscreenchange', handleFullscreenChange)
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange) // Safari
     document.addEventListener('mozfullscreenchange', handleFullscreenChange) // Firefox
@@ -341,11 +367,19 @@ export default function PostFeed() {
                 </div>
               </div>
               <div className="flex justify-between items-center pt-3 border-t border-[rgba(255,255,255,0.05)]">
-                <span className="text-xs text-light/60">{new Date(post.createdAt).toLocaleDateString()}</span>
+              <span className="text-xs text-light/60">{new Date(post.createdAt).toLocaleDateString()}</span>
+              <div className="flex items-center gap-3">
                 <span className="text-xs text-[#c56cf0]">
                   😂 {post.likeCount ?? 0}
                 </span>
+                <button
+                  onClick={() => handleDeletePost(post.postId)}
+                  className="text-red-400 hover:text-red-500 text-xs"
+                >
+                  Delete
+                </button>
               </div>
+            </div>
             </div>
           </div>
         )

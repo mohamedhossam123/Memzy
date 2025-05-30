@@ -14,7 +14,7 @@ namespace MyApiProject.Controllers
         private readonly IAuthenticationService _authService;
         private readonly IWebHostEnvironment _environment;
         private readonly MemzyContext _context;
-        
+
 
         public UserController(IUserService userService, IModeratorService moderatorService, IAuthenticationService authService, IWebHostEnvironment environment, MemzyContext context)
         {
@@ -56,27 +56,27 @@ namespace MyApiProject.Controllers
             }
         }
         [HttpGet("profile-picture")]
-[Authorize]
-public async Task<IActionResult> GetProfilePicture()
-{
-    try
-    {
-        var userId = await _authService.GetAuthenticatedUserId();
-        var user = await _context.Users.FindAsync(userId);
-        
-        if (user == null || string.IsNullOrEmpty(user.ProfilePictureUrl))
+        [Authorize]
+        public async Task<IActionResult> GetProfilePicture()
         {
-            return NotFound("Profile picture not found");
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+                var user = await _context.Users.FindAsync(userId);
+
+                if (user == null || string.IsNullOrEmpty(user.ProfilePictureUrl))
+                {
+                    return NotFound("Profile picture not found");
+                }
+                return Ok(new { ProfilePictureUrl = user.ProfilePictureUrl });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
-        return Ok(new { ProfilePictureUrl = user.ProfilePictureUrl });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"Internal server error: {ex.Message}");
-    }
-}
         [HttpDelete("DeleteUser")]
-        [Authorize] 
+        [Authorize]
         public async Task<IActionResult> DeleteUser(int id)
         {
             try
@@ -89,33 +89,34 @@ public async Task<IActionResult> GetProfilePicture()
                 return BadRequest(ex.Message);
             }
         }
-[HttpPost("UpdateProfilePicture")]
-[Authorize]
-public async Task<IActionResult> UploadProfilePicture([FromForm] ProfilePictureDto dto)
-{
-    try
-    {
-        var userId = await _authService.GetAuthenticatedUserId();
-        var result = await _userService.UploadProfilePictureAsync(dto.ProfilePicture, userId);
-        
-        return Ok(new { 
-            Message = "Profile picture updated successfully",
-            Url = result 
-        });
-    }
-    catch (ArgumentException ex)
-    {
-        return BadRequest(ex.Message);
-    }
-    catch (KeyNotFoundException ex)
-    {
-        return NotFound(ex.Message);
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"Internal server error: {ex.Message}");
-    }
-}
+        [HttpPost("UpdateProfilePicture")]
+        [Authorize]
+        public async Task<IActionResult> UploadProfilePicture([FromForm] ProfilePictureDto dto)
+        {
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+                var result = await _userService.UploadProfilePictureAsync(dto.ProfilePicture, userId);
+
+                return Ok(new
+                {
+                    Message = "Profile picture updated successfully",
+                    Url = result
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
 
 
@@ -146,68 +147,70 @@ public async Task<IActionResult> UploadProfilePicture([FromForm] ProfilePictureD
             }
         }
         [HttpGet("GetApprovedPosts")]
-[Authorize]
-public async Task<IActionResult> GetApprovedPosts()
-{
-    try
-    {
-        var userId = await _authService.GetAuthenticatedUserId();
-
-        var posts = await _context.Posts
-            .Where(p => p.UserId == userId && p.IsApproved)
-            .Select(p => new PostUserDto
+        [Authorize]
+        public async Task<IActionResult> GetApprovedPosts()
+        {
+            try
             {
-                PostId = p.PostId,
-                Description = p.Description,
-                FilePath = p.FilePath,
-                ContentType = p.ContentType,
-                IsApproved = p.IsApproved,
-                CreatedAt = p.CreatedAt,
-                HumorTypes = p.PostHumors
-                    .Select(ph => ph.HumorType.HumorTypeName)
-                    .ToList()
-            })
-            .ToListAsync();
+                var userId = await _authService.GetAuthenticatedUserId();
 
-        return Ok(posts);
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"Internal server error: {ex.Message}");
-    }
-}
+                var posts = await _context.Posts
+                    .Where(p => p.UserId == userId && p.IsApproved)
+                    .Select(p => new PostUserDto
+                    {
+                        PostId = p.PostId,
+                        Description = p.Description,
+                        FilePath = p.FilePath,
+                        ContentType = p.ContentType,
+                        IsApproved = p.IsApproved,
+                        CreatedAt = p.CreatedAt,
+                        HumorTypes = p.PostHumors
+                            .Select(ph => ph.HumorType.HumorTypeName)
+                            .ToList()
+                    })
+                    .ToListAsync();
 
-[HttpGet("GetPendingPosts")]
-[Authorize]
-public async Task<IActionResult> GetPendingPosts()
-{
-    try
-    {
-        var userId = await _authService.GetAuthenticatedUserId();
-
-        var posts = await _context.Posts
-            .Where(p => p.UserId == userId && !p.IsApproved)
-            .Select(p => new PostUserDto
+                return Ok(posts);
+            }
+            catch (Exception ex)
             {
-                PostId = p.PostId,
-                Description = p.Description,
-                FilePath = p.FilePath,
-                ContentType = p.ContentType,
-                IsApproved = p.IsApproved,
-                CreatedAt = p.CreatedAt,
-                HumorTypes = p.PostHumors
-                    .Select(ph => ph.HumorType.HumorTypeName)
-                    .ToList()
-            })
-            .ToListAsync();
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
-        return Ok(posts);
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"Internal server error: {ex.Message}");
-    }
-}
+
+
+        [HttpGet("GetPendingPosts")]
+        [Authorize]
+        public async Task<IActionResult> GetPendingPosts()
+        {
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+
+                var posts = await _context.Posts
+                    .Where(p => p.UserId == userId && !p.IsApproved)
+                    .Select(p => new PostUserDto
+                    {
+                        PostId = p.PostId,
+                        Description = p.Description,
+                        FilePath = p.FilePath,
+                        ContentType = p.ContentType,
+                        IsApproved = p.IsApproved,
+                        CreatedAt = p.CreatedAt,
+                        HumorTypes = p.PostHumors
+                            .Select(ph => ph.HumorType.HumorTypeName)
+                            .ToList()
+                    })
+                    .ToListAsync();
+
+                return Ok(posts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
         [HttpPost("UpdateUserBio")]
         [Authorize]
@@ -240,5 +243,32 @@ public async Task<IActionResult> GetPendingPosts()
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+        
+        [HttpDelete("DeleteMyPost/{postId}")]
+[Authorize]
+public async Task<IActionResult> DeleteMyPost(int postId)
+{
+    try
+    {
+        var userId = await _authService.GetAuthenticatedUserId();
+
+        var post = await _context.Posts.FindAsync(postId);
+
+        if (post == null)
+            return NotFound("Post not found");
+
+        if (post.UserId != userId)
+            return Forbid("You are not allowed to delete this post");
+
+        _context.Posts.Remove(post);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { Message = "Post deleted successfully" });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { Error = "Failed to delete post", ex.Message });
+    }
+}
     }
 }
