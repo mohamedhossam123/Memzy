@@ -200,29 +200,37 @@ namespace Memzy_finalist.Models
             .Select(f => f.User1Id == userId ? f.User2 : f.User1)
             .ToListAsync();
         }
-        
-        public async Task<List<FriendRequestDTO>> GetPendingFriendRequests(int userId)
-    {
-        return await _context.FriendRequests
-            .Where(fr => fr.ReceiverId == userId && fr.Status == FriendRequestStatus.Pending)
-            .Include(fr => fr.Sender)
-            .Select(fr => new FriendRequestDTO
-            {
-                RequestId = fr.RequestId,
-                SenderId = fr.SenderId,
-                SenderName = fr.Sender.Name,
-                SenderUserName =fr.Sender.UserName,
-                SenderProfileImageUrl = fr.Sender.ProfilePictureUrl ?? "",
-                ReceiverId = fr.ReceiverId,
-                Status = fr.Status,
-                CreatedAt = fr.CreatedAt,
-                RespondedAt = fr.RespondedAt,
-                Message = fr.Message
-
-            })
-            .AsNoTracking()
+        public async Task<IEnumerable<User>> GetFriendsAnotherUser(int userId)
+        {
+            return await _context.Friendships
+            .Where(f => f.User1Id == userId || f.User2Id == userId)
+            .Include(f => f.User1) 
+            .Include(f => f.User2) 
+            .Select(f => f.User1Id == userId ? f.User2 : f.User1)
             .ToListAsync();
-    }
+        }
+        public async Task<List<FriendRequestDTO>> GetPendingFriendRequests(int userId)
+        {
+            return await _context.FriendRequests
+                .Where(fr => fr.ReceiverId == userId && fr.Status == FriendRequestStatus.Pending)
+                .Include(fr => fr.Sender)
+                .Select(fr => new FriendRequestDTO
+                {
+                    RequestId = fr.RequestId,
+                    SenderId = fr.SenderId,
+                    SenderName = fr.Sender.Name,
+                    SenderUserName = fr.Sender.UserName,
+                    SenderProfileImageUrl = fr.Sender.ProfilePictureUrl ?? "",
+                    ReceiverId = fr.ReceiverId,
+                    Status = fr.Status,
+                    CreatedAt = fr.CreatedAt,
+                    RespondedAt = fr.RespondedAt,
+                    Message = fr.Message
+
+                })
+                .AsNoTracking()
+                .ToListAsync();
+        }
 
         public async Task<IEnumerable<FriendRequest>> GetAllReceivedRequests(int userId)
         {

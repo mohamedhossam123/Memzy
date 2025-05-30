@@ -169,6 +169,25 @@ namespace MyApiProject.Controllers
                 _ => StatusCode(500, new { Error = "Internal server error" })
             };
         }
+        [HttpGet("GetFriendsAnotherUser")]
+        [Authorize]
+        public async Task<IActionResult> GetFriendsAnotherUser(int userId)
+        {
+
+            try
+            {
+                var requests = await _friendsService.GetFriendsAnotherUser(userId);
+                return Ok(requests);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    error = "An error occurred",
+                    details = ex.Message
+                });
+            }
+        }
 
         [HttpGet("GetFriendRequests")]
         [Authorize]

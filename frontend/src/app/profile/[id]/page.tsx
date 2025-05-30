@@ -4,8 +4,7 @@
 import { useAuth } from '@/Context/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
-import { Fragment } from 'react'
+import { FriendsModal } from '@/Components/ProfilePageModels/FriendsModalDynamicPage'
 import { Post } from '@/Components/ProfilePageModels/ProfilePostsComponent'
 
 interface UserProfileData {
@@ -25,7 +24,12 @@ interface UserProfileData {
   requestType?: string 
   requestId?: number
 }
-
+interface Friend {
+  userId: string
+  name: string
+  userName: string
+  profilePictureUrl?: string
+}
 interface UserProfilePageProps {
   params: { id: string }
 }
@@ -92,8 +96,6 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
         ...friendshipStatus
       }
       setUserData(combinedData)
-      
-      // Fetch posts immediately if they're already friends
       if (combinedData.isFriend) {
         fetchUserPosts()
       }
@@ -156,20 +158,24 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
 };
 
   const fetchUserFriends = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetUserFriends/${userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      
-      if (response.ok) {
-        const friends = await response.json()
-        setFriendsList(friends)
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetFriendsAnotherUser?userId=${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-    } catch (err) {
-      console.error('Error fetching user friends:', err)
+    )
+    if (response.ok) {
+      const friends = await response.json()
+      setFriendsList(friends)
     }
+  } catch (err) {
+    console.error('Error fetching user friends:', err)
   }
+}
+
 
   const handleSendFriendRequest = async () => {
     if (!userData) return;
@@ -267,7 +273,6 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
           requestId: undefined
         };
         setUserData(updatedUserData);
-        // Posts will be fetched automatically by the useEffect
         console.log('Friend request accepted successfully');
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -684,80 +689,14 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
           )}
         </div>
 
-        {/* Friends Modal */}
-        <Transition appear show={activeModal === 'friends'} as={Fragment}>
-          <Dialog
-            as="div"
-            className="fixed inset-0 z-50 overflow-y-auto"
-            onClose={() => setActiveModal(null)}
-          >
-            <div className="min-h-screen px-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0"
-                enterTo="opacity-50"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-50"
-                leaveTo="opacity-0"
-              >
-                <div className="fixed inset-0 bg-black bg-opacity-50" aria-hidden="true" />
-              </Transition.Child>
-              
-              <span className="inline-block h-screen align-middle" aria-hidden="true">
-                &#8203;
-              </span>
+{/* Friends Modal */}
+<FriendsModal 
+  isOpen={activeModal === 'friends'}
+  onClose={() => setActiveModal(null)}
+  friendsList={friendsList}
+/>
 
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100" 
-                leaveTo="opacity-0 scale-95"
-              >
-                <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl shadow-2xl transform transition-all">
-                  <div className="flex justify-between items-center mb-4">
-                    <Dialog.Title className="text-2xl font-bold text-[#c56cf0]">
-                      {userData?.name}'s Friends
-                    </Dialog.Title>
-                    <button
-                      onClick={() => setActiveModal(null)}
-                      className="text-light/50 hover:text-light/80 transition-colors"
-                    >
-                      ✕
-                    </button>
-                  </div>
 
-                  <div className="max-h-64 overflow-y-auto space-y-4">
-                    {friendsList.length > 0 ? (
-                      friendsList.map(friend => (
-                        <div key={friend.userId} className="flex items-center gap-3 p-2 bg-glass/10 rounded-lg">
-                          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center overflow-hidden">
-                            <img
-                              src={getSearchResultImageUrl(friend.profilePic)}
-                              alt={friend.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <button
-                            onClick={() => router.push(`/profile/${friend.userId}`)}
-                            className="text-light/90 hover:text-accent transition-colors"
-                          >
-                            {friend.name}
-                          </button>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-center text-light/60">No friends to show</p>
-                    )}
-                  </div>
-                </div>
-              </Transition.Child>
-            </div>
-          </Dialog>
-        </Transition>
       </div>
     </div>
   )

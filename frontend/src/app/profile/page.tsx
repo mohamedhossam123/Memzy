@@ -810,25 +810,25 @@ export default function UserProfile() {
               </ul>
             ) : (
               <ul className="space-y-2">
-                {friendRequests.map((req) => (
-  <div key={req.requestId} className="flex items-center justify-between p-2 border-b">
-    <div className="flex items-center space-x-2">
-      <img
-        src={getSearchResultImageUrl(req.senderProfileImageUrl)}
-        alt={req.senderUserName}
-        className="w-10 h-10 rounded-full"
-      />
-      <div>
-        <div className="font-semibold">{req.senderName}</div>
-        <div className="text-sm text-gray-500">@{req.senderUserName}</div>
-        <div className="text-xs text-gray-400">{new Date(req.createdAt).toLocaleString()}</div>
-        {req.message && <div className="text-sm italic mt-1">"{req.message}"</div>}
-      </div>
-    </div>
-    <div className="flex space-x-2">
-      <button onClick={() => handleAcceptRequest(req.requestId)} className="bg-green-500 text-white px-2 py-1 rounded">Accept</button>
-      <button onClick={() => handleRejectRequest(req.requestId)} className="bg-red-500 text-white px-2 py-1 rounded">Reject</button>
-    </div>
+          {friendRequests.map((req) => (
+          <div key={req.requestId} className="flex items-center justify-between p-2 border-b">
+            <div className="flex items-center space-x-2">
+              <img
+                src={getSearchResultImageUrl(req.senderProfileImageUrl)}
+                alt={req.senderUserName}
+                className="w-10 h-10 rounded-full"
+              />
+              <div>
+                <div className="font-semibold">{req.senderName}</div>
+                <div className="text-sm text-gray-500">@{req.senderUserName}</div>
+                <div className="text-xs text-gray-400">{new Date(req.createdAt).toLocaleString()}</div>
+                {req.message && <div className="text-sm italic mt-1">"{req.message}"</div>}
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <button onClick={() => handleAcceptRequest(req.requestId)} className="bg-green-500 text-white px-2 py-1 rounded">Accept</button>
+              <button onClick={() => handleRejectRequest(req.requestId)} className="bg-red-500 text-white px-2 py-1 rounded">Reject</button>
+            </div>
             </div>
             ))}
               </ul>

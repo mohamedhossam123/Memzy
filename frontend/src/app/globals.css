@@ -222,6 +222,11 @@ img {
   backdrop-filter: blur(15px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* prevent outer scroll */
+}
 
 .text-gradient {
   background: linear-gradient(135deg, #c56cf0 0%, #ff6b9d 30%, #4ecdc4 70%, #c56cf0 100%);

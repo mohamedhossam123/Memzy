@@ -1,9 +1,11 @@
 'use client'
 
 import { useAuth } from '@/Context/AuthContext'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import axios from 'axios'
 import * as signalR from '@microsoft/signalr'
+import { FixedSizeList as List } from 'react-window'
+import AutoSizer from 'react-virtualized-auto-sizer'
 
 interface Message {
   messageId: number
@@ -11,6 +13,7 @@ interface Message {
   timestamp: string
   senderId: number
   receiverId: number
+  formattedTime?: string
 }
 
 interface Props {
@@ -18,55 +21,122 @@ interface Props {
   contactName?: string
 }
 
-const Chat = ({ contactId, contactName }: Props) => {
+type MessageAction = 
+  | { type: 'add'; payload: Message[] }
+  | { type: 'prepend'; payload: Message[] }
+  | { type: 'set'; payload: Message[] }  // Added new action type
+
+const messageReducer = (state: Message[], action: MessageAction): Message[] => {
+  switch (action.type) {
+    case 'add':
+      return [...state, ...action.payload]
+    case 'prepend':
+      return [...action.payload, ...state]
+    case 'set':  // Handle new action type
+      return action.payload
+    default:
+      return state
+  }
+}
+
+const formatTime = (timestamp: string) =>
+  new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+
+const Chat = ({ contactId }: Props) => {
   const { user, token } = useAuth()
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, dispatch] = useReducer(messageReducer, [])
   const [newMessage, setNewMessage] = useState('')
   const [isConnected, setIsConnected] = useState(false)
   const connectionRef = useRef<signalR.HubConnection | null>(null)
-  const bottomRef = useRef<HTMLDivElement | null>(null)
+  const [isSending, setIsSending] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const listRef = useRef<List>(null)
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL ?? 'http://localhost:5001'
 
-  const fetchMessages = async () => {
+  const fetchMessages = async (pageNum: number = 1) => {
     try {
-      console.log('Sending message to receiverId:', contactId, 'content length:', newMessage.length);
       const res = await axios.get(`${backendUrl}/api/Messaging/GetMessages`, {
-        params: { contactId, page: 1, pageSize: 50 },
+        params: { contactId, page: pageNum, pageSize: 50 },
         headers: { Authorization: `Bearer ${token}` }
       })
-      setMessages(res.data.messages.reverse())
+
+      const fetchedMessages = res.data.messages
+      const formatted = fetchedMessages.map((msg: Message) => ({
+        ...msg,
+        formattedTime: new Date(msg.timestamp).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      }))
+      
+      // Set messages or prepend based on page number
+      if (pageNum === 1) {
+        dispatch({ type: 'set', payload: formatted })
+      } else {
+        dispatch({ type: 'prepend', payload: formatted })
+      }
+      
+      setHasMore(fetchedMessages.length === 50)
+
+      // Scroll to bottom when first page loads
+      if (pageNum === 1 && listRef.current && formatted.length > 0) {
+        setTimeout(() => {
+          listRef.current?.scrollToItem(formatted.length - 1, 'end')
+        }, 0)
+      }
     } catch (err) {
       console.error('Error fetching messages:', err)
     }
   }
 
-  const sendMessage = async () => {
-  if (!newMessage.trim() || !connectionRef.current || !user) return;
-
-  const messageToSend = {
-    messageId: Date.now(), 
-    content: newMessage,
-    timestamp: new Date().toISOString(),
-    senderId: user.userId,
-    receiverId: contactId,
-  };
-
-  try {
-    await connectionRef.current.invoke('SendMessage', contactId, newMessage);
-    setMessages(prev => [...prev, messageToSend]); 
-    setNewMessage('');
-  } catch (err) {
-    console.error('Error sending message via SignalR:', err);
+  const loadMoreMessages = () => {
+    if (!hasMore) return
+    const nextPage = page + 1
+    setPage(nextPage)
+    fetchMessages(nextPage)
   }
-};
 
+  const sendMessage = async () => {
+    if (isSending || !newMessage.trim() || !connectionRef.current || !user) return
 
+    setIsSending(true)
+    try {
+      await connectionRef.current.invoke('SendMessage', contactId, newMessage)
+      dispatch({
+        type: 'add',
+        payload: [{
+          messageId: Date.now(),
+          content: newMessage,
+          timestamp: new Date().toISOString(),
+          formattedTime: formatTime(new Date().toISOString()),
+          senderId: user.userId,
+          receiverId: contactId
+        }]
+      })
+      setNewMessage('')
+      
+      // Scroll to bottom after sending
+      setTimeout(() => {
+        if (listRef.current && messages.length > 0) {
+          listRef.current.scrollToItem(messages.length, 'end')
+        }
+      }, 0)
+    } catch (err) {
+      console.error('Error sending message via SignalR:', err)
+    } finally {
+      setIsSending(false)
+    }
+  }
 
-  const setupSignalRConnection = () => {
+  useEffect(() => {
     if (!token || !user) return
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL ?? 'http://localhost:5001'
+    // Reset state when contact changes
+    dispatch({ type: 'set', payload: [] })
+    setPage(1)
+    setHasMore(true)
 
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${backendUrl}/hub/chat`, {
@@ -75,22 +145,37 @@ const Chat = ({ contactId, contactName }: Props) => {
       .withAutomaticReconnect()
       .build()
 
-    connection.on('ReceiveMessage', (message: Message) => {
+    const handleReceiveMessage = (message: Message) => {
       if (
-        (message.senderId === contactId && message.receiverId === user?.userId) ||
-        (message.senderId === user?.userId && message.receiverId === contactId)
+        (message.senderId === contactId && message.receiverId === user.userId) ||
+        (message.senderId === user.userId && message.receiverId === contactId)
       ) {
-        setMessages(prev => [...prev, message])
+        dispatch({
+          type: 'add',
+          payload: [{
+            ...message,
+            formattedTime: formatTime(message.timestamp)
+          }]
+        })
+        
+        // Scroll to bottom when receiving new message
+        setTimeout(() => {
+          if (listRef.current && messages.length > 0) {
+            listRef.current.scrollToItem(messages.length, 'end')
+          }
+        }, 0)
       }
-    })
+    }
 
+    connection.on('ReceiveMessage', handleReceiveMessage)
     connection.onreconnected(() => setIsConnected(true))
     connection.onclose(() => setIsConnected(false))
 
-    connection.start()
+    connection
+      .start()
       .then(() => {
-        console.log('SignalR connected')
         setIsConnected(true)
+        fetchMessages(1)
       })
       .catch(err => {
         console.error('SignalR connection error:', err)
@@ -98,75 +183,60 @@ const Chat = ({ contactId, contactName }: Props) => {
       })
 
     connectionRef.current = connection
-  }
-
-  useEffect(() => {
-    if (token && user) {
-      fetchMessages()
-      setupSignalRConnection()
-    }
 
     return () => {
-      if (connectionRef.current) {
-        connectionRef.current.stop()
-      }
+      connection.off('ReceiveMessage', handleReceiveMessage)
+      connection.stop()
     }
   }, [contactId, token, user])
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+    const msg = messages[index]
+    const isOwn = msg.senderId === user?.userId
+
+    return (
+      <div style={style} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+        <div
+          className={`max-w-[70%] rounded-2xl px-4 py-3 shadow-md backdrop-blur-sm ${
+            isOwn
+              ? 'bg-accent/90 text-white ml-auto shadow-glow'
+              : 'bg-glass/20 text-light border border-glass/30'
+          }`}
+        >
+          <div className="whitespace-pre-wrap break-words">{msg.content}</div>
+          <div className={`text-xs mt-2 ${isOwn ? 'text-white/70 text-right' : 'text-light/50 text-left'}`}>
+            {msg.formattedTime}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark to-darker p-8">
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Chat Header */}
-        
-
-        {/* Chat Container */}
         <div className="bg-glass/10 backdrop-blur-lg rounded-2xl shadow-glow overflow-hidden">
-          {/* Messages Area */}
-          <div className="h-[60vh] overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-transparent to-glass/5">
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-light/50">
-                <div className="text-4xl mb-4">💬</div>
-                <p className="text-lg">No messages yet</p>
-                <p className="text-sm">Start the conversation!</p>
-              </div>
-            ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg.messageId}
-                  className={`flex ${
-                    msg.senderId === user?.userId ? 'justify-end' : 'justify-start'
-                  }`}
+          <div className="h-[60vh] overflow-y-auto p-6 bg-gradient-to-b from-transparent to-glass/5">
+            <AutoSizer>
+              {({ height, width }) => (
+                <List
+                  height={height}
+                  itemCount={messages.length}
+                  itemSize={100}
+                  width={width}
+                  ref={listRef}
+                  onScroll={({ scrollOffset }) => {
+                    if (scrollOffset < 100 && hasMore) {
+                      loadMoreMessages()
+                    }
+                  }}
                 >
-                  <div
-                    className={`max-w-[70%] rounded-2xl px-4 py-3 shadow-md backdrop-blur-sm ${
-                      msg.senderId === user?.userId
-                        ? 'bg-accent/90 text-white ml-auto shadow-glow'
-                        : 'bg-glass/20 text-light border border-glass/30'
-                    }`}
-                  >
-                    <div className="whitespace-pre-wrap break-words">{msg.content}</div>
-                    <div className={`text-xs mt-2 ${
-                      msg.senderId === user?.userId 
-                        ? 'text-white/70 text-right' 
-                        : 'text-light/50 text-left'
-                    }`}>
-                      {new Date(msg.timestamp).toLocaleTimeString([], { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-            <div ref={bottomRef} />
+                  {Row}
+                </List>
+              )}
+            </AutoSizer>
           </div>
 
-          {/* Message Input Area */}
           <div className="border-t border-glass/30 p-6 bg-glass/5">
             <div className="flex gap-3 items-end">
               <div className="flex-1">
@@ -182,11 +252,7 @@ const Chat = ({ contactId, contactName }: Props) => {
                   }}
                   placeholder="Type your message... (Shift+Enter for new line)"
                   rows={1}
-                  style={{
-                    minHeight: '48px',
-                    maxHeight: '120px',
-                    height: 'auto'
-                  }}
+                  style={{ minHeight: '48px', maxHeight: '120px', height: 'auto' }}
                   onInput={(e) => {
                     const target = e.target as HTMLTextAreaElement
                     target.style.height = 'auto'
@@ -205,18 +271,8 @@ const Chat = ({ contactId, contactName }: Props) => {
               >
                 <div className="flex items-center gap-2">
                   <span>Send</span>
-                  <svg 
-                    className="w-4 h-4" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" 
-                    />
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                   </svg>
                 </div>
               </button>

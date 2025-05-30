@@ -13,8 +13,8 @@ namespace Memzy_finalist.Hubs
     public async Task SendMessage(int receiverId, string message)
     {
         var senderId = int.Parse(Context.UserIdentifier);
-        await _messagingService.SendMessageAsync(senderId, receiverId, message);
         var savedMessageId = await _messagingService.SendMessageAsync(senderId, receiverId, message);
+
             var fullMessage = new
             {
                 MessageId = savedMessageId,

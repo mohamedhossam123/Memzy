@@ -1,4 +1,3 @@
-
 // ChatPage.tsx
 'use client'
 
@@ -49,7 +48,7 @@ const ChatPage = () => {
   }, [isMobile])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-dark to-darker">
+    <div className="h-screen bg-gradient-to-b from-dark to-darker overflow-hidden">
       <div className="flex h-screen">
         <div className={`${showFriendsList ? 'block' : 'hidden'} md:block w-full md:w-80 bg-glass/10 backdrop-blur-lg border-r border-glass/30 shadow-glow transition-all duration-300 z-10`}>
           <FriendsList 
