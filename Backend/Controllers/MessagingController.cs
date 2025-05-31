@@ -24,7 +24,6 @@ namespace MyApiProject.Controllers
             _friendsService = friendsService;
         }
 
-
         [HttpGet("GetMessages")]
         [Authorize]
         public async Task<IActionResult> GetMessages(int contactId, int page = 1, int pageSize = 50)
@@ -33,8 +32,6 @@ namespace MyApiProject.Controllers
             var messages = await _messagingService.GetMessagesAsync(userId, contactId, page, pageSize);
             return Ok(new { messages });
         }
-
-
 
         [HttpDelete("DeleteMessage")]
         [Authorize]
@@ -64,31 +61,24 @@ namespace MyApiProject.Controllers
                 });
             }
         }
+
         [HttpPost("SendMessage")]
         [Authorize]
         public async Task<IActionResult> SendMessage([FromBody] MessageDto request)
         {
             try
             {
-                if (request == null || string.IsNullOrWhiteSpace(request.Content) || request.ReceiverId <= 0)
-                {
-                    return BadRequest(new { Error = "Invalid message data" });
-                }
-
                 var senderId = await _authService.GetAuthenticatedUserId();
-                if (senderId <= 0)
-                {
-                    return Unauthorized(new { Error = "User not authenticated" });
-                }
-
-                var friendshipStatus = await _friendsService.GetFriendshipStatus(senderId, request.ReceiverId);
-                if (!friendshipStatus.IsFriend && !friendshipStatus.HasPendingRequest)
-                {
-                    return BadRequest(new { Error = "You can only send messages to friends or pending requests" });
-                }
-
-                var messageId = await _messagingService.SendMessageAsync(senderId, request.ReceiverId, request.Content);
+                var messageId = await _messagingService.SendMessageWithValidationAsync(senderId, request);
                 return Ok(new { MessageId = messageId });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { Error = ex.Message });
             }
             catch (Exception ex)
             {
