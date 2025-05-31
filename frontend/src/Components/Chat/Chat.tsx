@@ -6,6 +6,7 @@ import axios from 'axios'
 import * as signalR from '@microsoft/signalr'
 import { FixedSizeList as List } from 'react-window'
 import AutoSizer from 'react-virtualized-auto-sizer'
+import { useMediaQuery } from 'react-responsive'
 
 interface Message {
   messageId: number
@@ -24,10 +25,13 @@ interface Props {
 type MessageAction = 
   | { type: 'add'; payload: Message[] }
   | { type: 'prepend'; payload: Message[] }
-  | { type: 'set'; payload: Message[] }  
+  | { type: 'set'; payload: Message[] }
+  | { type: 'remove'; payload: number }
 
 const messageReducer = (state: Message[], action: MessageAction): Message[] => {
   switch (action.type) {
+    case 'remove':
+      return state.filter(msg => msg.messageId !== action.payload)
     case 'add':
       return [...state, ...action.payload]
     case 'prepend':
@@ -52,6 +56,7 @@ const Chat = ({ contactId }: Props) => {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const listRef = useRef<List>(null)
+  const isMobile = useMediaQuery({ maxWidth: 768 })
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL ?? 'http://localhost:5001'
 
@@ -65,11 +70,9 @@ const Chat = ({ contactId }: Props) => {
       const fetchedMessages = res.data.messages
       const formatted = fetchedMessages.map((msg: Message) => ({
         ...msg,
-        formattedTime: new Date(msg.timestamp).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit'
-        })
+        formattedTime: formatTime(msg.timestamp)
       }))
+      
       if (pageNum === 1) {
         dispatch({ type: 'set', payload: formatted })
       } else {
@@ -92,6 +95,18 @@ const Chat = ({ contactId }: Props) => {
     const nextPage = page + 1
     setPage(nextPage)
     fetchMessages(nextPage)
+  }
+
+  const deleteMessage = async (messageId: number) => {
+    try {
+      await axios.delete(`${backendUrl}/api/Messaging/DeleteMessage`, {
+        params: { messageId },
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      dispatch({ type: 'remove', payload: messageId })
+    } catch (err) {
+      console.error('Error deleting message:', err)
+    }
   }
 
   const sendMessage = async () => {
@@ -183,16 +198,73 @@ const Chat = ({ contactId }: Props) => {
   const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
     const msg = messages[index]
     const isOwn = msg.senderId === user?.userId
+    const [showDelete, setShowDelete] = useState(false)
+    const touchTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+    const handleTouchStart = () => {
+      if (!isOwn) return
+      touchTimerRef.current = setTimeout(() => {
+        setShowDelete(true)
+      }, 500)
+    }
+
+    const handleTouchEnd = () => {
+      if (touchTimerRef.current) {
+        clearTimeout(touchTimerRef.current)
+      }
+    }
+
+    const handleDelete = async () => {
+      await deleteMessage(msg.messageId)
+      setShowDelete(false)
+    }
 
     return (
-      <div style={style} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-        <div
-          className={`max-w-[70%] rounded-2xl px-4 py-3 shadow-md backdrop-blur-sm ${
+      <div 
+        style={style} 
+        className={`flex ${isOwn ? 'justify-end' : 'justify-start'} relative group`}
+        onMouseEnter={() => isOwn && setShowDelete(true)}
+        onMouseLeave={() => isOwn && setShowDelete(false)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div 
+          className={`max-w-[70%] rounded-2xl px-4 py-3 shadow-md backdrop-blur-sm relative ${
             isOwn
               ? 'bg-accent/90 text-white ml-auto shadow-glow'
               : 'bg-glass/20 text-light border border-glass/30'
           }`}
         >
+          {isOwn && showDelete && (
+  <button
+    onClick={handleDelete}
+    className={`absolute top-1 right-1 z-10 flex items-center gap-1 text-xs rounded-full shadow-lg
+      ${isMobile 
+        ? 'bg-red-600 hover:bg-red-700 text-white px-3 py-1' 
+        : 'bg-transparent hover:bg-red-600 text-red-400 hover:text-white p-1'
+      } 
+      transition-all duration-150`}
+    aria-label="Delete message"
+    title="Delete message"
+  >
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+      />
+    </svg>
+    {isMobile && <span>Delete</span>}
+  </button>
+)}
+
+          
           <div className="whitespace-pre-wrap break-words">{msg.content}</div>
           <div className={`text-xs mt-2 ${isOwn ? 'text-white/70 text-right' : 'text-light/50 text-left'}`}>
             {msg.formattedTime}

@@ -2,8 +2,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import FriendsList from '@/Components/Friends/FriendListComponent'
-import Chat from '@/Components/Friends/Chat'
+import FriendsList from '@/Components/Chat/FriendListComponent'
+import Chat from '@/Components/Chat/Chat'
 import { useMediaQuery } from 'react-responsive'
 
 const ChatPage = () => {
@@ -145,14 +145,8 @@ const ChatPage = () => {
                   </p>
                   
                   {/* Search shortcut for mobile */}
-                  {isMobile && (
-                    <button 
-                      onClick={() => setShowFriendsList(true)}
-                      className="w-full bg-gradient-to-r from-primary to-accent text-light font-semibold py-2.5 rounded-lg transition-all duration-300 shadow hover:shadow-glow"
-                    >
-                      Browse Friends
-                    </button>
-                  )}
+                 
+                    
                 </div>
               </div>
               

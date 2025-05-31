@@ -38,24 +38,29 @@ namespace MyApiProject.Services
             return message.MessageId;
         }
 
-        public async Task<List<Message>> GetMessagesAsync(int userId, int contactId, int page, int pageSize)
+        public async Task<List<MessageResponseDto>> GetMessagesAsync(int userId, int contactId, int page, int pageSize)
+{
+    return await _context.Messages
+        .Where(m => (m.SenderId == userId && m.ReceiverId == contactId) ||
+                    (m.SenderId == contactId && m.ReceiverId == userId))
+        .OrderByDescending(m => m.Timestamp)
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .Select(m => new MessageResponseDto
         {
-            return await _context.Messages
-                .Where(m => (m.SenderId == userId && m.ReceiverId == contactId) ||
-                           (m.SenderId == contactId && m.ReceiverId == userId))
-                .OrderByDescending(m => m.Timestamp)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-        }
+            MessageId = m.MessageId,
+            Content = m.Content,
+            Timestamp = m.Timestamp,
+            SenderId = m.SenderId,
+            ReceiverId = m.ReceiverId
+        })
+        .ToListAsync();
+}
 
         public async Task<bool> DeleteMessageAsync(int messageId, int userId)
         {
-            var message = await _context.Messages
-                .FirstOrDefaultAsync(m => m.MessageId == messageId && m.SenderId == userId);
-
+            var message = await _context.Messages.FirstOrDefaultAsync(m => m.MessageId == messageId && m.SenderId == userId);
             if (message == null) return false;
-
             _context.Messages.Remove(message);
             await _context.SaveChangesAsync();
             return true;
