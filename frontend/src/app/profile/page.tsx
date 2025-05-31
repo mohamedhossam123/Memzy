@@ -1,4 +1,4 @@
-// static page
+// static profile page
 'use client'
 
 import { useAuth } from '@/Context/AuthContext'
@@ -14,81 +14,33 @@ import { PasswordModal } from '@/Components/ProfilePageModels/PasswordModal'
 import PostForm from '@/Components/ProfilePageModels/CreatePostComponent'
 import PostFeed, { Post } from '@/Components/ProfilePageModels/ProfilePostsComponent'
 import PostsModal from '@/Components/ProfilePageModels/ProfileInsiderPostsModal'
-
+import { APIClient, FullUser, FriendRequestDTO, Friend } from '@/lib/api'
 
 export default function UserProfile() {
   const { user, token } = useAuth()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
-  interface FullUser {
-    profilePic?: string
-    name?: string
-    bio?: string
-    friendCount?: number
-    postCount?: number
-    humorTypes?: string[] 
-    userName?: string 
-  }
-
-  interface FriendRequestDTO {
-  requestId: number
-  senderId: number
-  senderName: string
-  senderUserName: string
-  senderProfileImageUrl: string
-  receiverId: number
-  status: string
-  createdAt: string
-  respondedAt?: string
-  message: string
-}
-
-
   const [userData, setUserData] = useState<FullUser | null>(null)
   const [activeModal, setActiveModal] = useState<
     'humor' | 'profilePic' | 'name' | 'bio' | 'password' | 'friends' | 'createPost' | 'posts' | null
   >(null)
   const [passwordError, setPasswordError] = useState('')
   const [profileImageError, setProfileImageError] = useState(false)
-  
   const [pendingPosts, setPendingPosts] = useState<Post[]>([])
   const [approvedPosts, setApprovedPosts] = useState<Post[]>([])
-
   const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>('friends')
   const [friendRequests, setFriendRequests] = useState<FriendRequestDTO[]>([])
-
-  const [friendsList, setFriendsList] = useState<any[]>([])
+  const [friendsList, setFriendsList] = useState<Friend[]>([])
   const [availableHumorTypes, setAvailableHumorTypes] = useState<string[]>([])
+  const [apiClient, setApiClient] = useState<APIClient | null>(null)
 
   useEffect(() => {
-    console.log('User humor types:', userData?.humorTypes)
-    console.log('Available humor types:', availableHumorTypes)
-  }, [userData, availableHumorTypes])
-
-  useEffect(() => {
-  const fetchHumorTypes = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/UserHumor/GetAllHumorTypes`, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      if (!response.ok) throw new Error('Failed to fetch humor types');
-      const data = await response.json();
-      const humorTypeNames = data.humorTypes || [];
-      console.log('Available humor types:', humorTypeNames); 
-      setAvailableHumorTypes(humorTypeNames);
-    } catch (error) {
-      console.error('Error fetching humor types:', error);
-      setAvailableHumorTypes([]); 
+    if (token) {
+      setApiClient(new APIClient(token))
     }
-  };
-  
-  if (token) fetchHumorTypes();
-}, [token]);
+  }, [token])
 
-  
   useEffect(() => {
     setProfileImageError(false)
   }, [userData?.profilePic])
@@ -102,176 +54,140 @@ export default function UserProfile() {
   }, [user, router])
 
   useEffect(() => {
-    if (activeModal === 'posts') {
+    if (activeModal === 'posts' && apiClient) {
       fetchPendingPosts()
       fetchApprovedPosts()
     }
-  }, [activeModal])
+  }, [activeModal, apiClient])
 
   const fetchPendingPosts = async () => {
+    if (!apiClient) return
+    
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/GetPendingPosts`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      if (!response.ok) throw new Error('Failed to fetch pending posts')
-      setPendingPosts(await response.json())
+      const posts = await apiClient.user.getPendingPosts()
+      setPendingPosts(posts)
     } catch (error) {
       console.error('Error fetching pending posts:', error)
     }
   }
 
   const fetchApprovedPosts = async () => {
+    if (!apiClient) return
+    
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/GetApprovedPosts`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      if (!response.ok) throw new Error('Failed to fetch approved posts')
-      setApprovedPosts(await response.json())
+      const posts = await apiClient.user.getApprovedPosts()
+      setApprovedPosts(posts)
     } catch (error) {
       console.error('Error fetching approved posts:', error)
     }
   }
 
-
-  
-  const fetchUserHumor = async () => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/UserHumor/GetUserHumor`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+  const fetchHumorTypes = async () => {
+    if (!apiClient) return
     
-    if (!response.ok) throw new Error('Failed to fetch user humor');
-    const data = await response.json();
-    
-    console.log('User humor data:', data); 
-    const userHumorTypes = Array.isArray(data) 
-      ? data 
-      : data.humorTypes || data.HumorTypes || [];
-    
-    setUserData(prev => ({
-      ...prev,
-      humorTypes: userHumorTypes
-    }));
-  } catch (error) {
-    console.error('Error fetching user humor:', error);
-    setUserData(prev => ({
-      ...prev,
-      humorTypes: []
-    }));
+    try {
+      const types = await apiClient.humor.getAllHumorTypes()
+      setAvailableHumorTypes(types)
+    } catch (error) {
+      console.error('Error fetching humor types:', error)
+      setAvailableHumorTypes([])
+    }
   }
-};
+
+  const fetchUserHumor = async () => {
+    if (!apiClient) return
+    
+    try {
+      const userHumorTypes = await apiClient.humor.getUserHumor()
+      setUserData(prev => ({
+        ...prev,
+        humorTypes: userHumorTypes
+      } as FullUser));
+    } catch (error) {
+      console.error('Error fetching user humor:', error)
+      setUserData(prev => ({
+        ...prev,
+        humorTypes: []
+      } as FullUser));
+    }
+  }
 
   const fetchUserDetails = async () => {
-  if (!token) {
-    setIsLoading(false);
-    return;
-  }
-
-  try {
-    setFetchError(null);
-    const [userResponse, friendsResponse] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/getCurrentUser`, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }),
-      fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/friend-post-count`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-    ]);
-    
-    if (!userResponse.ok) {
-      throw new Error('Failed to fetch user data');
+    if (!apiClient) {
+      setIsLoading(false)
+      return
     }
-    
-    const userDataResponse = await userResponse.json();
-    const userData = userDataResponse.user || userDataResponse; 
-    
-    let friendCount = 0;
-    let postCount = 0;
 
-    if (friendsResponse.ok) {
-      const friendsData = await friendsResponse.json();
-      friendCount = friendsData.friendCount || friendsData.FriendCount || 0;
-      postCount = friendsData.postCount || friendsData.PostCount || 0;
+    try {
+      setFetchError(null)
+      const [userResponse, countResponse] = await Promise.all([
+        apiClient.user.getCurrentUser(),
+        apiClient.user.getFriendPostCount()
+      ])
+      
+      const mappedUserData: FullUser = {
+        profilePic: userResponse.profilePictureUrl,
+        name: userResponse.name,
+        bio: userResponse.bio || userResponse.Bio || '',
+        friendCount: countResponse.friendCount || countResponse.FriendCount || 0,
+        postCount: countResponse.postCount || countResponse.PostCount || 0,
+        humorTypes: [],
+        userName: userResponse.userName || userResponse.UserName || ''
+      }
+      
+      setUserData(mappedUserData)
+      await fetchUserHumor()
+    } catch (err) {
+      console.error('Error in fetchUserDetails:', err)
+      setFetchError(err instanceof Error ? err.message : 'Unknown error occurred')
+    } finally {
+      setIsLoading(false)
     }
-    const mappedUserData: FullUser = {
-      profilePic: userData.profilePictureUrl,
-      name: userData.name,
-      bio: userData.bio || userData.Bio || '', 
-      friendCount,
-      postCount,
-      humorTypes: [],
-      userName: userData.userName || userData.UserName || ''
-    };
-    
-    setUserData(mappedUserData);
-    await fetchUserHumor();
-    
-  } catch (err) {
-    console.error('Error in fetchUserDetails:', err);
-    setFetchError(err instanceof Error ? err.message : 'Unknown error occurred');
-  } finally {
-    setIsLoading(false);
   }
-}
-
-
-
 
   const fetchFriends = async () => {
+    if (!apiClient) return
+    
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetFriends`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      if (!response.ok) throw new Error('Failed to fetch friends')
-      const data = await response.json()
-      setFriendsList(data)
+      const friends = await apiClient.friends.getFriends()
+      setFriendsList(friends)
     } catch (error) {
       console.error('Error fetching friends:', error)
     }
   }
 
   const fetchFriendRequests = async () => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetFriendRequests`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
-    if (!response.ok) throw new Error('Failed to fetch requests')
-    const data: FriendRequestDTO[] = await response.json()
-    setFriendRequests(data)
-  } catch (error) {
-    console.error('Error fetching requests:', error)
+    if (!apiClient) return
+    
+    try {
+      const requests = await apiClient.friends.getFriendRequests()
+      setFriendRequests(requests)
+    } catch (error) {
+      console.error('Error fetching requests:', error)
+    }
   }
-}
-
 
   useEffect(() => {
-    if (activeModal === 'friends') {
+    if (apiClient) {
+      fetchHumorTypes()
+    }
+  }, [apiClient])
+
+  useEffect(() => {
+    if (activeModal === 'friends' && apiClient) {
       if (activeFriendsTab === 'friends') {
         fetchFriends()
       } else {
         fetchFriendRequests()
       }
     }
-  }, [activeModal, activeFriendsTab])
+  }, [activeModal, activeFriendsTab, apiClient])
 
   const handleAcceptRequest = async (requestId: number) => {
+    if (!apiClient) return
+    
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/acceptRequest/${requestId}`,
-        {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      )
-      if (!response.ok) throw new Error('Failed to accept request')
+      await apiClient.friends.acceptRequest(requestId)
       fetchFriendRequests()
       fetchUserDetails()
     } catch (error) {
@@ -280,15 +196,10 @@ export default function UserProfile() {
   }
 
   const handleRejectRequest = async (requestId: number) => {
+    if (!apiClient) return
+    
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/rejectrequest/${requestId}`,
-        {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      )
-      if (!response.ok) throw new Error('Failed to reject request')
+      await apiClient.friends.rejectRequest(requestId)
       fetchFriendRequests()
     } catch (error) {
       console.error('Error rejecting request:', error)
@@ -296,15 +207,10 @@ export default function UserProfile() {
   }
 
   const handleRemoveFriend = async (friendId: number) => {
+    if (!apiClient) return
+    
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/RemoveFriend?friendId=${friendId}`,
-        {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      )
-      if (!response.ok) throw new Error('Failed to remove friend')
+      await apiClient.friends.removeFriend(friendId)
       fetchFriends()
       fetchUserDetails()
     } catch (error) {
@@ -313,43 +219,23 @@ export default function UserProfile() {
   }
 
   const handleHumorUpdate = async (selectedHumor: string[]) => {
+    if (!apiClient) return
+    
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/UserHumor/SetHumor`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ humorTypes: selectedHumor })
-        }
-      )
-      
-      if (!res.ok) {
-        throw new Error('Failed to update humor preferences')
-      }
+      await apiClient.humor.setHumor(selectedHumor)
       await new Promise(resolve => setTimeout(resolve, 500))
       await fetchUserHumor()
-      
     } catch (err) {
       console.error('Error updating humor:', err)
-      await fetchUserHumor() 
+      await fetchUserHumor()
     }
   }
 
   const handleNameUpdate = async (newName: string) => {
+    if (!apiClient) return
+    
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateUsername`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify(newName)
-        }
-      )
-      if (!res.ok) throw new Error('Failed to update name')
+      await apiClient.user.updateUsername(newName)
       await fetchUserDetails()
     } catch (err) {
       console.error(err)
@@ -357,17 +243,10 @@ export default function UserProfile() {
   }
 
   const handleProfilePicUpdate = async (file: File) => {
+    if (!apiClient) return
+    
     try {
-      const formData = new FormData()
-      formData.append('ProfilePicture', file)
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateProfilePicture`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData
-        }
-      )
-      if (!res.ok) throw new Error('Failed to update profile picture')
+      await apiClient.user.updateProfilePicture(file)
       await fetchUserDetails()
     } catch (err) {
       console.error(err)
@@ -375,18 +254,10 @@ export default function UserProfile() {
   }
 
   const handleBioUpdate = async (newBio: string) => {
+    if (!apiClient) return
+    
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/UpdateUserBio`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify(newBio)
-        }
-      )
-      if (!res.ok) throw new Error('Failed to update bio')
+      await apiClient.user.updateBio(newBio)
       await fetchUserDetails()
     } catch (err) {
       console.error(err)
@@ -394,25 +265,11 @@ export default function UserProfile() {
   }
 
   const handlePasswordChange = async (currentPassword: string, newPassword: string) => {
+    if (!apiClient) return
+    
     setPasswordError('')
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/User/change-password`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ 
-            currentPassword,  
-            newPassword
-          })
-        }
-      )
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || 'Password update failed')
-      }
+      await apiClient.user.changePassword(currentPassword, newPassword)
       alert('Password changed successfully')
     } catch (err: any) {
       console.error(err)
