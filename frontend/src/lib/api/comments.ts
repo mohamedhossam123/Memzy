@@ -26,6 +26,7 @@ export const fetchComments = async (
   }
 }
 
+
 export const addComment = async (
   api: Api,
   postId: number,
@@ -84,29 +85,32 @@ export const toggleCommentLike = async (
 
 export const deleteComment = async (
   api: Api,
-  commentId: number
+  dto: { commentId: number; userId: number }
 ): Promise<ApiResponse<boolean>> => {
   try {
     const res = await api.delete('/api/user/comments/deleteComment', {
-      body: JSON.stringify({ commentId })
-    })
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dto)
+    });
     
     if (!res || !res.ok) {
       return {
         status: res?.status || 500,
         error: 'Failed to delete comment'
-      }
+      };
     }
     
-    return { data: true, status: res.status }
+    return { data: true, status: res.status };
   } catch (err) {
-    console.error('Error deleting comment:', err)
+    console.error('Error deleting comment:', err);
     return {
       status: 500,
       error: 'Internal server error'
-    }
+    };
   }
-}
+};
 
 export const fetchCommentCount = async (
   api: Api,

@@ -41,6 +41,7 @@ namespace MyApiProject.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
+        
         [HttpGet("GetCommentCount")]
         public async Task<IActionResult> GetCommentCount(int postId)
         {

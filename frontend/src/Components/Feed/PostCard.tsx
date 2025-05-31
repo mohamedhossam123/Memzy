@@ -148,19 +148,20 @@ export default function PostCard({
   }
 
   const deleteComment = async (commentId: number) => {
-    if (!user) return
-    try {
-      const response = await deleteCommentApi(api, commentId)
-      if (response.data) {
-        setComments(prev => prev.filter(c => c.commentId !== commentId))
-        setLocalCommentCount(prev => prev - 1)
-      } else {
-        console.error('Failed to delete comment:', response.error)
-      }
-    } catch (err) {
-      console.error('Error deleting comment:', err)
+  if (!user) return;
+  
+  try {
+    const response = await deleteCommentApi(api, { commentId, userId: user.userId });
+    if (response.data) {
+      setComments(prev => prev.filter(c => c.commentId !== commentId));
+      setLocalCommentCount(prev => prev - 1);
+    } else {
+      console.error('Failed to delete comment:', response.error);
     }
+  } catch (err) {
+    console.error('Error deleting comment:', err);
   }
+};
 
   useEffect(() => {
     const fetchCommentCount = async () => {
@@ -481,58 +482,61 @@ export default function PostCard({
           ) : (
             <div className="space-y-4">
               {comments.map((comment) => (
-                <div key={comment.commentId} className="flex gap-3">
-                  <div className="flex-shrink-0">
-                    {comment.userProfilePicture ? (
-                      <img
-                        src={comment.userProfilePicture}
-                        alt={`${comment.userName}'s profile`}
-                        className="w-9 h-9 rounded-full object-cover border border-glass"
-                      />
-                    ) : (
-                      <div className="w-9 h-9 rounded-full bg-glass flex items-center justify-center text-sm text-light/60 border border-glass">
-                        👤
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex-1">
-                    <div className="bg-glass/5 backdrop-blur-lg rounded-2xl p-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <Link href={`/profile/${comment.userId}`} className="font-semibold hover:underline">
-                            {comment.userName}
-                          </Link>
-                          <p className="text-light/90 mt-1">{comment.content}</p>
-                        </div>
-                        
-                        {user?.userId === comment.userId && (
-                          <button 
-                            onClick={() => deleteComment(comment.commentId)}
-                            className="text-light/50 hover:text-red-400 transition-colors"
-                            title="Delete comment"
-                          >
-                            🗑️
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="mt-1 flex items-center gap-4 text-sm text-light/60 pl-2">
-                      <span>{new Date(comment.createdAt).toLocaleString()}</span>
-                      <button 
-                        onClick={() => toggleCommentLike(comment.commentId)}
-                        className={`hover:text-accent transition-colors ${
-                          comment.isLikedByCurrentUser ? 'text-accent' : ''
-                        }`}
-                        disabled={!user}
-                      >
-                        {comment.isLikedByCurrentUser ? '❤️' : '🤍'} {comment.likeCount}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+  <div key={comment.commentId} className="flex gap-3">
+    <div className="flex-shrink-0">
+      {comment.userProfilePicture ? (
+        <img
+          src={comment.userProfilePicture}
+          alt={`${comment.userName}'s profile`}
+          className="w-9 h-9 rounded-full object-cover border border-glass"
+        />
+      ) : (
+        <div className="w-9 h-9 rounded-full bg-glass flex items-center justify-center text-sm text-light/60 border border-glass">
+          👤
+        </div>
+      )}
+    </div>
+    
+    <div className="flex-1">
+      <div className="bg-glass/5 backdrop-blur-lg rounded-2xl p-4 relative">
+        <div className="flex justify-between items-start">
+          <div>
+            <Link href={`/profile/${comment.userId}`} className="font-semibold hover:underline">
+              {comment.userName}
+            </Link>
+            <p className="text-light/90 mt-1">{comment.content}</p>
+          </div>
+          
+          {user?.userId === comment.userId && (
+            <button 
+              onClick={() => deleteComment(comment.commentId)}
+              className="text-light/50 hover:text-red-400 transition-colors absolute top-2 right-2"
+              title="Delete comment"
+              aria-label="Delete comment"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          )}
+        </div>
+        
+        <div className="mt-1 flex items-center gap-4 text-sm text-light/60">
+          <span>{new Date(comment.createdAt).toLocaleString()}</span>
+          <button 
+            onClick={() => toggleCommentLike(comment.commentId)}
+            className={`hover:text-accent transition-colors ${
+              comment.isLikedByCurrentUser ? 'text-accent' : ''
+            }`}
+            disabled={!user}
+          >
+            {comment.isLikedByCurrentUser ? '❤️' : '🤍'} {comment.likeCount}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+))}
             </div>
           )}
         </div>
