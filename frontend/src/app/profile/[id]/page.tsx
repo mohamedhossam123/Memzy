@@ -1,35 +1,12 @@
-// Dynamic profile
+// dyanmic profile
 'use client'
 
 import { useAuth } from '@/Context/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { FriendsModal } from '@/Components/ProfilePageModels/FriendsModalDynamicPage'
-import { Post } from '@/Components/ProfilePageModels/ProfilePostsComponent'
+import { APIClient, Post, UserProfileData } from '@/lib/api'
 
-interface UserProfileData {
-  id: number 
-  profilePictureUrl?: string 
-  name?: string
-  bio?: string
-  friendsCount?: number
-  postsCount?: number 
-  humorTypes?: { humorTypeName: string }[]
-  userName?: string
-  status?: string 
-  email?: string 
-  createdAt?: string 
-  isFriend?: boolean 
-  hasPendingRequest?: boolean
-  requestType?: string 
-  requestId?: number
-}
-interface Friend {
-  userId: string
-  name: string
-  userName: string
-  profilePictureUrl?: string
-}
 interface UserProfilePageProps {
   params: { id: string }
 }
@@ -45,8 +22,15 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
   const [friendsList, setFriendsList] = useState<any[]>([])
   const [friendshipLoading, setFriendshipLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [apiClient, setApiClient] = useState<APIClient | null>(null)
 
   const userId = params.id
+
+  useEffect(() => {
+    if (token) {
+      setApiClient(new APIClient(token))
+    }
+  }, [token])
 
   useEffect(() => {
     if (!user) {
@@ -58,297 +42,176 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
       return
     }
 
-    fetchUserProfile()
-  }, [user, userId, router])
+    if (apiClient) fetchUserProfile()
+  }, [user, userId, router, apiClient])
 
   useEffect(() => {
     setProfileImageError(false)
   }, [userData?.profilePictureUrl])
 
   useEffect(() => {
-    if (userData && userData.isFriend) {
+    if (userData && userData.isFriend && apiClient) {
       fetchUserPosts()
     } else if (userData && !userData.isFriend) {
       setUserPosts([])
     }
-  }, [userData?.isFriend, userData?.id])
+  }, [userData?.isFriend, userData?.id, apiClient])
 
   const fetchUserProfile = async () => {
+    if (!apiClient) return
+    
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Auth/GetUserByID?id=${userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
+      const data = await apiClient.user.getUserById(userId)
+      const friendshipStatus = await apiClient.friends.getFriendshipStatus(data.id)
       
-      if (!response.ok) {
-        if (response.status === 404) {
-          setError('User not found')
-        } else {
-          setError('Failed to load user profile')
-        }
-        return
-      }
-      
-      const data = await response.json()
-      const friendshipStatus = await fetchFriendshipStatus(data.id)
-      const combinedData = {
+      const combinedData: UserProfileData = {
         ...data,
         ...friendshipStatus
       }
+      
       setUserData(combinedData)
       if (combinedData.isFriend) {
         fetchUserPosts()
       }
-    } catch (err) {
-      console.error('Error fetching user profile:', err)
-      setError('Failed to load user profile')
+    } catch (err: any) {
+      if (err.message.includes('404')) {
+        setError('User not found')
+      } else {
+        setError('Failed to load user profile')
+      }
     } finally {
       setIsLoading(false)
     }
   }
 
-  const fetchFriendshipStatus = async (targetUserId: number) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetFriendshipStatus/${targetUserId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      if (response.ok) {
-        return await response.json();
-      }
-      return {
-        isFriend: false,
-        hasPendingRequest: false
-      };
-    } catch (err) {
-      console.error('Error fetching friendship status:', err);
-      return {
-        isFriend: false,
-        hasPendingRequest: false
-      };
-    }
-  };
-
   const fetchUserPosts = async () => {
-  try {
-    console.log('Fetching posts for user:', userId);
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetUserPosts/${userId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    if (!apiClient) return
     
-    if (response.ok) {
-      const posts = await response.json();
-      console.log('Fetched posts:', posts);
+    try {
+      const posts = await apiClient.user.getUserPosts(userId)
       setUserPosts(posts.map((post: Post) => ({
-  ...post,
-  postHumors: post.postHumors || [],
-})));
-    } else {
-      console.error('Failed to fetch posts, status:', response.status);
-      if (response.status === 401) {
-      } else if (response.status === 404) {
-      }
+        ...post,
+        postHumors: post.postHumors || [],
+      })))
+    } catch (err: any) {
+      setError('Failed to load posts. Please try again later.')
     }
-  } catch (err) {
-    console.error('Error fetching user posts:', err);
-    setError('Failed to load posts. Please try again later.');
   }
-};
 
   const fetchUserFriends = async () => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/GetFriendsAnotherUser?userId=${userId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-    if (response.ok) {
-      const friends = await response.json()
+    if (!apiClient) return
+    
+    try {
+      const friends = await apiClient.friends.getFriendsAnotherUser(userId)
       setFriendsList(friends)
+    } catch (err) {
+      console.error('Error fetching user friends:', err)
     }
-  } catch (err) {
-    console.error('Error fetching user friends:', err)
   }
-}
-
 
   const handleSendFriendRequest = async () => {
-    if (!userData) return;
-    
-    setFriendshipLoading(true);
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/SendRequest/${userData.id}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-      
-      if (response.ok) {
-        const result = await response.json();
-        setUserData(prev => prev ? { 
-          ...prev, 
-          hasPendingRequest: true,
-          requestType: 'sent',
-          requestId: result.requestId,
-          isFriend: false 
-        } : null);
-      } else {
-        console.error('Failed to send friend request');
-      }
-    } catch (err) {
-      console.error('Error sending friend request:', err);
-    } finally {
-      setFriendshipLoading(false);
-    }
-  };
-
-  const handleCancelFriendRequest = async () => {
-    if (!userData || !userData.requestId) return;
-    
-    setFriendshipLoading(true);
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/cancelrequest/${userData.requestId}`,
-        {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}` 
-          }
-        }
-      );
-      
-      if (response.ok) {
-        setUserData(prev => prev ? { 
-          ...prev, 
-          hasPendingRequest: false,
-          requestType: undefined,
-          requestId: undefined,
-          isFriend: false 
-        } : null);
-        console.log('Friend request canceled successfully');
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Failed to cancel friend request:', errorData);
-      }
-    } catch (err) {
-      console.error('Error canceling friend request:', err);
-    } finally {
-      setFriendshipLoading(false);
-    }
-  };
-
-  const handleAcceptFriendRequest = async () => {
-    if (!userData || !userData.requestId) return;
-    
-    setFriendshipLoading(true);
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/acceptRequest/${userData.requestId}`,
-        {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}` 
-          }
-        }
-      );
-      
-      if (response.ok) {
-        const updatedUserData = { 
-          ...userData, 
-          isFriend: true,
-          hasPendingRequest: false,
-          requestType: undefined,
-          requestId: undefined
-        };
-        setUserData(updatedUserData);
-        console.log('Friend request accepted successfully');
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Failed to accept friend request:', errorData);
-      }
-    } catch (err) {
-      console.error('Error accepting friend request:', err);
-    } finally {
-      setFriendshipLoading(false);
-    }
-  };
-
-  const handleRejectFriendRequest = async () => {
-    if (!userData || !userData.requestId) return;
-    
-    setFriendshipLoading(true);
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/rejectrequest/${userData.requestId}`,
-        {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}` 
-          }
-        }
-      );
-      
-      if (response.ok) {
-        setUserData(prev => prev ? { 
-          ...prev, 
-          hasPendingRequest: false,
-          requestType: undefined,
-          requestId: undefined,
-          isFriend: false 
-        } : null);
-        console.log('Friend request rejected successfully');
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Failed to reject friend request:', errorData);
-      }
-    } catch (err) {
-      console.error('Error rejecting friend request:', err);
-    } finally {
-      setFriendshipLoading(false);
-    }
-  };
-
-  const handleRemoveFriend = async () => {
-    if (!userData) return
+    if (!apiClient || !userData) return
     
     setFriendshipLoading(true)
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Friends/RemoveFriend?friendId=${userData.id}`,
-        {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      )
-      if (response.ok) {
-        setUserData(prev => prev ? { 
-          ...prev, 
-          isFriend: false,
-          hasPendingRequest: false,
-          requestType: undefined,
-          requestId: undefined
-        } : null)
-        setUserPosts([])
-      }
+      const result = await apiClient.friends.sendRequest(userData.id)
+      setUserData({ 
+        ...userData, 
+        hasPendingRequest: true,
+        requestType: 'sent',
+        requestId: result.requestId,
+        isFriend: false 
+      })
+    } catch (err) {
+      console.error('Error sending friend request:', err)
+    } finally {
+      setFriendshipLoading(false)
+    }
+  }
+
+  const handleCancelFriendRequest = async () => {
+    if (!apiClient || !userData || !userData.requestId) return
+    
+    setFriendshipLoading(true)
+    try {
+      await apiClient.friends.cancelRequest(userData.requestId)
+      setUserData({ 
+        ...userData, 
+        hasPendingRequest: false,
+        requestType: undefined,
+        requestId: undefined,
+        isFriend: false 
+      })
+    } catch (err) {
+      console.error('Error canceling friend request:', err)
+    } finally {
+      setFriendshipLoading(false)
+    }
+  }
+
+  const handleAcceptFriendRequest = async () => {
+    if (!apiClient || !userData || !userData.requestId) return
+    
+    setFriendshipLoading(true)
+    try {
+      await apiClient.friends.acceptRequest(userData.requestId)
+      setUserData({ 
+        ...userData, 
+        isFriend: true,
+        hasPendingRequest: false,
+        requestType: undefined,
+        requestId: undefined
+      })
+    } catch (err) {
+      console.error('Error accepting friend request:', err)
+    } finally {
+      setFriendshipLoading(false)
+    }
+  }
+
+  const handleRejectFriendRequest = async () => {
+    if (!apiClient || !userData || !userData.requestId) return
+    
+    setFriendshipLoading(true)
+    try {
+      await apiClient.friends.rejectRequest(userData.requestId)
+      setUserData({ 
+        ...userData, 
+        hasPendingRequest: false,
+        requestType: undefined,
+        requestId: undefined,
+        isFriend: false 
+      })
+    } catch (err) {
+      console.error('Error rejecting friend request:', err)
+    } finally {
+      setFriendshipLoading(false)
+    }
+  }
+
+  const handleRemoveFriend = async () => {
+    if (!apiClient || !userData) return
+    
+    setFriendshipLoading(true)
+    try {
+      await apiClient.friends.removeFriend(userData.id)
+      setUserData({ 
+        ...userData, 
+        isFriend: false,
+        hasPendingRequest: false,
+        requestType: undefined,
+        requestId: undefined
+      })
+      setUserPosts([])
     } catch (err) {
       console.error('Error removing friend:', err)
     } finally {
       setFriendshipLoading(false)
     }
   }
+
+  // ... rest of the component remains the same (renderFriendshipButtons, getProfileImageUrl, etc) ...
+
 
   const renderFriendshipButtons = () => {
     if (!userData) return null;

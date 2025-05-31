@@ -1,6 +1,7 @@
-export * from './comments'
-export * from './Posts'
-export * from './types'
+export * from './comments';
+export * from './Posts';
+export * from './types';
+
 import { UserAPI } from './user';
 import { HumorAPI } from './humor';
 import { FriendsAPI } from './friend';
@@ -9,26 +10,26 @@ export type {
   FullUser, 
   UserResponse, 
   FriendPostCount 
-} from './user'
+} from './user';
 
 export type { 
   HumorTypesResponse, 
   UserHumorResponse 
-} from './humor'
+} from './humor';
 
 export type { 
   FriendRequestDTO, 
   Friend 
-} from './friend'
+} from './friend';
 
 export class APIClient {
-  public user: UserAPI
-  public humor: HumorAPI
-  public friends: FriendsAPI
+  public user: UserAPI;
+  public humor: HumorAPI;
+  public friends: FriendsAPI;
 
   constructor(token: string) {
-    this.user = new UserAPI(token)
-    this.humor = new HumorAPI(token)
-    this.friends = new FriendsAPI(token)
+    this.user = new UserAPI(token);
+    this.humor = new HumorAPI(token);
+    this.friends = new FriendsAPI(token);
   }
 }
