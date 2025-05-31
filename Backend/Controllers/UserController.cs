@@ -15,7 +15,6 @@ namespace MyApiProject.Controllers
         private readonly IWebHostEnvironment _environment;
         private readonly MemzyContext _context;
 
-
         public UserController(IUserService userService, IModeratorService moderatorService, IAuthenticationService authService, IWebHostEnvironment environment, MemzyContext context)
         {
             _context = context;
@@ -24,6 +23,7 @@ namespace MyApiProject.Controllers
             _authService = authService;
             _environment = environment;
         }
+
         [HttpPost("UpdateUsername")]
         [Authorize]
         public async Task<IActionResult> UpdateUsername([FromBody] string newName)
@@ -55,6 +55,7 @@ namespace MyApiProject.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+
         [HttpGet("profile-picture")]
         [Authorize]
         public async Task<IActionResult> GetProfilePicture()
@@ -62,19 +63,19 @@ namespace MyApiProject.Controllers
             try
             {
                 var userId = await _authService.GetAuthenticatedUserId();
-                var user = await _context.Users.FindAsync(userId);
-
-                if (user == null || string.IsNullOrEmpty(user.ProfilePictureUrl))
-                {
-                    return NotFound("Profile picture not found");
-                }
+                var user = await _userService.GetProfilePictureAsync(userId);
                 return Ok(new { ProfilePictureUrl = user.ProfilePictureUrl });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
         [HttpDelete("DeleteUser")]
         [Authorize]
         public async Task<IActionResult> DeleteUser(int id)
@@ -89,6 +90,7 @@ namespace MyApiProject.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpPost("UpdateProfilePicture")]
         [Authorize]
         public async Task<IActionResult> UploadProfilePicture([FromForm] ProfilePictureDto dto)
@@ -118,8 +120,6 @@ namespace MyApiProject.Controllers
             }
         }
 
-
-
         [HttpPost("change-password")]
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
@@ -127,25 +127,23 @@ namespace MyApiProject.Controllers
             try
             {
                 var userId = await _authService.GetAuthenticatedUserId();
-                var user = await _authService.GetUserByIdAsync(userId);
-
-                if (user == null)
-                    return Unauthorized("User not found");
-                if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
-                    return BadRequest("Current password is incorrect");
-
-                if (string.IsNullOrWhiteSpace(dto.NewPassword) || dto.NewPassword.Length < 6)
-                    return BadRequest("New password must be at least 6 characters");
-                user.PasswordHash = _authService.HashPassword(dto.NewPassword);
-                await _context.SaveChangesAsync();
-
+                await _userService.ChangePasswordAsync(userId, dto);
                 return Ok(new { Message = "Password changed successfully" });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { Error = "Password change failed", ex.Message });
             }
         }
+
         [HttpGet("GetApprovedPosts")]
         [Authorize]
         public async Task<IActionResult> GetApprovedPosts()
@@ -153,23 +151,7 @@ namespace MyApiProject.Controllers
             try
             {
                 var userId = await _authService.GetAuthenticatedUserId();
-
-                var posts = await _context.Posts
-                    .Where(p => p.UserId == userId && p.IsApproved)
-                    .Select(p => new PostUserDto
-                    {
-                        PostId = p.PostId,
-                        Description = p.Description,
-                        FilePath = p.FilePath,
-                        ContentType = p.ContentType,
-                        IsApproved = p.IsApproved,
-                        CreatedAt = p.CreatedAt,
-                        HumorTypes = p.PostHumors
-                            .Select(ph => ph.HumorType.HumorTypeName)
-                            .ToList()
-                    })
-                    .ToListAsync();
-
+                var posts = await _userService.GetApprovedPostsAsync(userId);
                 return Ok(posts);
             }
             catch (Exception ex)
@@ -178,8 +160,6 @@ namespace MyApiProject.Controllers
             }
         }
 
-
-
         [HttpGet("GetPendingPosts")]
         [Authorize]
         public async Task<IActionResult> GetPendingPosts()
@@ -187,23 +167,7 @@ namespace MyApiProject.Controllers
             try
             {
                 var userId = await _authService.GetAuthenticatedUserId();
-
-                var posts = await _context.Posts
-                    .Where(p => p.UserId == userId && !p.IsApproved)
-                    .Select(p => new PostUserDto
-                    {
-                        PostId = p.PostId,
-                        Description = p.Description,
-                        FilePath = p.FilePath,
-                        ContentType = p.ContentType,
-                        IsApproved = p.IsApproved,
-                        CreatedAt = p.CreatedAt,
-                        HumorTypes = p.PostHumors
-                            .Select(ph => ph.HumorType.HumorTypeName)
-                            .ToList()
-                    })
-                    .ToListAsync();
-
+                var posts = await _userService.GetPendingPostsAsync(userId);
                 return Ok(posts);
             }
             catch (Exception ex)
@@ -243,32 +207,29 @@ namespace MyApiProject.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
-        
+
         [HttpDelete("DeleteMyPost/{postId}")]
-[Authorize]
-public async Task<IActionResult> DeleteMyPost(int postId)
-{
-    try
-    {
-        var userId = await _authService.GetAuthenticatedUserId();
-
-        var post = await _context.Posts.FindAsync(postId);
-
-        if (post == null)
-            return NotFound("Post not found");
-
-        if (post.UserId != userId)
-            return Forbid("You are not allowed to delete this post");
-
-        _context.Posts.Remove(post);
-        await _context.SaveChangesAsync();
-
-        return Ok(new { Message = "Post deleted successfully" });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, new { Error = "Failed to delete post", ex.Message });
-    }
-}
+        [Authorize]
+        public async Task<IActionResult> DeleteMyPost(int postId)
+        {
+            try
+            {
+                var userId = await _authService.GetAuthenticatedUserId();
+                await _userService.DeleteUserPostAsync(postId, userId);
+                return Ok(new { Message = "Post deleted successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = "Failed to delete post", ex.Message });
+            }
+        }
     }
 }
