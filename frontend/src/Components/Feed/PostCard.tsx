@@ -4,6 +4,17 @@ import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/Context/AuthContext'
 import Link from 'next/link'
 
+interface CommentResponseDto {
+  commentId: number
+  postId: number
+  userId: number
+  userName: string
+  userProfilePicture: string | null
+  content: string
+  createdAt: string
+  likeCount: number
+  isLikedByCurrentUser: boolean
+}
 
 export interface PostProps {
   id: number

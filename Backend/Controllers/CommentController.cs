@@ -38,7 +38,7 @@ namespace MyApiProject.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
-        [HttpPost]
+        [HttpPost("ToggleLikeComments")]
         public async Task<IActionResult> ToggleCommentLike(LikeCommentDto dto)
         {
             try
@@ -52,6 +52,13 @@ namespace MyApiProject.Controllers
             {
                 return NotFound(new { message = ex.Message });
             }
+        }
+        [HttpGet("GetComments")]
+        public async Task<IActionResult> GetComments(int postId)
+        {
+            var user = await _auth.GetAuthenticatedUserId();
+            var response = await _commentservice.GetCommentsAsync(postId, user);
+            return Ok(response);
         }
     }
 }

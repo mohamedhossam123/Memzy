@@ -104,5 +104,29 @@ namespace Memzy_finalist.Services
                 IsLiked = isLiked
             };
         }
+        public async Task<List<CommentResponseDto>> GetCommentsAsync(int postId, int currentUserId)
+        {
+            var post = await _context.Posts
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.Likes)
+                .FirstOrDefaultAsync(p => p.PostId == postId);
+            if (post == null)
+                throw new Exception("Post not found");
+            var commentsDto = post.Comments.Select(c => new CommentResponseDto
+            {
+                CommentId = c.CommentId,
+                PostId = c.PostId,
+                UserId = c.UserId,
+                UserName = c.User?.UserName,
+                UserProfilePicture = c.User?.ProfilePictureUrl,
+                Content = c.Content,
+                CreatedAt = c.CreatedAt,
+                LikeCount = c.Likes.Count,
+                IsLikedByCurrentUser = c.Likes.Any(like => like.UserId == currentUserId)
+            }).ToList();
+            return commentsDto;
+        }
     }
 }
