@@ -3,33 +3,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/Context/AuthContext'
 import { useSearch } from '@/Context/SearchContext'
-
-interface PendingPost {
-  id: number
-  author?: string
-  userName?: string
-  content: string
-  mediaType?: 'image' | 'video' | null
-  mediaUrl?: string | null
-  timestamp: string
-  humorType: string
-  likes: number
-  status: 'pending' | 'approved' | 'rejected'
-  userId: number
-  user: User
-}
-
-interface User {
-  id: number
-  name: string
-  email: string
-  userName: string
-  status: string
-  profilePictureUrl?: string
-}
+import { ModeratorAPI, PendingPost, User } from '@/lib/api/moderator'
+import { detectMediaType, getOptimizedMediaUrl } from '@/lib/api/utils'
 
 export default function ModeratorDashboard() {
-  const { user: currentUser, api } = useAuth()
+  const { user: currentUser, token, api } = useAuth() // Extract token separately
   const { searchTerm, setSearchTerm } = useSearch()
   const [activeTab, setActiveTab] = useState<'posts' | 'users'>('posts')
   const [pendingPosts, setPendingPosts] = useState<PendingPost[]>([])
@@ -37,110 +15,52 @@ export default function ModeratorDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [actionMessage, setActionMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  const [moderatorApi, setModeratorApi] = useState<ModeratorAPI | null>(null)
 
-  const detectMediaType = (url: string): 'image' | 'video' | null => {
-    if (!url) return null
-    
-    const urlLower = url.toLowerCase()
-    
-    if (urlLower.includes('.mp4') || urlLower.includes('.webm') || urlLower.includes('.mov') || 
-        urlLower.includes('.avi') || urlLower.includes('.mkv') || urlLower.includes('video')) {
-      return 'video'
+  useEffect(() => {
+    if (currentUser && token) { // Use token instead of currentUser.token
+      setModeratorApi(new ModeratorAPI(token))
     }
-    
-    if (urlLower.includes('.jpg') || urlLower.includes('.jpeg') || urlLower.includes('.png') || 
-        urlLower.includes('.gif') || urlLower.includes('.webp') || urlLower.includes('.svg') ||
-        urlLower.includes('image')) {
-      return 'image'
-    }
-    
-    if (urlLower.includes('cloudinary.com')) {
-      if (urlLower.includes('/video/')) return 'video'
-      if (urlLower.includes('/image/')) return 'image'
-    }
-    
-    return null
-  }
-const handleMakeModerator = async (userId: number) => {
-  try {
-    const requestedById = currentUser?.userId;
-    if (!requestedById) throw new Error('Your user ID is missing');
+  }, [currentUser, token])
 
-    const response = await api.post('/api/Moderator/makeModerator', {
-      userId,
-      requestedById,
-    });
-
-    if (response?.ok) {
-      showMessage('success', 'User promoted to moderator successfully');
-      setAllUsers(users =>
-        users.map(user =>
-          user.id === userId ? { ...user, status: 'moderator' } : user
-        )
-      );
-    } else {
-      const errorData = await response?.json();
-      throw new Error(errorData?.Message || 'Failed to promote user');
-    }
-  } catch (err) {
-    showMessage('error', err instanceof Error ? err.message : 'Action failed');
-  }
-};
-
-
-  
   useEffect(() => {
     const fetchData = async () => {
+      if (!moderatorApi) return
+      
       try {
         setLoading(true)
         setError(null)
+        
         if (activeTab === 'posts') {
-          const postsResponse = await api.get('/api/Moderator/pendingPosts')
-          
-          if (postsResponse?.ok) {
-            const posts = await postsResponse.json()
+          const posts = await moderatorApi.fetchPendingPosts()
+          const transformedPosts = posts.map((post: any) => {
+            const mediaType = detectMediaType(post.mediaUrl)
             
-            if (!Array.isArray(posts)) {
-              setError('Invalid response format from server')
-              return
-            }
-            const transformedPosts = posts.map((post: any) => {
-              const mediaType = detectMediaType(post.mediaUrl)
-              
-              return {
-                id: post.id ,
-                content: post.content || '[No content available]',
-                mediaType: mediaType,
-                mediaUrl: post.mediaUrl,
-                timestamp: post.timestamp || new Date().toISOString(),
-                humorType: post.humorType || 'General',
-                likes: post.likes || 0,
-                status: post.status || 'pending',
-                userId: post.userId,
-                user: {
-                  id: post.user?.id || post.userId,
-                  name: post.user?.name || post.author || 'Unknown user',
-                  userName: post.user?.userName || post.userName || 'unknown',
-                  email: post.user?.email || '',
-                  status: post.user?.status || 'user',
-                  profilePictureUrl: post.user?.profilePictureUrl
-                }
+            return {
+              id: post.id,
+              content: post.content || '[No content available]',
+              mediaType,
+              mediaUrl: post.mediaUrl,
+              timestamp: post.timestamp || new Date().toISOString(),
+              humorType: post.humorType || 'General',
+              likes: post.likes || 0,
+              status: post.status || 'pending',
+              userId: post.userId,
+              user: {
+                id: post.user?.id || post.userId,
+                name: post.user?.name || post.author || 'Unknown user',
+                userName: post.user?.userName || post.userName || 'unknown',
+                email: post.user?.email || '',
+                status: post.user?.status || 'user',
+                profilePictureUrl: post.user?.profilePictureUrl
               }
-            })
-            
-            setPendingPosts(transformedPosts)
-          } else {
-            setError(`Failed to fetch posts: ${postsResponse?.status || 'Unknown error'}`)
-          }
-        } else {
-          const usersResponse = await api.get('/api/Moderator/users')
+            }
+          })
           
-          if (usersResponse?.ok) {
-            const users = await usersResponse.json()
-            setAllUsers(users.filter((u: User) => u.id !== currentUser?.userId))
-          } else {
-            setError(`Failed to fetch users: ${usersResponse?.status || 'Unknown error'}`)
-          }
+          setPendingPosts(transformedPosts)
+        } else {
+          const users = await moderatorApi.fetchAllUsers()
+          setAllUsers(users.filter((u: User) => u.id !== currentUser?.userId))
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load data')
@@ -150,53 +70,54 @@ const handleMakeModerator = async (userId: number) => {
     }
 
     fetchData()
-  }, [activeTab, api, currentUser?.userId])
+  }, [activeTab, moderatorApi, currentUser?.userId])
 
   const handlePostAction = async (postId: number, action: 'approve' | 'reject') => {
-  try {
-    const modId = currentUser?.userId
-    if (!modId) throw new Error('Moderator ID missing')
-
-    let response
-    switch (action) {
-      case 'approve':
-        response = await api.post('/api/Moderator/approvePost', { postId, modId })
-        break
-      case 'reject':
-  response = await api.delete('/api/Moderator/deletePost', {
-    body: JSON.stringify({ postId, modId }),
-    headers: { 'Content-Type': 'application/json' }
-  })
-  break
-    }
+    if (!moderatorApi || !currentUser?.userId) return
     
-    if (response?.ok) {
+    try {
+      const modId = currentUser.userId
+      
+      if (action === 'approve') {
+        await moderatorApi.approvePost({ postId, modId })
+      } else {
+        await moderatorApi.rejectPost({ postId, modId })
+      }
+      
       setPendingPosts(posts => posts.filter(post => post.id !== postId))
       showMessage('success', `Post ${action}d successfully`)
-    } else {
-      throw new Error(`Failed to ${action} post: ${response?.status}`)
+    } catch (err) {
+      showMessage('error', err instanceof Error ? err.message : 'Action failed')
     }
-  } catch (err) {
-    showMessage('error', err instanceof Error ? err.message : 'Action failed')
   }
-}
 
   const handleDeleteUser = async (userId: number) => {
+    if (!moderatorApi || !currentUser?.userId) return
+    
     try {
-      const modId = currentUser?.userId
-      if (!modId) throw new Error('Moderator ID missing')
+      const modId = currentUser.userId
+      await moderatorApi.deleteUser({ id: userId, modId })
+      
+      setAllUsers(users => users.filter(user => user.id !== userId))
+      showMessage('success', 'User deleted successfully')
+    } catch (err) {
+      showMessage('error', err instanceof Error ? err.message : 'Action failed')
+    }
+  }
 
-      const response = await api.delete('/api/Moderator/deleteUser', {
-        body: JSON.stringify({ id: userId, modId }),
-        headers: { 'Content-Type': 'application/json' }
-      })
-
-      if (response?.ok) {
-        setAllUsers(users => users.filter(user => user.id !== userId))
-        showMessage('success', 'User deleted successfully')
-      } else {
-        throw new Error('Failed to delete user')
-      }
+  const handleMakeModerator = async (userId: number) => {
+    if (!moderatorApi || !currentUser?.userId) return
+    
+    try {
+      const requestedById = currentUser.userId
+      await moderatorApi.makeModerator({ userId, requestedById })
+      
+      showMessage('success', 'User promoted to moderator successfully')
+      setAllUsers(users =>
+        users.map(user =>
+          user.id === userId ? { ...user, status: 'moderator' } : user
+        )
+      )
     } catch (err) {
       showMessage('error', err instanceof Error ? err.message : 'Action failed')
     }
@@ -212,18 +133,6 @@ const handleMakeModerator = async (userId: number) => {
       field?.toLowerCase().includes(searchTerm.toLowerCase())
     )
   )
-
-  const getOptimizedMediaUrl = (url: string, type: 'image' | 'video') => {
-    if (!url || !url.includes('cloudinary.com')) return url
-    
-    if (type === 'image') {
-      return url.replace('/upload/', '/upload/q_auto,f_auto,w_800,c_limit/')
-    } else if (type === 'video') {
-      return url.replace('/upload/', '/upload/q_auto,w_800,c_limit/')
-    }
-    
-    return url
-  }
 
   const MediaDisplay = ({ post }: { post: PendingPost }) => {
     const [imageLoaded, setImageLoaded] = useState(false)
@@ -534,5 +443,4 @@ const handleMakeModerator = async (userId: number) => {
     </div>
   </div>
 )
-
 }

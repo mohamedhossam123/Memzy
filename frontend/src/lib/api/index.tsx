@@ -1,6 +1,7 @@
 export * from './comments';
 export * from './Posts';
 export * from './types';
+export * from './utils';
 
 import { UserAPI } from './user';
 import { HumorAPI } from './humor';
