@@ -11,7 +11,7 @@ interface Friend {
   username: string
   profilePicture?: string
   isOnline?: boolean
-  lastSeen?: string
+  bio?: string
 }
 
 interface Props {
@@ -35,29 +35,41 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL ?? 'http://localhost:5001'
 
-  const fetchFriends = async () => {
-    try {
-      setLoading(true)
-      setError('')
-      const response = await axios.get(`${backendUrl}/api/Friends/GetFriends`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      const friendsData = response.data.map((friend: any) => ({
-        userId: friend.userId,
-        name: friend.name,
-        username: friend.username,
-        profilePicture: friend.profilePictureUrl,
-      }))
-      
-      setFriends(friendsData || [])
-      setFilteredFriends(friendsData || [])
-    } catch (err) {
-      console.error('Error fetching friends:', err)
-      setError('Failed to load friends. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+  interface Friend {
+  userId: number
+  name: string
+  username: string
+  profilePicture?: string
+  isOnline?: boolean
+  bio?: string
+}
+
+const fetchFriends = async () => {
+  try {
+    setLoading(true)
+    setError('')
+    const response = await axios.get(`${backendUrl}/api/Friends/GetFriends`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
+    const friendsData: Friend[] = response.data.map((friend: any) => ({
+      userId: friend.userId,
+      name: friend.name,
+      username: friend.userName,             
+      profilePicture: friend.profilePictureUrl, 
+      bio: friend.bio,                    
+      isOnline: friend.isOnline,          
+    }))
+
+    setFriends(friendsData || [])
+    setFilteredFriends(friendsData || [])
+  } catch (err) {
+    console.error('Error fetching friends:', err)
+    setError('Failed to load friends. Please try again.')
+  } finally {
+    setLoading(false)
   }
+}
 
   useEffect(() => {
     if (token) {

@@ -1,6 +1,7 @@
 using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Memzy_finalist.Models.DTOs;
 
 namespace MyApiProject.Controllers
 {
@@ -218,8 +219,8 @@ namespace MyApiProject.Controllers
             try
             {
                 var userId = await _authService.GetAuthenticatedUserId();
-                var result = await _friendsService.GetFriends(userId);
-                return Ok(result ?? new List<User>());
+                var friends = await _friendsService.GetFriends(userId);
+                return Ok(friends ?? new List<FriendDTO2>());
             }
             catch (ApplicationException ex)
             {
@@ -238,7 +239,6 @@ namespace MyApiProject.Controllers
                 });
             }
         }
-
         [HttpDelete("RemoveFriend")]
         [Authorize]
         public async Task<IActionResult> RemoveFriend(int friendId)

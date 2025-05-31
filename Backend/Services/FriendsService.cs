@@ -1,3 +1,4 @@
+using Memzy_finalist.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace Memzy_finalist.Models
@@ -190,15 +191,24 @@ namespace Memzy_finalist.Models
             
             return true;
         }
-        
-        public async Task<IEnumerable<User>> GetFriends(int userId)
+
+        public async Task<IEnumerable<FriendDTO2>> GetFriends(int userId)
         {
             return await _context.Friendships
-            .Where(f => f.User1Id == userId || f.User2Id == userId)
-            .Include(f => f.User1) 
-            .Include(f => f.User2) 
-            .Select(f => f.User1Id == userId ? f.User2 : f.User1)
-            .ToListAsync();
+                .Where(f => f.User1Id == userId || f.User2Id == userId)
+                .Include(f => f.User1)
+                .Include(f => f.User2)
+                .Select(f => f.User1Id == userId ? f.User2 : f.User1)
+                .Select(u => new FriendDTO2
+                {
+                    UserId = u.UserId,
+                    Name = u.Name,
+                    UserName = u.UserName,
+                    ProfilePictureUrl = u.ProfilePictureUrl,
+                    Bio = u.Bio,
+                    IsOnline = u.IsOnline,
+                })
+                .ToListAsync();
         }
         public async Task<IEnumerable<User>> GetFriendsAnotherUser(int userId)
         {

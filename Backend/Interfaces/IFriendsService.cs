@@ -1,4 +1,5 @@
 using Memzy_finalist.Models;
+using Memzy_finalist.Models.DTOs;
 
 public interface IFriendsService
 {
@@ -11,7 +12,7 @@ public interface IFriendsService
     Task<FriendRequest> RejectFriendRequest(int requestId, int userId);
     Task<bool> CancelFriendRequest(int requestId, int userId);
     Task<bool> RemoveFriend(int userId, int friendId);
-    Task<IEnumerable<User>> GetFriends(int userId);
+    Task<IEnumerable<FriendDTO2>> GetFriends(int userId);
     Task<List<FriendRequestDTO>> GetPendingFriendRequests(int userId);
     Task<IEnumerable<User>> GetFriendsAnotherUser(int userId);
 
