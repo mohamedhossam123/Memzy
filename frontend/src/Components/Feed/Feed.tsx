@@ -4,6 +4,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import PostCard, { PostProps } from '@/Components/Feed/PostCard'
 import { useAuth } from '@/Context/AuthContext'
+import { ApiResponse } from '@/lib/api/types'
 
 interface ApiPost {
   postId: number
@@ -23,7 +24,7 @@ interface ApiPost {
   onLikeUpdate?: (postId: number, isLiked: boolean, likeCount: number) => void;
 }
 
-interface ApiResponse {
+interface ApiPostsResponse {
   posts: ApiPost[]
 }
 
@@ -117,8 +118,8 @@ export default function Feed() {
 
   const endpoint = useMemo(() => 
     user 
-      ? `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetFirst6BasedOnUser`
-      : `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/GetFirst6`,
+      ? `/api/Posts/GetFirst6BasedOnUser`
+      : `/api/Posts/GetFirst6`,
     [user]
   )
 
@@ -127,18 +128,14 @@ export default function Feed() {
       setLoading(true)
       setError(null)
 
-      const response = await api.post(
-        endpoint,
-        { page, pageSize: 6 },
-        { authenticated: !!user }
-      )
+      const response = await api.post(endpoint, { page, pageSize: 6 })
 
       if (!response || !response.ok) {
         const errorText = await response?.text().catch(() => 'Unknown error')
         throw new Error(`Failed to fetch feed: ${response?.status} ${errorText}`)
       }
 
-      const data: ApiResponse = await response.json()
+      const data: ApiPostsResponse = await response.json()
       
       if (!data.posts || !Array.isArray(data.posts)) {
         throw new Error('Invalid response format from server')

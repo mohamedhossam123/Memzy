@@ -3,33 +3,30 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useAuth } from '@/Context/AuthContext'
 import Link from 'next/link'
-
-interface CommentResponseDto {
-  commentId: number
-  postId: number
-  userId: number
-  userName: string
-  userProfilePicture: string | null
-  content: string
-  createdAt: string
-  likeCount: number
-  isLikedByCurrentUser: boolean
-}
+import {
+  CommentResponseDto,
+  togglePostLike,
+  fetchComments as fetchCommentsApi,
+  addComment as addCommentApi,
+  toggleCommentLike as toggleCommentLikeApi,
+  deleteComment as deleteCommentApi,
+  fetchCommentCount as fetchCommentCountApi
+} from '@/lib/api'
 
 export interface PostProps {
   id: number
   author: string
   content: string
   mediaType?: 'image' | 'video' | null
-  authorName?: string 
+  authorName?: string
   authorId?: string
   mediaUrl?: string | null
   timestamp: string
-  humorType: 'Dark Humor' | 'Friendly Humor' 
+  humorType: 'Dark Humor' | 'Friendly Humor'
   likes: number
-  profileImageUrl?: string | null;
-  isLiked?: boolean 
-  onLikeUpdate?: (postId: number, isLiked: boolean, likes: number) => void;
+  profileImageUrl?: string | null
+  isLiked?: boolean
+  onLikeUpdate?: (postId: number, isLiked: boolean, likes: number) => void
 }
 
 export default function PostCard({
@@ -42,9 +39,9 @@ export default function PostCard({
   humorType,
   likes: initialLikes,
   isLiked: initialIsLiked = false,
-  authorId = "", 
+  authorId = '',
   authorName,
-  profileImageUrl, 
+  profileImageUrl
 }: PostProps) {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
@@ -54,12 +51,12 @@ export default function PostCard({
   const [isLikeLoading, setIsLikeLoading] = useState(false)
 
   const [comments, setComments] = useState<CommentResponseDto[]>([])
-  const [newComment, setNewComment] = useState("")
+  const [newComment, setNewComment] = useState('')
   const [isCommentsVisible, setIsCommentsVisible] = useState(false)
   const [isLoadingComments, setIsLoadingComments] = useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [localCommentCount, setLocalCommentCount] = useState(0)
-  
+
   const { api, user } = useAuth()
   const videoRef = useRef<HTMLVideoElement>(null)
   const commentFormRef = useRef<HTMLDivElement>(null)
@@ -68,16 +65,15 @@ export default function PostCard({
     if (!user) return
     setIsLoadingComments(true)
     try {
-      const res = await api.get(`/api/user/comments/GetComments?postId=${id}`)
-      if (res && res.ok) {
-        const data = await res.json()
-        setComments(data)
-        setLocalCommentCount(data.length)
+      const response = await fetchCommentsApi(api, id)
+      if (response.data) {
+        setComments(response.data)
+        setLocalCommentCount(response.data.length)
       } else {
-        console.error("Failed to fetch comments")
+        console.error('Failed to fetch comments:', response.error)
       }
     } catch (err) {
-      console.error("Error fetching comments:", err)
+      console.error('Error fetching comments:', err)
     } finally {
       setIsLoadingComments(false)
     }
@@ -87,102 +83,101 @@ export default function PostCard({
     if (!newComment.trim() || isSubmittingComment || !user) return
 
     setIsSubmittingComment(true)
-    try {
-      const res = await api.post("/api/user/comments/addComment", {
-        postId: id,
-        content: newComment.trim(),
-      })
-      
+    const optimisticCommentId = Date.now()
+    const optimisticComment: CommentResponseDto = {
+      commentId: optimisticCommentId,
+      postId: id,
+      userId: user.userId,
+      userName: user.userName ?? 'Unknown',
+      userProfilePicture: user.profilePictureUrl || null,
+      content: newComment.trim(),
+      createdAt: new Date().toISOString(),
+      likeCount: 0,
+      isLikedByCurrentUser: false
+    }
 
-      if (res && res.ok) {
-        const data = await res.json()
-        const newCommentObj: CommentResponseDto = {
-          commentId: Date.now(),
-          postId: id,
-          userId: user.userId,
-          userName: user.userName ?? "Unknown",
-          userProfilePicture: user.profilePictureUrl || null,
-          content: newComment.trim(),
-          createdAt: new Date().toISOString(),
-          likeCount: 0,
-          isLikedByCurrentUser: false
-        }
-        
-        setComments(prev => [newCommentObj, ...prev])
-        setNewComment("")
-        setLocalCommentCount(prev => prev + 1)
+    setComments(prev => [optimisticComment, ...prev])
+    setNewComment('')
+    setLocalCommentCount(prev => prev + 1)
+
+    try {
+      const response = await addCommentApi(api, id, newComment.trim())
+
+      if (response.data) {
+        setComments(prev =>
+          prev.map(comment =>
+            comment.commentId === optimisticCommentId ? response.data! : comment
+          )
+        )
       } else {
-        console.error("Failed to post comment")
+        console.error('Failed to post comment:', response.error)
+        setComments(prev => prev.filter(c => c.commentId !== optimisticCommentId))
+        setLocalCommentCount(prev => prev - 1)
       }
     } catch (err) {
-      console.error("Error posting comment:", err)
+      console.error('Error posting comment:', err)
+      setComments(prev => prev.filter(c => c.commentId !== optimisticCommentId))
+      setLocalCommentCount(prev => prev - 1)
     } finally {
       setIsSubmittingComment(false)
     }
   }
+
   const toggleCommentLike = async (commentId: number) => {
     if (!user) return
     try {
-      const res = await api.post("/api/user/comments/ToggleLikeComments", {
-        commentId
-      })
-
-      if (res && res.ok) {
-        const data = await res.json() 
-        setComments(prev => prev.map(comment => {
-          if (comment.commentId === commentId) {
-            return {
-              ...comment,
-              likeCount: comment.isLikedByCurrentUser 
-                ? comment.likeCount - 1 
-                : comment.likeCount + 1,
-              isLikedByCurrentUser: !comment.isLikedByCurrentUser
-            }
-          }
-          return comment
-        }))
+      const response = await toggleCommentLikeApi(api, commentId)
+      if (response.data) {
+        setComments(prev =>
+          prev.map(comment =>
+            comment.commentId === commentId
+              ? {
+                  ...comment,
+                  likeCount: response.data!.likeCount,
+                  isLikedByCurrentUser: response.data!.isLiked
+                }
+              : comment
+          )
+        )
       } else {
-        console.error("Failed to toggle comment like")
+        console.error('Failed to toggle comment like:', response.error)
       }
     } catch (err) {
-      console.error("Error toggling comment like:", err)
+      console.error('Error toggling comment like:', err)
     }
   }
+
   const deleteComment = async (commentId: number) => {
     if (!user) return
     try {
-      const res = await api.delete("/api/user/comments/deleteComment", {
-        body: JSON.stringify({ commentId })
-      })
-
-      if (res && res.ok) {
+      const response = await deleteCommentApi(api, commentId)
+      if (response.data) {
         setComments(prev => prev.filter(c => c.commentId !== commentId))
         setLocalCommentCount(prev => prev - 1)
       } else {
-        console.error("Failed to delete comment")
+        console.error('Failed to delete comment:', response.error)
       }
     } catch (err) {
-      console.error("Error deleting comment:", err)
+      console.error('Error deleting comment:', err)
     }
   }
 
   useEffect(() => {
-  const fetchCommentCount = async () => {
-    try {
-      const res = await api.get(`/api/user/comments/GetCommentCount?postId=${id}`);
-      if (res && res.ok) {
-        const data = await res.json();
-        setLocalCommentCount(data);
+    const fetchCommentCount = async () => {
+      try {
+        const response = await fetchCommentCountApi(api, id)
+        if (response.data !== undefined) {
+          setLocalCommentCount(response.data)
+        }
+      } catch (err) {
+        console.error('Error fetching comment count:', err)
       }
-    } catch (err) {
-      console.error("Error fetching comment count:", err);
     }
-  };
 
-  if (user) {
-    fetchCommentCount();
-  }
-}, [api, id, user]);
+    if (user) {
+      fetchCommentCount()
+    }
+  }, [api, id, user])
 
   useEffect(() => {
     if (isCommentsVisible && comments.length === 0) {
@@ -205,37 +200,34 @@ export default function PostCard({
 
   const getOptimizedMediaUrl = (url: string, type: 'image' | 'video') => {
     if (!url.includes('cloudinary.com')) return url
-    
+
     if (type === 'image') {
       return url.replace('/upload/', '/upload/q_auto,f_auto,w_800,c_limit/')
     } else if (type === 'video') {
       return url.replace('/upload/', '/upload/q_auto,w_800,c_limit/')
     }
-    
+
     return url
   }
 
   const handleLikeToggle = async () => {
     if (isLikeLoading || !user) return
     setIsLikeLoading(true)
+
     const newIsLiked = !isLiked
     const newLikes = newIsLiked ? likes + 1 : likes - 1
     setIsLiked(newIsLiked)
     setLikes(newLikes)
+
     try {
-      const endpoint = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/Posts/${id}/like`
-      const response = newIsLiked 
-        ? await api.post(endpoint, {})
-        : await api.delete(endpoint)
-      if (!response || !response.ok) {
+      const response = await togglePostLike(api, id, isLiked)
+      if (response.data) {
+        setLikes(response.data.likeCount)
+        setIsLiked(response.data.isLiked)
+      } else {
         setIsLiked(!newIsLiked)
         setLikes(newIsLiked ? likes : likes + 1)
-        throw new Error('Failed to update like status')
-      }
-      const data = await response.json().catch(() => null)
-      if (data) {
-        setLikes(data.likeCount || newLikes)
-        setIsLiked(data.isLiked !== undefined ? data.isLiked : newIsLiked)
+        console.error('Failed to update like:', response.error)
       }
     } catch (error) {
       console.error('Error toggling like:', error)
@@ -245,16 +237,6 @@ export default function PostCard({
       setIsLikeLoading(false)
     }
   }
-
-  useEffect(() => {
-    console.log('PostCard Props Debug:', {
-      id,
-      author,
-      authorName,
-      authorId,
-      profileImageUrl
-    });
-  }, [id, author, authorName, authorId, profileImageUrl]);
 
   useEffect(() => {
     const videoElement = videoRef.current
@@ -276,7 +258,7 @@ export default function PostCard({
         })
       },
       {
-        threshold: 0.5 
+        threshold: 0.5
       }
     )
     observer.observe(videoElement)
