@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 using Memzy_finalist.Models.Entities;
 using Memzy_finalist.Models;
 
@@ -12,13 +11,11 @@ namespace MyApiProject.Controllers
     {
         private readonly IAuthenticationService _authService;
         private readonly IFeedService _feedService;
-        private readonly MemzyContext _context;
 
-        public PostsController(IFeedService feedService, IAuthenticationService authService, MemzyContext context)
+        public PostsController(IFeedService feedService, IAuthenticationService authService)
         {
             _authService = authService;
             _feedService = feedService;
-            _context = context;
         }
 
         [HttpPost("GetFirst6BasedOnUser")]
@@ -56,34 +53,23 @@ namespace MyApiProject.Controllers
             try
             {
                 var userId = await _authService.GetAuthenticatedUserId();
-                var post = await _context.Posts.FindAsync(postId);
-                if (post == null)
-                {
-                    return NotFound(new { message = "Post not found" });
-                }
-                var existingLike = await _context.Set<PostLike>()
-                    .FirstOrDefaultAsync(pl => pl.PostId == postId && pl.UserId == userId);
+                var result = await _feedService.LikePostAsync(postId, userId);
 
-                if (existingLike != null)
+                if (!result.Success)
                 {
-                    return BadRequest(new { message = "Post already liked" });
+                    if (result.Message == "Post not found")
+                        return NotFound(new { message = result.Message });
+                    
+                    return BadRequest(new { message = result.Message });
                 }
-                var like = new PostLike
-                {
-                    PostId = postId,
-                    UserId = userId
-                };
-                _context.Set<PostLike>().Add(like);
-                await _context.SaveChangesAsync();
-                var likeCount = await _context.Set<PostLike>()
-                    .CountAsync(pl => pl.PostId == postId);
+
                 return Ok(new { 
-                    message = "Post liked successfully", 
-                    likeCount = likeCount,
-                    isLiked = true 
+                    message = result.Message, 
+                    likeCount = result.LikeCount,
+                    isLiked = result.IsLiked 
                 });
             }
-            catch (Exception )
+            catch (Exception)
             {
                 return StatusCode(500, new { message = "An error occurred while liking the post" });
             }
@@ -96,27 +82,20 @@ namespace MyApiProject.Controllers
             try
             {
                 var userId = await _authService.GetAuthenticatedUserId();
+                var result = await _feedService.UnlikePostAsync(postId, userId);
 
-                var post = await _context.Posts.FindAsync(postId);
-                if (post == null)
+                if (!result.Success)
                 {
-                    return NotFound(new { message = "Post not found" });
+                    if (result.Message == "Post not found")
+                        return NotFound(new { message = result.Message });
+                    
+                    return BadRequest(new { message = result.Message });
                 }
-                var existingLike = await _context.Set<PostLike>()
-                    .FirstOrDefaultAsync(pl => pl.PostId == postId && pl.UserId == userId);
 
-                if (existingLike == null)
-                {
-                    return BadRequest(new { message = "Post not liked by user" });
-                }
-                _context.Set<PostLike>().Remove(existingLike);
-                await _context.SaveChangesAsync();
-                var likeCount = await _context.Set<PostLike>()
-                    .CountAsync(pl => pl.PostId == postId);
                 return Ok(new { 
-                    message = "Post unliked successfully", 
-                    likeCount = likeCount,
-                    isLiked = false 
+                    message = result.Message, 
+                    likeCount = result.LikeCount,
+                    isLiked = result.IsLiked 
                 });
             }
             catch (Exception)
@@ -124,51 +103,23 @@ namespace MyApiProject.Controllers
                 return StatusCode(500, new { message = "An error occurred while unliking the post" });
             }
         }
+
         [HttpGet("GetUserPosts/{userId}")]
-[Authorize]
-public async Task<IActionResult> GetUserPosts(int userId)
-{
-    try
-    {
-        var currentUserId = await _authService.GetAuthenticatedUserId();
-        
-        var posts = await _context.Posts
-            .Where(p => p.UserId == userId && p.IsApproved)
-            .Include(p => p.PostHumors)
-            .ThenInclude(ph => ph.HumorType)
-            .Include(p => p.User)
-            .Include(p => p.Likes)
-            .OrderByDescending(p => p.CreatedAt)
-            .AsNoTracking()
-            .ToListAsync();
-
-        var dtos = posts.Select(p => new PostDto
+        [Authorize]
+        public async Task<IActionResult> GetUserPosts(int userId)
         {
-            PostId = p.PostId,
-            MediaType = p.MediaType,
-            Description = p.Description,
-            FilePath = p.FilePath,
-            CreatedAt = p.CreatedAt,
-            LikeCounter = p.Likes.Count,
-            IsApproved = p.IsApproved,
-            HumorTypeIds = p.PostHumors.Select(ph => ph.HumorTypeId).ToList(),
-            HumorTypes = p.PostHumors.Select(ph => new HumorTypeDto 
-            { 
-                HumorTypeId = ph.HumorTypeId, 
-                HumorTypeName = ph.HumorType.HumorTypeName 
-            }).ToList(),
-            UserName = p.User?.UserName ?? p.User?.Name ?? "Anonymous",
-            IsLiked = p.Likes.Any(l => l.UserId == currentUserId),
-            ProfileImageUrl = p.User?.ProfilePictureUrl
-        }).ToList();
+            try
+            {
+                var currentUserId = await _authService.GetAuthenticatedUserId();
+                var dtos = await _feedService.GetUserPostsAsync(userId, currentUserId);
+                return Ok(dtos);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching user posts" });
+            }
+        }
 
-        return Ok(dtos);
-    }
-    catch (Exception )
-    {
-        return StatusCode(500, new { message = "An error occurred while fetching user posts" });
-    }
-}
         [HttpGet("{postId}/like-status")]
         [Authorize]
         public async Task<IActionResult> GetLikeStatus(int postId)
@@ -176,19 +127,10 @@ public async Task<IActionResult> GetUserPosts(int userId)
             try
             {
                 var userId = await _authService.GetAuthenticatedUserId();
-                
-                var isLiked = await _context.Set<PostLike>()
-                    .AnyAsync(pl => pl.PostId == postId && pl.UserId == userId);
-
-                var likeCount = await _context.Set<PostLike>()
-                    .CountAsync(pl => pl.PostId == postId);
-
-                return Ok(new { 
-                    isLiked = isLiked, 
-                    likeCount = likeCount 
-                });
+                var result = await _feedService.GetLikeStatusAsync(postId, userId);
+                return Ok(result);
             }
-            catch (Exception )
+            catch (Exception)
             {
                 return StatusCode(500, new { message = "An error occurred while getting like status" });
             }
