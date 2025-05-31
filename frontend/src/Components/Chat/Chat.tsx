@@ -2,53 +2,36 @@
 
 import { useAuth } from '@/Context/AuthContext'
 import { useEffect, useReducer, useRef, useState } from 'react'
-import axios from 'axios'
-import * as signalR from '@microsoft/signalr'
 import { FixedSizeList as List } from 'react-window'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { useMediaQuery } from 'react-responsive'
-
-interface Message {
-  messageId: number
-  content: string
-  timestamp: string
-  senderId: number
-  receiverId: number
-  formattedTime?: string
-}
+import {
+  fetchMessages,
+  deleteMessage
+} from '@/lib/api/messaging/client'
+import {
+  createConnection,
+  startConnection,
+  setupMessageHandler,
+  sendMessageViaSignalR
+} from '@/lib/api/messaging/signalR'
+import {
+  Message,
+  PendingMessage,
+  ExtendedMessage,
+  messageReducer,
+  formatTime
+} from '@/lib/api/messaging/type'
 
 interface Props {
   contactId: number
   contactName?: string
 }
 
-type MessageAction = 
-  | { type: 'add'; payload: Message[] }
-  | { type: 'prepend'; payload: Message[] }
-  | { type: 'set'; payload: Message[] }
-  | { type: 'remove'; payload: number }
-
-const messageReducer = (state: Message[], action: MessageAction): Message[] => {
-  switch (action.type) {
-    case 'remove':
-      return state.filter(msg => msg.messageId !== action.payload)
-    case 'add':
-      return [...state, ...action.payload]
-    case 'prepend':
-      return [...action.payload, ...state]
-    case 'set':  
-      return action.payload
-    default:
-      return state
-  }
-}
-
-const formatTime = (timestamp: string) =>
-  new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-
 const Chat = ({ contactId }: Props) => {
   const { user, token } = useAuth()
   const [messages, dispatch] = useReducer(messageReducer, [])
+  const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [isConnected, setIsConnected] = useState(false)
   const connectionRef = useRef<signalR.HubConnection | null>(null)
@@ -58,35 +41,37 @@ const Chat = ({ contactId }: Props) => {
   const listRef = useRef<List>(null)
   const isMobile = useMediaQuery({ maxWidth: 768 })
 
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL ?? 'http://localhost:5001'
+  const loadMessages = async (pageNum = 1) => {
+    if (!token) return
 
-  const fetchMessages = async (pageNum: number = 1) => {
     try {
-      const res = await axios.get(`${backendUrl}/api/Messaging/GetMessages`, {
-        params: { contactId, page: pageNum, pageSize: 50 },
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const { messages: fetchedMessages, hasMore: moreMessages } = await fetchMessages(
+        token,
+        contactId,
+        pageNum,
+        50
+      )
 
-      const fetchedMessages = res.data.messages
-      const formatted = fetchedMessages.map((msg: Message) => ({
+      const formatted = fetchedMessages.map((msg) => ({
         ...msg,
         formattedTime: formatTime(msg.timestamp)
       }))
-      
+
       if (pageNum === 1) {
         dispatch({ type: 'set', payload: formatted })
       } else {
         dispatch({ type: 'prepend', payload: formatted })
       }
-      
-      setHasMore(fetchedMessages.length === 50)
-      if (pageNum === 1 && listRef.current && formatted.length > 0) {
+
+      setHasMore(moreMessages)
+
+      if (pageNum === 1 && formatted.length > 0) {
         setTimeout(() => {
           listRef.current?.scrollToItem(formatted.length - 1, 'end')
         }, 0)
       }
     } catch (err) {
-      console.error('Error fetching messages:', err)
+      console.error('Error loading messages:', err)
     }
   }
 
@@ -94,18 +79,21 @@ const Chat = ({ contactId }: Props) => {
     if (!hasMore) return
     const nextPage = page + 1
     setPage(nextPage)
-    fetchMessages(nextPage)
+    loadMessages(nextPage)
   }
 
-  const deleteMessage = async (messageId: number) => {
+  const handleDeleteMessage = async (messageId: number) => {
+    if (!token || !user) return
+
     try {
-      await axios.delete(`${backendUrl}/api/Messaging/DeleteMessage`, {
-        params: { messageId },
-        headers: { Authorization: `Bearer ${token}` }
-      })
       dispatch({ type: 'remove', payload: messageId })
+      await deleteMessage(token, messageId)
     } catch (err) {
       console.error('Error deleting message:', err)
+      const messageToRestore = messages.find((m) => m.messageId === messageId)
+      if (messageToRestore) {
+        dispatch({ type: 'add', payload: [messageToRestore] })
+      }
     }
   }
 
@@ -113,27 +101,31 @@ const Chat = ({ contactId }: Props) => {
     if (isSending || !newMessage.trim() || !connectionRef.current || !user) return
 
     setIsSending(true)
+    const tempId = `temp_${Date.now()}_${Math.random()}`
+    const now = new Date().toISOString()
+
+    const pendingMessage: PendingMessage = {
+      messageId: -1,
+      content: newMessage,
+      timestamp: now,
+      formattedTime: formatTime(now),
+      senderId: user.userId,
+      receiverId: contactId,
+      isPending: true,
+      tempId
+    }
+
+    console.log('Adding pending message:', pendingMessage);
+    setPendingMessages((prev) => [...prev, pendingMessage])
+    const messageContent = newMessage
+    setNewMessage('')
+
     try {
-      await connectionRef.current.invoke('SendMessage', contactId, newMessage)
-      dispatch({
-        type: 'add',
-        payload: [{
-          messageId: Date.now(),
-          content: newMessage,
-          timestamp: new Date().toISOString(),
-          formattedTime: formatTime(new Date().toISOString()),
-          senderId: user.userId,
-          receiverId: contactId
-        }]
-      })
-      setNewMessage('')
-      setTimeout(() => {
-        if (listRef.current && messages.length > 0) {
-          listRef.current.scrollToItem(messages.length, 'end')
-        }
-      }, 0)
+      await sendMessageViaSignalR(connectionRef.current, contactId, messageContent, tempId)
+      console.log('Message sent successfully via SignalR');
     } catch (err) {
-      console.error('Error sending message via SignalR:', err)
+      console.error('Failed to send:', err)
+      setPendingMessages((prev) => prev.filter((m) => m.tempId !== tempId))
     } finally {
       setIsSending(false)
     }
@@ -142,67 +134,102 @@ const Chat = ({ contactId }: Props) => {
   useEffect(() => {
     if (!token || !user) return
     dispatch({ type: 'set', payload: [] })
+    setPendingMessages([])
     setPage(1)
     setHasMore(true)
 
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${backendUrl}/hub/chat`, {
-        accessTokenFactory: () => token
-      })
-      .withAutomaticReconnect()
-      .build()
+    const connection = createConnection(token)
 
-    const handleReceiveMessage = (message: Message) => {
-      if (
+    const handleReceiveMessage = (message: Message & { tempId?: string }) => {
+      const isRelevant =
         (message.senderId === contactId && message.receiverId === user.userId) ||
         (message.senderId === user.userId && message.receiverId === contactId)
-      ) {
-        dispatch({
-          type: 'add',
-          payload: [{
-            ...message,
-            formattedTime: formatTime(message.timestamp)
-          }]
-        })
-        setTimeout(() => {
-          if (listRef.current && messages.length > 0) {
-            listRef.current.scrollToItem(messages.length, 'end')
-          }
-        }, 0)
+
+      if (!isRelevant) {
+        console.log('❌ Message not relevant, ignoring');
+        return;
       }
+
+      if (message.senderId === user.userId) {
+        console.log('🔄 This is our own message, removing from pending');
+        setPendingMessages((prev) => {
+          console.log('📝 Current pending messages before filtering:', prev);
+          
+          if (message.tempId) {
+            const filtered = prev.filter((p) => p.tempId !== message.tempId);
+            console.log('✅ Filtered by tempId:', filtered);
+            return filtered;
+          } else {
+            const filtered = prev.filter(
+              (p) => {
+                const contentMatch = p.content.trim() === message.content.trim();
+                const receiverMatch = p.receiverId === message.receiverId;
+                const shouldRemove = contentMatch && receiverMatch;
+                
+                console.log(`🔍 Checking pending message:`, {
+                  pendingContent: p.content.trim(),
+                  receivedContent: message.content.trim(),
+                  pendingReceiverId: p.receiverId,
+                  messageReceiverId: message.receiverId,
+                  contentMatch,
+                  receiverMatch,
+                  shouldRemove
+                });
+                
+                return !shouldRemove;
+              }
+            );
+            return filtered;
+          }
+        })
+      } else {
+        console.log('📨 This is a message from contact, not removing pending');
+      }
+
+      dispatch({
+        type: 'add',
+        payload: [{
+          ...message,
+          formattedTime: formatTime(message.timestamp)
+        }]
+      })
+
+      setTimeout(() => {
+        const total = messages.length + pendingMessages.length + 1
+        if (listRef.current && total > 0) {
+          listRef.current.scrollToItem(total - 1, 'end')
+        }
+      }, 0)
     }
 
-    connection.on('ReceiveMessage', handleReceiveMessage)
+    const cleanup = setupMessageHandler(connection, handleReceiveMessage)
+
     connection.onreconnected(() => setIsConnected(true))
     connection.onclose(() => setIsConnected(false))
 
-    connection
-      .start()
-      .then(() => {
-        setIsConnected(true)
-        fetchMessages(1)
-      })
-      .catch(err => {
-        console.error('SignalR connection error:', err)
-        setIsConnected(false)
-      })
+    startConnection(connection).then(success => {
+      setIsConnected(success)
+      if (success) loadMessages(1)
+    })
 
     connectionRef.current = connection
 
     return () => {
-      connection.off('ReceiveMessage', handleReceiveMessage)
+      cleanup()
       connection.stop()
     }
   }, [contactId, token, user])
 
   const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
-    const msg = messages[index]
+    const allMessages: ExtendedMessage[] = [...messages, ...pendingMessages]
+    const msg = allMessages[index]
     const isOwn = msg.senderId === user?.userId
+    const isPending = 'isPending' in msg && msg.isPending
     const [showDelete, setShowDelete] = useState(false)
     const touchTimerRef = useRef<NodeJS.Timeout | null>(null)
 
     const handleTouchStart = () => {
-      if (!isOwn) return
+      if (!isOwn || isPending) return
       touchTimerRef.current = setTimeout(() => {
         setShowDelete(true)
       }, 500)
@@ -215,57 +242,44 @@ const Chat = ({ contactId }: Props) => {
     }
 
     const handleDelete = async () => {
-      await deleteMessage(msg.messageId)
+      if (isPending) return
+      await handleDeleteMessage(msg.messageId)
       setShowDelete(false)
     }
 
     return (
-      <div 
-        style={style} 
+      <div
+        style={style}
         className={`flex ${isOwn ? 'justify-end' : 'justify-start'} relative group`}
-        onMouseEnter={() => isOwn && setShowDelete(true)}
+        onMouseEnter={() => isOwn && !isPending && setShowDelete(true)}
         onMouseLeave={() => isOwn && setShowDelete(false)}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div 
+        <div
           className={`max-w-[70%] rounded-2xl px-4 py-3 shadow-md backdrop-blur-sm relative ${
             isOwn
-              ? 'bg-accent/90 text-white ml-auto shadow-glow'
+              ? `bg-accent/90 text-white ml-auto shadow-glow ${isPending ? 'opacity-70' : ''}`
               : 'bg-glass/20 text-light border border-glass/30'
           }`}
         >
-          {isOwn && showDelete && (
-  <button
-    onClick={handleDelete}
-    className={`absolute top-1 right-1 z-10 flex items-center gap-1 text-xs rounded-full shadow-lg
-      ${isMobile 
-        ? 'bg-red-600 hover:bg-red-700 text-white px-3 py-1' 
-        : 'bg-transparent hover:bg-red-600 text-red-400 hover:text-white p-1'
-      } 
-      transition-all duration-150`}
-    aria-label="Delete message"
-    title="Delete message"
-  >
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-      />
-    </svg>
-    {isMobile && <span>Delete</span>}
-  </button>
-)}
+          {isOwn && showDelete && !isPending && (
+            <button
+              onClick={handleDelete}
+              className={`absolute top-1 right-1 z-10 text-xs rounded-full transition-all duration-150 ${
+                isMobile
+                  ? 'bg-red-600 hover:bg-red-700 text-white px-3 py-1'
+                  : 'bg-transparent hover:bg-red-600 text-red-400 hover:text-white p-1'
+              }`}
+            >
+              🗑️ {isMobile && <span>Delete</span>}
+            </button>
+          )}
 
-          
-          <div className="whitespace-pre-wrap break-words">{msg.content}</div>
+          <div className="whitespace-pre-wrap break-words">
+            {msg.content}
+            {isPending && <span className="text-xs opacity-60 ml-2">Sending...</span>}
+          </div>
           <div className={`text-xs mt-2 ${isOwn ? 'text-white/70 text-right' : 'text-light/50 text-left'}`}>
             {msg.formattedTime}
           </div>
@@ -283,14 +297,12 @@ const Chat = ({ contactId }: Props) => {
               {({ height, width }) => (
                 <List
                   height={height}
-                  itemCount={messages.length}
+                  itemCount={messages.length + pendingMessages.length}
                   itemSize={100}
                   width={width}
                   ref={listRef}
                   onScroll={({ scrollOffset }) => {
-                    if (scrollOffset < 100 && hasMore) {
-                      loadMoreMessages()
-                    }
+                    if (scrollOffset < 100 && hasMore) loadMoreMessages()
                   }}
                 >
                   {Row}

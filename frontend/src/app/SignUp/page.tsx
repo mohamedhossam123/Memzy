@@ -33,8 +33,6 @@ export default function SignupPage() {
     e.preventDefault()
     setError('')
     setSuccess('')
-    
-    // Validate inputs
     if (!name.trim() || !email || !userName || !password || !confirmPassword) {
       setError('All fields are required')
       return

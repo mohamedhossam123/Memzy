@@ -35,7 +35,7 @@ namespace MyApiProject.Controllers
 
         [HttpDelete("DeleteMessage")]
         [Authorize]
-        public async Task<IActionResult> DeleteMessage([FromQuery] int messageId)
+        public async Task<IActionResult> DeleteMessage([FromQuery] long messageId)
         {
             try
             {

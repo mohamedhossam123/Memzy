@@ -210,9 +210,6 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
     }
   }
 
-  // ... rest of the component remains the same (renderFriendshipButtons, getProfileImageUrl, etc) ...
-
-
   const renderFriendshipButtons = () => {
     if (!userData) return null;
     if (userData.isFriend) {

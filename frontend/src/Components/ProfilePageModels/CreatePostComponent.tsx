@@ -47,7 +47,6 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
 
       onSuccess?.()
 
-      // Auto-close the tab after 1.5 seconds
       setTimeout(() => window.close(), 1500)
     } catch (err) {
       console.error('Post creation failed:', err)

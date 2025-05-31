@@ -57,7 +57,7 @@ namespace MyApiProject.Services
         .ToListAsync();
 }
 
-        public async Task<bool> DeleteMessageAsync(int messageId, int userId)
+        public async Task<bool> DeleteMessageAsync(long messageId, int userId)
         {
             var message = await _context.Messages.FirstOrDefaultAsync(m => m.MessageId == messageId && m.SenderId == userId);
             if (message == null) return false;

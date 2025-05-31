@@ -1,4 +1,3 @@
-// static profile page
 'use client'
 
 import { useAuth } from '@/Context/AuthContext'
@@ -18,6 +17,7 @@ import { APIClient, FullUser, FriendRequestDTO, Friend } from '@/lib/api'
 
 export default function UserProfile() {
   const { user, token } = useAuth()
+  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -45,13 +45,18 @@ export default function UserProfile() {
     setProfileImageError(false)
   }, [userData?.profilePic])
   
+  // Main initialization effect
   useEffect(() => {
     if (!user) {
       router.push('/login')
-    } else {
+      return
+    }
+    
+    // If we have apiClient, start the initial load
+    if (apiClient) {
       fetchUserDetails()
     }
-  }, [user, router])
+  }, [user, router, apiClient])
 
   useEffect(() => {
     if (activeModal === 'posts' && apiClient) {
@@ -114,21 +119,23 @@ export default function UserProfile() {
 
   const fetchUserDetails = async () => {
     if (!apiClient) {
-      setIsLoading(false)
       return
     }
 
     try {
+      setIsLoading(true)
       setFetchError(null)
+      
       const [userResponse, countResponse] = await Promise.all([
         apiClient.user.getCurrentUser(),
         apiClient.user.getFriendPostCount()
       ])
       
+      console.log('User Response:', userResponse);
       const mappedUserData: FullUser = {
         profilePic: userResponse.profilePictureUrl,
         name: userResponse.name,
-        bio: userResponse.bio || userResponse.Bio || '',
+        bio: userResponse.user?.bio || userResponse.bio || userResponse.Bio || '', 
         friendCount: countResponse.friendCount || countResponse.FriendCount || 0,
         postCount: countResponse.postCount || countResponse.PostCount || 0,
         humorTypes: [],
@@ -142,6 +149,7 @@ export default function UserProfile() {
       setFetchError(err instanceof Error ? err.message : 'Unknown error occurred')
     } finally {
       setIsLoading(false)
+      setIsInitialLoadComplete(true) 
     }
   }
 
@@ -293,26 +301,33 @@ export default function UserProfile() {
     return url.startsWith('http') ? url : `https://${url}`
   }
 
-  if (isLoading) return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-    </div>
-  )
+  if (!isInitialLoadComplete && isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
 
-  if (fetchError) return (
-    <div className="flex flex-col items-center justify-center h-screen text-center">
-      <div className="text-red-500 mb-4">Error loading profile data:</div>
-      <div className="text-red-400 mb-4">{fetchError}</div>
-      <button 
-        onClick={() => fetchUserDetails()} 
-        className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded"
-      >
-        Retry
-      </button>
-    </div>
-  )
+  if (fetchError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen text-center">
+        <div className="text-red-500 mb-4">Error loading profile data:</div>
+        <div className="text-red-400 mb-4">{fetchError}</div>
+        <button 
+          onClick={() => {
+            setFetchError(null);
+            fetchUserDetails();
+          }} 
+          className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
-  if (!user) return null
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-darker to-primary-dark text-light">
@@ -469,14 +484,14 @@ export default function UserProfile() {
 
         {/* Modals */}
         {activeModal === 'humor' && (
-  <HumorModal
-    isOpen
-    humorTypes={availableHumorTypes}
-    onClose={() => setActiveModal(null)}
-    initialHumorTypes={userData?.humorTypes || []}
-    onConfirm={handleHumorUpdate}
-  />
-)}
+          <HumorModal
+            isOpen
+            humorTypes={availableHumorTypes}
+            onClose={() => setActiveModal(null)}
+            initialHumorTypes={userData?.humorTypes || []}
+            onConfirm={handleHumorUpdate}
+          />
+        )}
 
         <ProfilePictureModal
           isOpen={activeModal === 'profilePic'}
@@ -493,11 +508,11 @@ export default function UserProfile() {
         />
 
         <BioModal
-  isOpen={activeModal === 'bio'}
-  onClose={() => setActiveModal(null)}
-  bio={userData?.bio || user?.bio || ''}
-  onSave={handleBioUpdate}
-/>
+          isOpen={activeModal === 'bio'}
+          onClose={() => setActiveModal(null)}
+          bio={userData?.bio || user?.bio || ''}
+          onSave={handleBioUpdate}
+        />
 
         <PasswordModal
           isOpen={activeModal === 'password'}
@@ -507,13 +522,13 @@ export default function UserProfile() {
         />
         
         <PostsModal
-  isOpen={activeModal === 'posts'}
-  onClose={() => setActiveModal(null)}
-  pendingPosts={pendingPosts}
-  approvedPosts={approvedPosts}
-  onApprove={undefined}
-  onReject={undefined}
-/>
+          isOpen={activeModal === 'posts'}
+          onClose={() => setActiveModal(null)}
+          pendingPosts={pendingPosts}
+          approvedPosts={approvedPosts}
+          onApprove={undefined}
+          onReject={undefined}
+        />
 
         {/* Create Post Modal */}
         <Transition appear show={activeModal === 'createPost'} as={Fragment}>
@@ -569,102 +584,102 @@ export default function UserProfile() {
 
         {/* Friends Modal */}
         <Transition appear show={activeModal === 'friends'} as={Fragment}>
-  <Dialog as="div" className="relative z-10" onClose={() => setActiveModal(null)}>
-    <Transition.Child
-      as={Fragment}
-      enter="ease-out duration-300"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="ease-in duration-200"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
-    >
-      <div className="fixed inset-0 bg-black bg-opacity-25" />
-    </Transition.Child>
+          <Dialog as="div" className="relative z-10" onClose={() => setActiveModal(null)}>
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-black bg-opacity-25" />
+            </Transition.Child>
 
-    <div className="fixed inset-0 overflow-y-auto">
-      <div className="flex min-h-full items-center justify-center p-4 text-center">
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0 scale-95"
-          enterTo="opacity-100 scale-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100 scale-100"
-          leaveTo="opacity-0 scale-95"
-        >
-          <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-dark p-6 text-left align-middle shadow-xl transition-all">
-            <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-light mb-4">
-              {activeFriendsTab === 'friends' ? 'Your Friends' : 'Friend Requests'}
-            </Dialog.Title>
+            <div className="fixed inset-0 overflow-y-auto">
+              <div className="flex min-h-full items-center justify-center p-4 text-center">
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0 scale-95"
+                  enterTo="opacity-100 scale-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100 scale-100"
+                  leaveTo="opacity-0 scale-95"
+                >
+                  <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-dark p-6 text-left align-middle shadow-xl transition-all">
+                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-light mb-4">
+                      {activeFriendsTab === 'friends' ? 'Your Friends' : 'Friend Requests'}
+                    </Dialog.Title>
 
-            <div className="flex space-x-4 mb-4">
-              <button
-                onClick={() => setActiveFriendsTab('friends')}
-                className={`px-4 py-2 rounded ${activeFriendsTab === 'friends' ? 'bg-primary' : 'bg-gray-700'}`}
-              >
-                Friends
-              </button>
-              <button
-                onClick={() => setActiveFriendsTab('requests')}
-                className={`px-4 py-2 rounded ${activeFriendsTab === 'requests' ? 'bg-primary' : 'bg-gray-700'}`}
-              >
-                Requests
-              </button>
-            </div>
-
-            {activeFriendsTab === 'friends' ? (
-              <ul className="space-y-2">
-                {friendsList.length === 0 ? (
-                  <p className="text-sm text-gray-400">You have no friends yet.</p>
-                ) : (
-                  friendsList.map(friend => (
-                    <li key={friend.id} className="flex justify-between items-center">
-                      <div className="flex items-center space-x-3">
-                        <img src={getSearchResultImageUrl(friend.profilePictureUrl)} className="w-8 h-8 rounded-full" />
-                        <span>{friend.name}</span>
-                      </div>
+                    <div className="flex space-x-4 mb-4">
                       <button
-                        onClick={() => handleRemoveFriend(friend.id)}
-                        className="text-red-400 hover:text-red-600 text-sm"
+                        onClick={() => setActiveFriendsTab('friends')}
+                        className={`px-4 py-2 rounded ${activeFriendsTab === 'friends' ? 'bg-primary' : 'bg-gray-700'}`}
                       >
-                        Remove
+                        Friends
                       </button>
-                    </li>
-                  ))
-                )}
-              </ul>
-            ) : (
-              <ul className="space-y-2">
-          {friendRequests.map((req) => (
-          <div key={req.requestId} className="flex items-center justify-between p-2 border-b">
-            <div className="flex items-center space-x-2">
-              <img
-                src={getSearchResultImageUrl(req.senderProfileImageUrl)}
-                alt={req.senderUserName}
-                className="w-10 h-10 rounded-full"
-              />
-              <div>
-                <div className="font-semibold">{req.senderName}</div>
-                <div className="text-sm text-gray-500">@{req.senderUserName}</div>
-                <div className="text-xs text-gray-400">{new Date(req.createdAt).toLocaleString()}</div>
-                {req.message && <div className="text-sm italic mt-1">"{req.message}"</div>}
+                      <button
+                        onClick={() => setActiveFriendsTab('requests')}
+                        className={`px-4 py-2 rounded ${activeFriendsTab === 'requests' ? 'bg-primary' : 'bg-gray-700'}`}
+                      >
+                        Requests
+                      </button>
+                    </div>
+
+                    {activeFriendsTab === 'friends' ? (
+                      <ul className="space-y-2">
+                        {friendsList.length === 0 ? (
+                          <p className="text-sm text-gray-400">You have no friends yet.</p>
+                        ) : (
+                          friendsList.map(friend => (
+                            <li key={friend.id} className="flex justify-between items-center">
+                              <div className="flex items-center space-x-3">
+                                <img src={getSearchResultImageUrl(friend.profilePictureUrl)} className="w-8 h-8 rounded-full" />
+                                <span>{friend.name}</span>
+                              </div>
+                              <button
+                                onClick={() => handleRemoveFriend(friend.id)}
+                                className="text-red-400 hover:text-red-600 text-sm"
+                              >
+                                Remove
+                              </button>
+                            </li>
+                          ))
+                        )}
+                      </ul>
+                    ) : (
+                      <ul className="space-y-2">
+                        {friendRequests.map((req) => (
+                          <div key={req.requestId} className="flex items-center justify-between p-2 border-b">
+                            <div className="flex items-center space-x-2">
+                              <img
+                                src={getSearchResultImageUrl(req.senderProfileImageUrl)}
+                                alt={req.senderUserName}
+                                className="w-10 h-10 rounded-full"
+                              />
+                              <div>
+                                <div className="font-semibold">{req.senderName}</div>
+                                <div className="text-sm text-gray-500">@{req.senderUserName}</div>
+                                <div className="text-xs text-gray-400">{new Date(req.createdAt).toLocaleString()}</div>
+                                {req.message && <div className="text-sm italic mt-1">"{req.message}"</div>}
+                              </div>
+                            </div>
+                            <div className="flex space-x-2">
+                              <button onClick={() => handleAcceptRequest(req.requestId)} className="bg-green-500 text-white px-2 py-1 rounded">Accept</button>
+                              <button onClick={() => handleRejectRequest(req.requestId)} className="bg-red-500 text-white px-2 py-1 rounded">Reject</button>
+                            </div>
+                          </div>
+                        ))}
+                      </ul>
+                    )}
+                  </Dialog.Panel>
+                </Transition.Child>
               </div>
             </div>
-            <div className="flex space-x-2">
-              <button onClick={() => handleAcceptRequest(req.requestId)} className="bg-green-500 text-white px-2 py-1 rounded">Accept</button>
-              <button onClick={() => handleRejectRequest(req.requestId)} className="bg-red-500 text-white px-2 py-1 rounded">Reject</button>
-            </div>
-            </div>
-            ))}
-              </ul>
-            )}
-          </Dialog.Panel>
-        </Transition.Child>
-      </div>
-    </div>
-  </Dialog>
-</Transition>
+          </Dialog>
+        </Transition>
 
       </div>
     </div>
