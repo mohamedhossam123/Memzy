@@ -1,6 +1,7 @@
 using Memzy_finalist.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyApiProject.Controllers
 {
@@ -11,11 +12,13 @@ namespace MyApiProject.Controllers
     {
         private readonly IAuthenticationService _auth;
         private readonly ICommentService _commentservice;
+        private readonly MemzyContext _context;
 
-        public CommentConrtoller(IAuthenticationService authService, ICommentService commentservice)
+        public CommentConrtoller(IAuthenticationService authService, ICommentService commentservice, MemzyContext context)
         {
             _auth = authService;
             _commentservice = commentservice;
+            _context = context;
         }
 
         [HttpPost("addComment")]
@@ -38,6 +41,13 @@ namespace MyApiProject.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
+        [HttpGet("GetCommentCount")]
+        public async Task<IActionResult> GetCommentCount(int postId)
+        {
+            var count = await _context.Comments.CountAsync(c => c.PostId == postId);
+            return Ok(count);
+        }
+
         [HttpPost("ToggleLikeComments")]
         public async Task<IActionResult> ToggleCommentLike(LikeCommentDto dto)
         {
