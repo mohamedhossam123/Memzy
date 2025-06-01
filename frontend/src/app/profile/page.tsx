@@ -285,21 +285,16 @@ export default function UserProfile() {
     }
   }
 
-  const getProfileImageUrl = (profilePic?: string) => {
-    const imageUrl = profilePic || user?.profilePictureUrl
-    
-    if (profileImageError || !imageUrl) {
-      return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
+  // Consolidated image URL function
+  const getImageUrl = (url?: string, isProfilePicError: boolean = false) => {
+    // If there's a profile picture error or no URL provided, return the default image
+    if (isProfilePicError || !url) {
+      return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg';
     }
-    return imageUrl.startsWith('http')
-      ? imageUrl
-      : `https://${imageUrl}`
-  }
+    // Prepend 'https://' if the URL doesn't already start with 'http'
+    return url.startsWith('http') ? url : `https://${url}`;
+  };
 
-  const getSearchResultImageUrl = (url?: string) => {
-    if (!url) return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
-    return url.startsWith('http') ? url : `https://${url}`
-  }
 
   if (!isInitialLoadComplete && isLoading) {
     return (
@@ -337,7 +332,7 @@ export default function UserProfile() {
           {/* Profile Picture Section */}
           <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-accent overflow-hidden shadow-glow group">
             <img
-              src={getProfileImageUrl(userData?.profilePic)}
+              src={getImageUrl(userData?.profilePic, profileImageError)} 
               alt={userData?.name || user.name || 'User'}
               onError={() => setProfileImageError(true)}
               className="w-full h-full object-cover"
@@ -636,7 +631,7 @@ export default function UserProfile() {
                           friendsList.map(friend => (
                             <li key={friend.id} className="flex justify-between items-center">
                               <div className="flex items-center space-x-3">
-                                <img src={getSearchResultImageUrl(friend.profilePictureUrl)} className="w-8 h-8 rounded-full" />
+                                <img src={getImageUrl(friend.profilePictureUrl)} className="w-8 h-8 rounded-full" /> {/* Using the consolidated function */}
                                 <span>{friend.name}</span>
                               </div>
                               <button
@@ -655,7 +650,7 @@ export default function UserProfile() {
                           <div key={req.requestId} className="flex items-center justify-between p-2 border-b">
                             <div className="flex items-center space-x-2">
                               <img
-                                src={getSearchResultImageUrl(req.senderProfileImageUrl)}
+                                src={getImageUrl(req.senderProfileImageUrl)} 
                                 alt={req.senderUserName}
                                 className="w-10 h-10 rounded-full"
                               />

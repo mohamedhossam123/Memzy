@@ -7,7 +7,7 @@ import { ModeratorAPI, PendingPost, User } from '@/lib/api/moderator'
 import { detectMediaType, getOptimizedMediaUrl } from '@/lib/api/utils'
 
 export default function ModeratorDashboard() {
-  const { user: currentUser, token, api } = useAuth() 
+  const { user: currentUser, token } = useAuth() 
   const { searchTerm, setSearchTerm } = useSearch()
   const [activeTab, setActiveTab] = useState<'posts' | 'users'>('posts')
   const [pendingPosts, setPendingPosts] = useState<PendingPost[]>([])

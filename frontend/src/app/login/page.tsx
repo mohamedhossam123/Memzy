@@ -13,12 +13,9 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    setSuccess('')
-    setIsLoading(true)
     setSuccess('')
     setIsLoading(true)
     
@@ -30,16 +27,10 @@ export default function LoginPage() {
       setIsLoading(false)
     }
   }
-
-
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-darker to-primary-dark p-4 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary/10 blur-3xl animate-pulse-slow"></div>
-      <div className="absolute bottom-1/3 right-1/4 w-72 h-72 rounded-full bg-accent/10 blur-3xl animate-pulse-slow" style={{animationDelay: '2s'}}></div>
-      
-      <div className="relative z-10 w-full max-w-md" id="poda">
+      <div className="relative z-10 w-full max-w-md">
         <div className="bg-glass-dark backdrop-blur-sm p-8 rounded-xl shadow-2xl border border-glass relative overflow-hidden conic-border">
           <div className="flex justify-center mb-6">
             <div className="p-3 rounded-lg bg-gradient-to-r from-primary to-accent shadow-glow">
@@ -157,7 +148,6 @@ export default function LoginPage() {
                 <div className="w-full border-t border-glass"></div>
               </div>
             </div>
-            
             
             <div className="mt-6 text-center text-sm">
               <p className="text-primary-light">

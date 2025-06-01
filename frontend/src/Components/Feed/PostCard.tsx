@@ -43,8 +43,8 @@ export default function PostCard({
   authorName,
   profileImageUrl,
 }: PostProps) {
-  const [imageLoaded, setImageLoaded] = useState(false)
-  const [imageError, setImageError] = useState(false)
+  const [, setImageLoaded] = useState(false)
+  const [, setImageError] = useState(false)
   const [videoError, setVideoError] = useState(false)
   const [likes, setLikes] = useState(initialLikes)
   const [isLiked, setIsLiked] = useState(initialIsLiked)
@@ -53,14 +53,12 @@ export default function PostCard({
   const [comments, setComments] = useState<CommentResponseDto[]>([])
   const [newComment, setNewComment] = useState('')
   const [isCommentsVisible, setIsCommentsVisible] = useState(false)
-  const [isLoadingComments, setIsLoadingComments] = useState(false)
+  const [, setIsLoadingComments] = useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [localCommentCount, setLocalCommentCount] = useState(0)
   const [replyingToCommentId, setReplyingToCommentId] = useState<number | null>(null)
   const [replyContent, setReplyContent] = useState('')
-
   const [collapsedReplies, setCollapsedReplies] = useState<Set<number>>(new Set())
-
   const { api, user } = useAuth()
   const videoRef = useRef<HTMLVideoElement>(null)
   const commentFormRef = useRef<HTMLDivElement>(null)
@@ -425,7 +423,7 @@ export default function PostCard({
         </div>
 
         {replyingToCommentId === comment.commentId && user && (
-          <div className="flex gap-2 mt-3 pl-0 sm:pl-8"> {/* Adjusted padding for smaller screens */}
+          <div className="flex gap-2 mt-3 pl-0 sm:pl-8">
             <input
               type="text"
               value={replyContent}
@@ -489,8 +487,9 @@ export default function PostCard({
   }
 
   return (
-  <div className="bg-glass/30 border border-glass rounded-2xl p-5 shadow-xl space-y-4 w-full max-w-2xl mx-auto transition duration-300 hover:shadow-2xl">
-    {/* Header */}
+  <div className="bg-glass/30 border border-glass rounded-2xl overflow-hidden shadow-xl transition duration-300 hover:shadow-2xl w-full max-w-2xl mx-auto">
+  {/* Header */}
+  <div className="p-5">
     <div className="flex items-center gap-4">
       {profileImageUrl ? (
         <img src={profileImageUrl} alt="Author" className="w-10 h-10 rounded-full object-cover border border-glass" />
@@ -507,34 +506,45 @@ export default function PostCard({
     </div>
 
     {/* Content */}
-    <p className="text-light/90 whitespace-pre-line">{content}</p>
+    <p className="text-light/90 whitespace-pre-line mt-3">{content}</p>
+  </div>
 
-    {/* Media */}
-    {mediaType && mediaUrl && (
-      <div className="rounded-xl overflow-hidden border border-glass">
-        {mediaType === 'image' ? (
-          <img
-            src={getOptimizedMediaUrl(mediaUrl, 'image')}
-            alt="Post Media"
-            className="w-full max-h-[400px] object-cover rounded-xl transition-opacity duration-300"
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageError(true)}
-          />
-        ) : (
+  {/* Media - Takes full width and determines card height */}
+  {mediaType && mediaUrl && (
+    <div className="w-full">
+      {mediaType === 'image' ? (
+        <img
+          src={getOptimizedMediaUrl(mediaUrl, 'image')}
+          alt="Post Media"
+          className="w-full object-cover"
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <div className="relative w-full bg-black">
           <video
             src={getOptimizedMediaUrl(mediaUrl, 'video')}
             controls
             loop
             ref={videoRef}
-            className="w-full max-h-[400px] object-cover rounded-xl"
+            className="w-full h-auto max-h-[80vh]"
             onError={() => setVideoError(true)}
             onEnded={handleVideoEnd}
+            playsInline
+            preload="metadata"
           />
-        )}
-      </div>
-    )}
+          {videoError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
+              Failed to load video
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )}
 
-    {/* Post actions */}
+  {/* Post actions - Fixed at bottom */}
+  <div className="p-5">
     <div className="flex items-center gap-5 text-light/80">
       <button
         onClick={handleLikeToggle}
@@ -591,6 +601,6 @@ export default function PostCard({
       </div>
     )}
   </div>
-)
-
+</div>
+  )
 }

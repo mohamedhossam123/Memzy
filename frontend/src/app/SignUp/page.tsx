@@ -1,4 +1,6 @@
-'use client'
+// app/signup/page.tsx
+'use client' // This is correct as it's a client component
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -15,20 +17,20 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  
+
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001'
   const router = useRouter()
-  
+
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return re.test(email)
   }
-  
+
   const validateUsername = (username: string) => {
     const re = /^[a-zA-Z0-9_]+$/
     return re.test(username) && username.length >= 3 && username.length <= 20
   }
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -37,29 +39,29 @@ export default function SignupPage() {
       setError('All fields are required')
       return
     }
-    
+
     if (!validateEmail(email)) {
       setError('Please enter a valid email address')
       return
     }
-    
+
     if (!validateUsername(userName)) {
       setError('Username must be 3-20 characters, letters, numbers, and underscores only')
       return
     }
-    
+
     if (password !== confirmPassword) {
       setError("Passwords don't match")
       return
     }
-    
+
     if (password.length < 6) {
       setError('Password must be at least 6 characters')
       return
     }
-    
+
     setIsLoading(true)
-    
+
     try {
       const response = await fetch(`${BACKEND_URL}/api/auth/signup`, {
         method: 'POST',
@@ -71,13 +73,13 @@ export default function SignupPage() {
           password 
         }),
       })
-      
+
       const data = await response.json()
-      
+
       if (!response.ok) {
         throw new Error(data.message || 'Signup failed')
       }
-      
+
       setSuccess('Account created successfully! Redirecting to login...')
       setTimeout(() => {
         router.push('/login?registered=true')
@@ -88,12 +90,12 @@ export default function SignupPage() {
       setIsLoading(false)
     }
   }
-  
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-darker to-primary-dark p-4 relative overflow-hidden">
       <div className="absolute top-1/3 left-1/3 w-64 h-64 rounded-full bg-primary/10 blur-3xl animate-float"></div>
       <div className="absolute bottom-1/4 right-1/3 w-72 h-72 rounded-full bg-accent/10 blur-3xl animate-float-reverse"></div>
-      
+
       <div className="relative z-10 w-full max-w-md" id="poda">
         <div className="bg-glass-dark backdrop-blur-sm p-8 rounded-xl shadow-2xl border border-glass relative overflow-hidden conic-border-dark">
           <div className="flex justify-center mb-6">
@@ -101,14 +103,14 @@ export default function SignupPage() {
               <FiUser className="text-light text-2xl" />
             </div>
           </div>
-          
+
           <h2 className="text-2xl font-bold mb-2 text-center text-light text-glow">
             Create Your Account
           </h2>
           <p className="text-center text-primary-light mb-6">
             Join Memzy and start your journey
           </p>
-          
+
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start">
               <div className="text-red-400 mr-3 mt-0.5">
@@ -121,7 +123,7 @@ export default function SignupPage() {
               <div className="text-red-300 text-sm flex-1">{error}</div>
             </div>
           )}
-          
+
           {success && (
             <div className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg flex items-start">
               <div className="text-green-400 mr-3 mt-0.5">
@@ -133,7 +135,7 @@ export default function SignupPage() {
               <div className="text-green-300 text-sm flex-1">{success}</div>
             </div>
           )}
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -152,7 +154,7 @@ export default function SignupPage() {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-primary-light text-xs font-medium mb-1.5">Username</label>
                 <div className="relative">
@@ -172,7 +174,7 @@ export default function SignupPage() {
                 </div>
               </div>
             </div>
-            
+
             <div>
               <label className="block text-primary-light text-xs font-medium mb-1.5">Email</label>
               <div className="relative">
@@ -189,7 +191,7 @@ export default function SignupPage() {
                 />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-primary-light text-xs font-medium mb-1.5">Password</label>
@@ -219,7 +221,7 @@ export default function SignupPage() {
                   </button>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-primary-light text-xs font-medium mb-1.5">Confirm</label>
                 <div className="relative">
@@ -249,11 +251,11 @@ export default function SignupPage() {
                 </div>
               </div>
             </div>
-            
+
             <p className="text-xs text-primary-light/50 text-center">
               Password: min 6 chars • Username: 3-20 chars, letters/numbers only
             </p>
-            
+
             <button
               type="submit"
               disabled={isLoading}
@@ -275,7 +277,7 @@ export default function SignupPage() {
                 </>
               )}
             </button>
-            
+
             <div className="mt-6 text-center text-sm">
               <p className="text-primary-light">
                 Already have an account?{" "}
