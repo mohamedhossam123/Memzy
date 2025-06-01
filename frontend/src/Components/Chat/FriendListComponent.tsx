@@ -5,14 +5,6 @@ import { useAuth } from '@/Context/AuthContext'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 
-interface Friend {
-  userId: number
-  name: string
-  username: string
-  profilePicture?: string
-  isOnline?: boolean
-  bio?: string
-}
 
 interface Props {
   onSelectFriend: (

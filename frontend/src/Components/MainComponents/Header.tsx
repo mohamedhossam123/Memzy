@@ -23,7 +23,7 @@ export function Header() {
   const searchRef = useRef<HTMLDivElement>(null)
   const [profileImageError, setProfileImageError] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [, setMousePos] = useState({ x: 0, y: 0 })
   const [isLogoHovered, setIsLogoHovered] = useState(false)
 
   const debouncedSearch = useCallback(

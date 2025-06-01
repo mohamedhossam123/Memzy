@@ -4,7 +4,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import PostCard, { PostProps } from '@/Components/Feed/PostCard'
 import { useAuth } from '@/Context/AuthContext'
-import { ApiResponse } from '@/lib/api/types'
+
 
 interface ApiPost {
   postId: number
