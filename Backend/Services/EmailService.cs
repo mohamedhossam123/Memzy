@@ -21,7 +21,6 @@ public class EmailService : IEmailService
     public async Task<bool> SendPasswordResetEmailAsync(string email, string name, string resetLink)
     {
         using var client = new SmtpClient();
-
         try
         {
             var message = new MimeMessage();
@@ -30,7 +29,6 @@ public class EmailService : IEmailService
                 _configuration["EmailSettings:SenderEmail"]));
             message.To.Add(new MailboxAddress(name, email));
             message.Subject = "Password Reset Request";
-
             message.Body = new TextPart(TextFormat.Html)
             {
                 Text = $@"
@@ -39,12 +37,9 @@ public class EmailService : IEmailService
                     <p>Click <a href='{resetLink}'>here</a> to reset your password.</p>
                     <p>This link expires in 15 minutes.</p>"
             };
-
             client.Timeout = 30000;
             client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
             _logger.LogInformation("Attempting to connect to SMTP server...");
-
             await client.ConnectAsync(
                 _configuration["EmailSettings:MailServer"],
                 int.Parse(_configuration["EmailSettings:MailPort"]),
@@ -54,10 +49,8 @@ public class EmailService : IEmailService
                 _configuration["EmailSettings:SenderEmail"],
                 _configuration["EmailSettings:Password"]); 
             _logger.LogInformation("Authentication successful. Sending email...");
-
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
-
             _logger.LogInformation("Email sent successfully!");
             return true;
         }
@@ -86,7 +79,6 @@ public class EmailService : IEmailService
                 await client.DisconnectAsync(true);
             }
         }
-
         return false;
     }
 }

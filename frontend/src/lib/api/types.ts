@@ -82,7 +82,18 @@ export interface PendingPost {
   userId: number;
   user: User;
 }
-
+export interface ResetPasswordDto {
+  token: string;
+  newPassword: string;
+}
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+}
+export interface ResetPasswordResponse {
+  success: boolean;
+  message: string;
+}
 export interface User {
   id: number;
   name: string;
