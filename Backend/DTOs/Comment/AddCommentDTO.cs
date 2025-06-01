@@ -3,6 +3,7 @@ public class AddCommentDto
 {
     [Required]
     public int PostId { get; set; }
+    public int ParentCommentId { get; set; }
 
     [Required]
     [StringLength(1000, MinimumLength = 1)]

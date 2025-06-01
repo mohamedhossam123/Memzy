@@ -9,4 +9,7 @@ public class CommentResponseDto
     public DateTime CreatedAt { get; set; }
     public int LikeCount { get; set; }
     public bool IsLikedByCurrentUser { get; set; }
+    public int? ParentCommentId { get; set; }
+public List<CommentResponseDto> Replies { get; set; }
+
 }

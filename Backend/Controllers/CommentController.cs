@@ -5,19 +5,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MyApiProject.Controllers
 {
+
     [ApiController]
     [Route("api/user/comments")]
     [Authorize]
-    public class CommentConrtoller : ControllerBase
+    public class CommentController : ControllerBase
     {
         private readonly IAuthenticationService _auth;
-        private readonly ICommentService _commentservice;
+        private readonly ICommentService _commentService;
         private readonly MemzyContext _context;
-
-        public CommentConrtoller(IAuthenticationService authService, ICommentService commentservice, MemzyContext context)
+        public CommentController(
+            IAuthenticationService authService,
+            ICommentService commentService,
+            MemzyContext context)
         {
             _auth = authService;
-            _commentservice = commentservice;
+            _commentService = commentService;
             _context = context;
         }
 
@@ -25,15 +28,16 @@ namespace MyApiProject.Controllers
         public async Task<IActionResult> AddComment([FromBody] AddCommentDto dto)
         {
             var userId = await _auth.GetAuthenticatedUserId();
-            var response = await _commentservice.AddComment(dto, userId);
+            var response = await _commentService.AddComment(dto, userId);
             return Ok(response);
         }
+
         [HttpDelete("deleteComment")]
         public async Task<IActionResult> DeleteComment([FromBody] DeleteCommentDto dto)
         {
             try
             {
-                await _commentservice.DeleteComment(dto);
+                await _commentService.DeleteComment(dto);
                 return NoContent();
             }
             catch (Exception ex)
@@ -41,22 +45,21 @@ namespace MyApiProject.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
-        
-        [HttpGet("GetCommentCount")]
+
+        [HttpGet("getCommentCount")]
         public async Task<IActionResult> GetCommentCount(int postId)
         {
             var count = await _context.Comments.CountAsync(c => c.PostId == postId);
             return Ok(count);
         }
-
-        [HttpPost("ToggleLikeComments")]
+        [HttpPost("toggleLikeComments")]
         public async Task<IActionResult> ToggleCommentLike(LikeCommentDto dto)
         {
             try
             {
                 var userId = await _auth.GetAuthenticatedUserId();
                 dto.UserId = userId;
-                var response = await _commentservice.ToggleCommentLike(dto);
+                var response = await _commentService.ToggleCommentLike(dto);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -64,11 +67,11 @@ namespace MyApiProject.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
-        [HttpGet("GetComments")]
+        [HttpGet("getComments")]
         public async Task<IActionResult> GetComments(int postId)
         {
-            var user = await _auth.GetAuthenticatedUserId();
-            var response = await _commentservice.GetCommentsAsync(postId, user);
+            var userId = await _auth.GetAuthenticatedUserId();
+            var response = await _commentService.GetCommentsAsync(postId, userId);
             return Ok(response);
         }
     }

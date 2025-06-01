@@ -31,17 +31,25 @@ namespace Memzy_finalist.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Comment>(entity =>
-            {
-                entity.HasKey(c => c.CommentId);
-                entity.HasOne(c => c.Post)
-                    .WithMany(p => p.Comments)
-                    .HasForeignKey(c => c.PostId)
-                    .OnDelete(DeleteBehavior.Cascade);
-                entity.HasOne(c => c.User)
-                    .WithMany(u => u.Comments)
-                    .HasForeignKey(c => c.UserId)
-                    .OnDelete(DeleteBehavior.NoAction);
-            });
+{
+    entity.HasKey(c => c.CommentId);
+
+    entity.HasOne(c => c.Post)
+        .WithMany(p => p.Comments)
+        .HasForeignKey(c => c.PostId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    entity.HasOne(c => c.User)
+        .WithMany(u => u.Comments)
+        .HasForeignKey(c => c.UserId)
+        .OnDelete(DeleteBehavior.NoAction);
+
+    entity.HasOne(c => c.ParentComment)                        
+        .WithMany(c => c.Replies)                               
+        .HasForeignKey(c => c.ParentCommentId)
+        .OnDelete(DeleteBehavior.Cascade);                     
+});
+
 
             modelBuilder.Entity<CommentLike>()
                 .HasKey(cl => new { cl.CommentId, cl.UserId });

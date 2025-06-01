@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Memzy_finalist.Models.Entities;
-
 namespace Memzy_finalist.Models
 {
     public class Comment
@@ -12,13 +11,14 @@ namespace Memzy_finalist.Models
         public int PostId { get; set; }
         [ForeignKey(nameof(User))]
         public int UserId { get; set; }
+        public int? ParentCommentId { get; set; }
         [Required, MaxLength(1000)]
         public string Content { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public virtual Post Post { get; set; }
         public virtual User User { get; set; }
+        public virtual Comment ParentComment { get; set; }  
+        public virtual ICollection<Comment> Replies { get; set; } = new List<Comment>(); 
         public virtual ICollection<CommentLike> Likes { get; set; } = new List<CommentLike>();
     }
-    
-    
 }
