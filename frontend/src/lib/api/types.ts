@@ -9,6 +9,8 @@ export interface CommentResponseDto {
   createdAt: string;
   likeCount: number;
   isLikedByCurrentUser: boolean;
+  parentCommentId?: number | null; 
+  replies?: CommentResponseDto[];
 }
 
 export interface ApiResponse<T> {

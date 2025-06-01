@@ -10,7 +10,7 @@ import {
   addComment as addCommentApi,
   toggleCommentLike as toggleCommentLikeApi,
   deleteComment as deleteCommentApi,
-  fetchCommentCount as fetchCommentCountApi
+  fetchCommentCount as fetchCommentCountApi,
 } from '@/lib/api'
 
 export interface PostProps {
@@ -41,7 +41,7 @@ export default function PostCard({
   isLiked: initialIsLiked = false,
   authorId = '',
   authorName,
-  profileImageUrl
+  profileImageUrl,
 }: PostProps) {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
@@ -56,31 +56,71 @@ export default function PostCard({
   const [isLoadingComments, setIsLoadingComments] = useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [localCommentCount, setLocalCommentCount] = useState(0)
+  const [replyingToCommentId, setReplyingToCommentId] = useState<number | null>(null)
+  const [replyContent, setReplyContent] = useState('')
+
+  const [collapsedReplies, setCollapsedReplies] = useState<Set<number>>(new Set())
 
   const { api, user } = useAuth()
   const videoRef = useRef<HTMLVideoElement>(null)
   const commentFormRef = useRef<HTMLDivElement>(null)
 
+  const UpdateSubComments = useCallback((
+    commentsArray: CommentResponseDto[],
+    targetCommentId: number,
+    updateFn: (comment: CommentResponseDto) => CommentResponseDto | null 
+  ): CommentResponseDto[] => {
+    return commentsArray.flatMap(comment => {
+      if (comment.commentId === targetCommentId) {
+        const updatedComment = updateFn(comment)
+        return updatedComment ? [updatedComment] : [] 
+      }
+
+      if (comment.replies && comment.replies.length > 0) {
+        const updatedReplies = UpdateSubComments(comment.replies, targetCommentId, updateFn)
+        if (updatedReplies.length !== comment.replies.length ||
+            !updatedReplies.every((val, index) => val === comment.replies![index])) {
+          return [{ ...comment, replies: updatedReplies }]
+        }
+      }
+      return [comment] 
+    })
+  }, []) 
   const fetchComments = useCallback(async () => {
     if (!user) return
     setIsLoadingComments(true)
     try {
       const response = await fetchCommentsApi(api, id)
+      console.log('Comments API Response:', response)
       if (response.data) {
-        setComments(response.data)
-        setLocalCommentCount(response.data.length)
+        const sortedComments = Array.isArray(response.data)
+          ? response.data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          : []
+        setComments(sortedComments)
+        setLocalCommentCount(sortedComments.length)
       } else {
         console.error('Failed to fetch comments:', response.error)
+        setComments([])
+        setLocalCommentCount(0)
       }
     } catch (err) {
       console.error('Error fetching comments:', err)
+      setComments([])
+      setLocalCommentCount(0)
     } finally {
       setIsLoadingComments(false)
     }
   }, [api, id, user])
 
-  const submitComment = async () => {
-    if (!newComment.trim() || isSubmittingComment || !user) return
+  useEffect(() => {
+    if (user) {
+      fetchComments()
+    }
+  }, [user, fetchComments])
+
+  const submitComment = async (parentCommentId: number | null = null) => {
+    const commentToSubmit = parentCommentId ? replyContent : newComment
+    if (!commentToSubmit.trim() || isSubmittingComment || !user) return
 
     setIsSubmittingComment(true)
     const optimisticCommentId = Date.now()
@@ -90,33 +130,51 @@ export default function PostCard({
       userId: user.userId,
       userName: user.userName ?? 'Unknown',
       userProfilePicture: user.profilePictureUrl || null,
-      content: newComment.trim(),
+      content: commentToSubmit.trim(),
       createdAt: new Date().toISOString(),
       likeCount: 0,
-      isLikedByCurrentUser: false
+      isLikedByCurrentUser: false,
+      parentCommentId: parentCommentId,
+      replies: [],
     }
+    setComments(prev => {
+      if (parentCommentId) {
+        return UpdateSubComments(prev, parentCommentId, (parentComment) => ({
+          ...parentComment,
+          replies: [...(parentComment.replies || []), optimisticComment],
+        }))
+      } else {
+        return [optimisticComment, ...prev]
+      }
+    })
 
-    setComments(prev => [optimisticComment, ...prev])
-    setNewComment('')
+    if (parentCommentId) {
+      setReplyContent('')
+      setReplyingToCommentId(null)
+    } else {
+      setNewComment('')
+    }
     setLocalCommentCount(prev => prev + 1)
 
     try {
-      const response = await addCommentApi(api, id, newComment.trim())
+      const response = await addCommentApi(api, id, commentToSubmit.trim(), parentCommentId)
 
       if (response.data) {
         setComments(prev =>
-          prev.map(comment =>
-            comment.commentId === optimisticCommentId ? response.data! : comment
-          )
+          UpdateSubComments(prev, optimisticCommentId, () => response.data!)
         )
       } else {
         console.error('Failed to post comment:', response.error)
-        setComments(prev => prev.filter(c => c.commentId !== optimisticCommentId))
+        setComments(prev =>
+          UpdateSubComments(prev, optimisticCommentId, () => null)
+        )
         setLocalCommentCount(prev => prev - 1)
       }
     } catch (err) {
       console.error('Error posting comment:', err)
-      setComments(prev => prev.filter(c => c.commentId !== optimisticCommentId))
+      setComments(prev =>
+        UpdateSubComments(prev, optimisticCommentId, () => null)
+      )
       setLocalCommentCount(prev => prev - 1)
     } finally {
       setIsSubmittingComment(false)
@@ -125,43 +183,73 @@ export default function PostCard({
 
   const toggleCommentLike = async (commentId: number) => {
     if (!user) return
+    setComments(prevComments =>
+      UpdateSubComments(prevComments, commentId, (comment) => ({
+        ...comment,
+        isLikedByCurrentUser: !comment.isLikedByCurrentUser,
+        likeCount: comment.isLikedByCurrentUser ? comment.likeCount - 1 : comment.likeCount + 1,
+      }))
+    )
+
     try {
       const response = await toggleCommentLikeApi(api, commentId)
       if (response.data) {
         setComments(prev =>
-          prev.map(comment =>
-            comment.commentId === commentId
-              ? {
-                  ...comment,
-                  likeCount: response.data!.likeCount,
-                  isLikedByCurrentUser: response.data!.isLiked
-                }
-              : comment
-          )
+          UpdateSubComments(prev, commentId, (comment) => ({
+            ...comment,
+            likeCount: response.data!.likeCount,
+            isLikedByCurrentUser: response.data!.isLiked,
+          }))
         )
       } else {
         console.error('Failed to toggle comment like:', response.error)
+        setComments(prevComments =>
+          UpdateSubComments(prevComments, commentId, (comment) => ({
+            ...comment,
+            isLikedByCurrentUser: !comment.isLikedByCurrentUser,
+            likeCount: comment.isLikedByCurrentUser ? comment.likeCount + 1 : comment.likeCount - 1,
+          }))
+        )
       }
     } catch (err) {
       console.error('Error toggling comment like:', err)
+      setComments(prevComments =>
+        UpdateSubComments(prevComments, commentId, (comment) => ({
+          ...comment,
+          isLikedByCurrentUser: !comment.isLikedByCurrentUser,
+          likeCount: comment.isLikedByCurrentUser ? comment.likeCount + 1 : comment.likeCount - 1,
+        }))
+      )
     }
   }
 
-  const deleteComment = async (commentId: number) => {
-  if (!user) return;
-  
-  try {
-    const response = await deleteCommentApi(api, { commentId, userId: user.userId });
-    if (response.data) {
-      setComments(prev => prev.filter(c => c.commentId !== commentId));
-      setLocalCommentCount(prev => prev - 1);
-    } else {
-      console.error('Failed to delete comment:', response.error);
+  const deleteComment = async (commentId: number) => { 
+    if (!user) return
+
+    if (!window.confirm('Are you sure you want to delete this comment?')) {
+      return
     }
-  } catch (err) {
-    console.error('Error deleting comment:', err);
+
+    // Optimistic deletion using the recursive helper
+    setComments(prev => UpdateSubComments(prev, commentId, () => null))
+    setLocalCommentCount(prev => prev - 1)
+
+    try {
+      const response = await deleteCommentApi(api, {
+        commentId,
+        userId: user.userId,
+      })
+      if (!response.data) {
+        console.error('Failed to delete comment:', response.error)
+        // Revert: Re-fetch comments to sync state with backend
+        fetchComments()
+      }
+    } catch (err) {
+      console.error('Error deleting comment:', err)
+      // Revert: Re-fetch comments to sync state with backend
+      fetchComments()
+    }
   }
-};
 
   useEffect(() => {
     const fetchCommentCount = async () => {
@@ -244,7 +332,7 @@ export default function PostCard({
     if (!videoElement) return
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         entries.forEach(entry => {
           if (!videoElement) return
 
@@ -259,7 +347,7 @@ export default function PostCard({
         })
       },
       {
-        threshold: 0.5
+        threshold: 0.5,
       }
     )
     observer.observe(videoElement)
@@ -267,6 +355,141 @@ export default function PostCard({
       observer.disconnect()
     }
   }, [])
+
+  const toggleRepliesCollapse = (commentId: number) => {
+    setCollapsedReplies(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(commentId)) {
+        newSet.delete(commentId)
+      } else {
+        newSet.add(commentId)
+      }
+      return newSet
+    })
+  }
+
+  const renderComment = (comment: CommentResponseDto, isReply: boolean = false) => {
+    const hasReplies = comment.replies && comment.replies.length > 0
+    const areRepliesCollapsed = collapsedReplies.has(comment.commentId)
+
+    return (
+      <div key={comment.commentId} className={`bg-glass/20 p-3 rounded-xl border border-glass ${isReply ? 'ml-8 mt-2' : ''}`}>
+        <div className="flex items-center gap-3">
+          {comment.userProfilePicture ? (
+            <img
+              src={comment.userProfilePicture}
+              alt={`${comment.userName}'s profile`}
+              className="w-8 h-8 rounded-full object-cover border border-glass"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-glass flex items-center justify-center text-xs text-light/60 border border-glass">
+              👤
+            </div>
+          )}
+          <div>
+            <p className="font-semibold text-sm">{comment.userName}</p>
+            <p className="text-xs text-light/60">
+              {new Date(comment.createdAt).toLocaleString()}
+            </p>
+          </div>
+        </div>
+        <p className="mt-2 text-light/90 whitespace-pre-line">{comment.content}</p>
+        <div className="flex items-center gap-3 mt-2">
+          <button
+            onClick={() => toggleCommentLike(comment.commentId)}
+            className={`text-lg transition-colors ${
+              comment.isLikedByCurrentUser
+                ? 'text-accent'
+                : 'text-light/50 hover:text-accent'
+            } ${!user ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={!user}
+            title={!user ? 'Login to like comments' : undefined}
+          >
+            {comment.isLikedByCurrentUser ? '❤️' : '🤍'}
+          </button>
+          <span className="text-sm text-light/70">{comment.likeCount}</span>
+          {user && user.userId === comment.userId && (
+            <button
+              onClick={() => deleteComment(comment.commentId)} // No need to pass parentCommentId here
+              className="text-red-400 hover:text-red-500 text-sm ml-auto"
+              title="Delete comment"
+            >
+              🗑️ Delete
+            </button>
+          )}
+          {user && (
+            <button
+              onClick={() => setReplyingToCommentId(replyingToCommentId === comment.commentId ? null : comment.commentId)}
+              className="text-light/60 hover:text-light text-sm"
+            >
+              💬 Reply
+            </button>
+          )}
+        </div>
+
+        {replyingToCommentId === comment.commentId && user && (
+          <div className="flex gap-2 mt-3 pl-8">
+            <input
+              type="text"
+              value={replyContent}
+              onChange={(e) => setReplyContent(e.target.value)}
+              placeholder={`Replying to ${comment.userName}...`}
+              className="flex-1 bg-glass/5 border border-glass rounded-xl px-4 py-2 focus:outline-none focus:border-accent text-sm"
+              disabled={isSubmittingComment}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  submitComment(comment.commentId);
+                }
+              }}
+            />
+            <button
+              onClick={() => submitComment(comment.commentId)}
+              disabled={isSubmittingComment || !replyContent.trim()}
+              className="bg-accent/20 text-accent px-3 py-1 rounded-xl hover:bg-accent/30 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            >
+              {isSubmittingComment ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent mx-1"></div>
+              ) : (
+                'Reply'
+              )}
+            </button>
+            <button
+              onClick={() => setReplyingToCommentId(null)}
+              className="bg-red-400/20 text-red-400 px-3 py-1 rounded-xl hover:bg-red-400/30 text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
+        {/* Render Replies Section with Toggle */}
+        {hasReplies && (
+          <div className="mt-2">
+            <button
+              onClick={() => toggleRepliesCollapse(comment.commentId)}
+              className="text-light/60 hover:text-accent text-sm flex items-center"
+            >
+              {areRepliesCollapsed ? (
+                <>
+                  ▶️ Show {comment.replies!.length} replies
+                </>
+              ) : (
+                <>
+                  ▼ Hide replies
+                </>
+              )}
+            </button>
+            {!areRepliesCollapsed && (
+              <div className="mt-2 space-y-2">
+                {comment.replies!.map(reply => renderComment(reply, true))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow hover:shadow-glow/50 transition-all space-y-4">
@@ -285,10 +508,16 @@ export default function PostCard({
           )}
 
           <div className="flex flex-col">
-            <Link href={`/profile/${authorId}`} className="text-base text-glow font-semibold hover:underline">
-              {authorName || author} 
+            <Link
+              href={`/profile/${authorId}`}
+              className="text-base text-glow font-semibold hover:underline"
+            >
+              {authorName || author}
             </Link>
-            <Link href={`/profile/${authorId}`} className="text-sm text-light/60 hover:underline">
+            <Link
+              href={`/profile/${authorId}`}
+              className="text-sm text-light/60 hover:underline"
+            >
               @{author}
             </Link>
           </div>
@@ -334,7 +563,7 @@ export default function PostCard({
             className="w-full h-auto max-h-[800px] rounded-none border-y border-glass"
             preload="auto"
             playsInline
-            onLoadedMetadata={(e) => {
+            onLoadedMetadata={e => {
               const video = e.currentTarget
               const aspectRatio = video.videoWidth / video.videoHeight
               video.style.aspectRatio = aspectRatio.toString()
@@ -385,10 +614,10 @@ export default function PostCard({
 
       {/* Like and Comment Counter */}
       <div className="flex items-center gap-4 pt-2 border-t border-glass/30">
-        <button 
+        <button
           className={`transition-all duration-200 text-xl ${
-            isLiked 
-              ? 'text-accent scale-110 hover:scale-105' 
+            isLiked
+              ? 'text-accent scale-110 hover:scale-105'
               : 'text-light/50 hover:text-accent hover:scale-105'
           } ${isLikeLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${
             !user ? 'opacity-50 cursor-not-allowed' : ''
@@ -407,9 +636,9 @@ export default function PostCard({
         <span className="text-light/70 min-w-[50px]">
           {likes} {likes === 1 ? 'like' : 'likes'}
         </span>
-        
+
         {/* Comments Toggle */}
-        <button 
+        <button
           onClick={() => setIsCommentsVisible(!isCommentsVisible)}
           className={`flex items-center gap-2 transition-colors ${
             !user ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:text-accent'
@@ -419,15 +648,16 @@ export default function PostCard({
         >
           <span className="text-xl">💬</span>
           <span className="text-light/70">
-            {localCommentCount} {localCommentCount === 1 ? 'comment' : 'comments'}
+            {localCommentCount}{' '}
+            {localCommentCount === 1 ? 'comment' : 'comments'}
           </span>
         </button>
       </div>
-      
+
       {/* Comments Section */}
       {isCommentsVisible && (
         <div className="pt-4 border-t border-glass/20">
-          {/* Comment Form */}
+          {/* Main Comment Form */}
           {user && (
             <div ref={commentFormRef} className="flex gap-3 mb-4">
               <div className="flex-shrink-0">
@@ -443,16 +673,16 @@ export default function PostCard({
                   </div>
                 )}
               </div>
-              
+
               <div className="flex-1 flex gap-2">
                 <input
                   type="text"
                   value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
+                  onChange={e => setNewComment(e.target.value)}
                   placeholder="Write a comment..."
                   className="flex-1 bg-glass/5 border border-glass rounded-xl px-4 py-2 focus:outline-none focus:border-accent"
                   disabled={isSubmittingComment}
-                  onKeyDown={(e) => {
+                  onKeyDown={e => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault()
                       submitComment()
@@ -460,84 +690,33 @@ export default function PostCard({
                   }}
                 />
                 <button
-                  onClick={submitComment}
+                  onClick={() => submitComment()}
                   disabled={isSubmittingComment || !newComment.trim()}
                   className="bg-accent/20 text-accent px-4 py-2 rounded-xl hover:bg-accent/30 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmittingComment ? (
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-accent mx-2"></div>
-                  ) : 'Post'}
+                  ) : (
+                    'Post'
+                  )}
                 </button>
               </div>
             </div>
           )}
-          
+
           {/* Comments List */}
           {isLoadingComments ? (
             <div className="flex justify-center py-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
             </div>
-          ) : comments.length === 0 ? (
-            <p className="text-center text-light/50 py-4">No comments yet. Be the first to comment!</p>
-          ) : (
+          ) : comments && comments.length > 0 ? (
             <div className="space-y-4">
-              {comments.map((comment) => (
-  <div key={comment.commentId} className="flex gap-3">
-    <div className="flex-shrink-0">
-      {comment.userProfilePicture ? (
-        <img
-          src={comment.userProfilePicture}
-          alt={`${comment.userName}'s profile`}
-          className="w-9 h-9 rounded-full object-cover border border-glass"
-        />
-      ) : (
-        <div className="w-9 h-9 rounded-full bg-glass flex items-center justify-center text-sm text-light/60 border border-glass">
-          👤
-        </div>
-      )}
-    </div>
-    
-    <div className="flex-1">
-      <div className="bg-glass/5 backdrop-blur-lg rounded-2xl p-4 relative">
-        <div className="flex justify-between items-start">
-          <div>
-            <Link href={`/profile/${comment.userId}`} className="font-semibold hover:underline">
-              {comment.userName}
-            </Link>
-            <p className="text-light/90 mt-1">{comment.content}</p>
-          </div>
-          
-          {user?.userId === comment.userId && (
-            <button 
-              onClick={() => deleteComment(comment.commentId)}
-              className="text-light/50 hover:text-red-400 transition-colors absolute top-2 right-2"
-              title="Delete comment"
-              aria-label="Delete comment"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          )}
-        </div>
-        
-        <div className="mt-1 flex items-center gap-4 text-sm text-light/60">
-          <span>{new Date(comment.createdAt).toLocaleString()}</span>
-          <button 
-            onClick={() => toggleCommentLike(comment.commentId)}
-            className={`hover:text-accent transition-colors ${
-              comment.isLikedByCurrentUser ? 'text-accent' : ''
-            }`}
-            disabled={!user}
-          >
-            {comment.isLikedByCurrentUser ? '❤️' : '🤍'} {comment.likeCount}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-))}
+              {comments.map(comment => renderComment(comment))}
             </div>
+          ) : (
+            <p className="text-center text-light/50 py-4">
+              No comments yet. Be the first to comment!
+            </p>
           )}
         </div>
       )}

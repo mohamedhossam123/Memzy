@@ -12,25 +12,51 @@ namespace MyApiProject.Controllers
     public class CommentController : ControllerBase
     {
         private readonly IAuthenticationService _auth;
+        private readonly ILogger<CommentController> _logger;
         private readonly ICommentService _commentService;
         private readonly MemzyContext _context;
         public CommentController(
             IAuthenticationService authService,
             ICommentService commentService,
-            MemzyContext context)
+            MemzyContext context,
+            ILogger<CommentController> logger
+            )
         {
             _auth = authService;
             _commentService = commentService;
             _context = context;
+            _logger = logger;
         }
 
         [HttpPost("addComment")]
-        public async Task<IActionResult> AddComment([FromBody] AddCommentDto dto)
+public async Task<IActionResult> AddComment([FromBody] AddCommentDto dto)
+{
+    try
+    {
+        if (!ModelState.IsValid)
         {
-            var userId = await _auth.GetAuthenticatedUserId();
-            var response = await _commentService.AddComment(dto, userId);
-            return Ok(response);
+            return BadRequest(ModelState);
         }
+
+        var userId = await _auth.GetAuthenticatedUserId();
+        if (userId <= 0)
+        {
+            return Unauthorized("User not authenticated");
+        }
+
+        var response = await _commentService.AddComment(dto, userId);
+        return Ok(response);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error adding comment");
+        return StatusCode(500, new { 
+            message = "Failed to add comment",
+            detailedError = ex.Message,
+            stackTrace = ex.StackTrace
+        });
+    }
+}
 
         [HttpDelete("deleteComment")]
         public async Task<IActionResult> DeleteComment([FromBody] DeleteCommentDto dto)
