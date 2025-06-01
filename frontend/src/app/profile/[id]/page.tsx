@@ -274,11 +274,6 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
     return profilePic.startsWith('http') ? profilePic : `https://${profilePic}`
   }
 
-  const getSearchResultImageUrl = (url?: string) => {
-    if (!url) return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg'
-    return url.startsWith('http') ? url : `https://${url}`
-  }
-
   const isVideoFile = (url: string | null): boolean => {
     if (!url) return false
     const videoExtensions = ['.mp4', '.webm', '.ogg', '.avi', '.mov', '.wmv', '.flv', '.mkv']
