@@ -44,10 +44,11 @@ namespace Memzy_finalist.Models
         .HasForeignKey(c => c.UserId)
         .OnDelete(DeleteBehavior.NoAction);
 
-    entity.HasOne(c => c.ParentComment)                        
-        .WithMany(c => c.Replies)                               
+    entity.HasOne(c => c.ParentComment)
+        .WithMany(c => c.Replies)
         .HasForeignKey(c => c.ParentCommentId)
-        .OnDelete(DeleteBehavior.Cascade);                     
+        .OnDelete(DeleteBehavior.Restrict);    
+                      
 });
 
 
