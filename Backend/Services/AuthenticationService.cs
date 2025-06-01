@@ -3,20 +3,25 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
+using MailKit.Net.Smtp;
+using MimeKit;
+using MimeKit.Text;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 
 public class AuthenticationService : IAuthenticationService
 {
     private readonly IConfiguration _configuration;
+    private readonly IEmailService _emailService;
     private readonly MemzyContext _context;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public AuthenticationService(MemzyContext context, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
+    public AuthenticationService(MemzyContext context, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IEmailService emailService)
     {
         _configuration = configuration;
         _context = context;
         _httpContextAccessor = httpContextAccessor;
+        _emailService = emailService;
     }
     public async Task UpdateUserAsync(User user)
     {
@@ -301,55 +306,90 @@ public class AuthenticationService : IAuthenticationService
         {
             return (false, $"Error retrieving counts: {ex.Message}", null);
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
-
-public int? ValidateTokenAndGetUserId(string token)
-{
-    try
+    public async Task<(bool Success, string Message)> ForgotPasswordAsync(string email)
     {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (user == null)
+            return (false, "If this email is registered, you'll receive a password reset link.");
+
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
 
-        var validationParameters = new TokenValidationParameters
+        var tokenDescriptor = new SecurityTokenDescriptor
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ClockSkew = TimeSpan.Zero,
-            ValidIssuer = _configuration["Jwt:Issuer"],
-            ValidAudience = _configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(key)
+            Subject = new ClaimsIdentity(new[] {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
+            }),
+            Expires = DateTime.UtcNow.AddMinutes(15),
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(key), 
+                SecurityAlgorithms.HmacSha256Signature),
+            Issuer = _configuration["Jwt:Issuer"],
+            Audience = _configuration["Jwt:Audience"]
         };
-
-        var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
-        var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
-
-        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId))
-        {
-            return userId;
-        }
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        var resetToken = tokenHandler.WriteToken(token);
+        var resetLink = $"{_configuration["ClientApp:BaseUrl"]}/reset-password?token={Uri.EscapeDataString(resetToken)}";
+        var emailSent = await _emailService.SendPasswordResetEmailAsync(
+            user.Email, 
+            user.Name, 
+            resetLink);
+        if (!emailSent)
+            return (false, "Failed to send password reset email. Please try again.");
+        return (true, "If this email is registered, you'll receive a password reset link.");
     }
-    catch
-    {
-        
-    }
+public async Task<(bool Success, string Message)> ResetPasswordAsync(string token, string newPassword)
+{
+    var userId = ValidateTokenAndGetUserId(token);
+    if (userId == null)
+        return (false, "Invalid or expired token.");
 
-    return null;
+    var user = await _context.Users.FindAsync(userId);
+    if (user == null)
+        return (false, "User not found.");
+
+    user.PasswordHash = HashPassword(newPassword);
+    await _context.SaveChangesAsync();
+
+    return (true, "Password reset successful.");
 }
+
+
+public int? ValidateTokenAndGetUserId(string token)
+    {
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ClockSkew = TimeSpan.Zero,
+                ValidIssuer = _configuration["Jwt:Issuer"],
+                ValidAudience = _configuration["Jwt:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(key)
+            };
+
+            var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
+            var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId))
+            {
+                return userId;
+            }
+        }
+        catch
+        {
+
+        }
+
+        return null;
+    }
 
 
 

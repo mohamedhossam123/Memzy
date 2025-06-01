@@ -37,6 +37,25 @@ namespace MyApiProject.Controllers
                 Username = result.User.UserName
             });
         }
+        [HttpPost("forgot-password")]
+[AllowAnonymous]
+public async Task<IActionResult> ForgotPassword([FromBody] string email)
+{
+    var result = await _authService.ForgotPasswordAsync(email);
+    return result.Success ? Ok(new { message = result.Message }) : BadRequest(new { message = result.Message });
+}
+
+[HttpPost("reset-password")]
+[AllowAnonymous]
+public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+{
+    if (string.IsNullOrWhiteSpace(dto.Token) || string.IsNullOrWhiteSpace(dto.NewPassword))
+        return BadRequest("Token and new password are required.");
+
+    var result = await _authService.ResetPasswordAsync(dto.Token, dto.NewPassword);
+    return result.Success ? Ok(new { message = result.Message }) : BadRequest(new { message = result.Message });
+}
+
 
         [HttpGet("GetUserByID")]
         public async Task<IActionResult> GetUser(int id)

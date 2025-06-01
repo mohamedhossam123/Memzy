@@ -38,6 +38,7 @@ builder.Services.AddScoped<IFriendsService, FriendsService>();
 builder.Services.AddScoped<IMessagingService, MessagingService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
+builder.Services.AddTransient<IEmailService, EmailService>();
 
 builder.Services.AddSignalR();
 
