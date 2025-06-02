@@ -79,10 +79,9 @@ export const toggleCommentLike = async (
   commentId: number
 ): Promise<ApiResponse<{ likeCount: number; isLiked: boolean }>> => {
   try {
-    const res = await api.post('/api/user/comments/ToggleLikeComments', {
+    const res = await api.post('/api/user/comments/toggleLikeComments', {
       commentId,
     })
-
     if (!res || !res.ok) {
       return {
         status: res?.status || 500,
@@ -134,24 +133,24 @@ export const deleteComment = async (
 export const fetchCommentCount = async (
   api: Api,
   postId: number
-): Promise<ApiResponse<number>> => {
+): Promise<ApiResponse<{ totalCount: number; topLevelComments: number; replies: number }>> => {
   try {
-    const res = await api.get(`/api/user/comments/GetCommentCount?postId=${postId}`)
+    const res = await api.get(`/api/user/comments/GetCommentCount?postId=${postId}`);
 
     if (!res || !res.ok) {
       return {
         status: res?.status || 500,
         error: 'Failed to fetch comment count',
-      }
+      };
     }
 
-    const data = await res.json()
-    return { data, status: res.status }
+    const data = await res.json();
+    return { data, status: res.status };
   } catch (err) {
-    console.error('Error fetching comment count:', err)
+    console.error('Error fetching comment count:', err);
     return {
       status: 500,
-      error: 'Internal server error',
-    }
+      error: err instanceof Error ? err.message : 'Internal server error',
+    };
   }
-}
+};

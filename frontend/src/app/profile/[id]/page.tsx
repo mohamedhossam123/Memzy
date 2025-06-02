@@ -122,6 +122,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
         requestId: result.requestId,
         isFriend: false 
       })
+      
     } catch (err) {
       console.error('Error sending friend request:', err)
     } finally {

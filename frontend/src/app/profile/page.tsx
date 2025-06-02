@@ -26,7 +26,7 @@ export default function UserProfile() {
     'humor' | 'profilePic' | 'name' | 'bio' | 'password' | 'friends' | 'createPost' | 'posts' | null
   >(null)
   const [passwordError, setPasswordError] = useState('')
-  const [profileImageError, setProfileImageError] = useState(false)
+  const [, setProfileImageError] = useState(false)
   const [pendingPosts, setPendingPosts] = useState<Post[]>([])
   const [approvedPosts, setApprovedPosts] = useState<Post[]>([])
   const [activeFriendsTab, setActiveFriendsTab] = useState<'friends' | 'requests'>('friends')
@@ -44,15 +44,11 @@ export default function UserProfile() {
   useEffect(() => {
     setProfileImageError(false)
   }, [userData?.profilePic])
-  
-  // Main initialization effect
   useEffect(() => {
     if (!user) {
       router.push('/login')
       return
     }
-    
-    // If we have apiClient, start the initial load
     if (apiClient) {
       fetchUserDetails()
     }
@@ -132,15 +128,16 @@ export default function UserProfile() {
       ])
       
       console.log('User Response:', userResponse);
+      console.log('userResponse.profilePictureUrl from API:', userResponse.profilePictureUrl);
       const mappedUserData: FullUser = {
-        profilePic: userResponse.profilePictureUrl,
+        profilePic: userResponse.user?.profilePictureUrl, 
         name: userResponse.name,
         bio: userResponse.user?.bio || userResponse.bio || userResponse.Bio || '', 
         friendCount: countResponse.friendCount || countResponse.FriendCount || 0,
         postCount: countResponse.postCount || countResponse.PostCount || 0,
-        humorTypes: [],
-        userName: userResponse.userName || userResponse.UserName || ''
-      }
+        humorTypes: [], 
+        userName: userResponse.userName || userResponse.UserName || userResponse.user?.userName || ''
+      };
       
       setUserData(mappedUserData)
       await fetchUserHumor()
@@ -285,15 +282,28 @@ export default function UserProfile() {
     }
   }
 
-  // Consolidated image URL function
-  const getImageUrl = (url?: string, isProfilePicError: boolean = false) => {
-    // If there's a profile picture error or no URL provided, return the default image
-    if (isProfilePicError || !url) {
-      return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg';
+  const getImageUrl = (url?: string | null) => {
+  if (!url) {
+    return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg';
+  }
+  if (url.startsWith('http')) {
+    return url; 
+  }
+  else {
+    return `${url}`;
+  }
+};
+useEffect(() => {
+    if (!user) {
+        router.push('/login');
+        return;
     }
-    // Prepend 'https://' if the URL doesn't already start with 'http'
-    return url.startsWith('http') ? url : `https://${url}`;
-  };
+    
+    if (apiClient) {
+        setProfileImageError(false); 
+        fetchUserDetails();
+    }
+}, [user, router, apiClient]);
 
 
   if (!isInitialLoadComplete && isLoading) {
@@ -332,11 +342,11 @@ export default function UserProfile() {
           {/* Profile Picture Section */}
           <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-accent overflow-hidden shadow-glow group">
             <img
-              src={getImageUrl(userData?.profilePic, profileImageError)} 
-              alt={userData?.name || user.name || 'User'}
-              onError={() => setProfileImageError(true)}
-              className="w-full h-full object-cover"
-            />
+  src={getImageUrl(userData?.profilePic)} // Call the function without the error flag
+  alt={userData?.name || user.name || 'User'}
+  onError={() => setProfileImageError(true)} // Set error to true if image fails to load
+  className="w-full h-full object-cover"
+/>
             <button
               onClick={() => setActiveModal('profilePic')}
               className="absolute bottom-0 right-0 transform -translate-x-2 -translate-y-2 bg-glass/90 backdrop-blur-lg rounded-full p-2 shadow-lg hover:bg-accent/80 transition-all duration-300 hover:scale-110"

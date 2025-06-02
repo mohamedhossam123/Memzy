@@ -210,15 +210,25 @@ namespace Memzy_finalist.Models
                 })
                 .ToListAsync();
         }
-        public async Task<IEnumerable<User>> GetFriendsAnotherUser(int userId)
-        {
-            return await _context.Friendships
+        public async Task<IEnumerable<FriendDTO2>> GetFriendsAnotherUser(int userId)
+    {
+        return await _context.Friendships
             .Where(f => f.User1Id == userId || f.User2Id == userId)
-            .Include(f => f.User1) 
+            .Include(f => f.User1)
             .Include(f => f.User2) 
-            .Select(f => f.User1Id == userId ? f.User2 : f.User1)
+            .Select(f => f.User1Id == userId ? f.User2 : f.User1) 
+            .Select(u => new FriendDTO2 
+            {
+                UserId = u.UserId, 
+                Name = u.Name,
+                UserName = u.UserName,
+                ProfilePictureUrl = u.ProfilePictureUrl,
+                Bio = u.Bio,
+                IsOnline = u.IsOnline,
+                LastActive = u.LastActive
+            })
             .ToListAsync();
-        }
+    }
         public async Task<List<FriendRequestDTO>> GetPendingFriendRequests(int userId)
         {
             return await _context.FriendRequests

@@ -66,13 +66,49 @@ public class ModeratorService : IModeratorService
 
     public async Task DeleteUserAsync(int id)
     {
-        var user = await _context.Users.FindAsync(id);
+        var user = await _context.Users
+            .Include(u => u.PostLikes)
+            .Include(u => u.Comments)
+                .ThenInclude(c => c.Likes) 
+            .Include(u => u.Comments)
+                .ThenInclude(c => c.Replies) 
+            .Include(u => u.Posts)
+                .ThenInclude(p => p.Comments) 
+                .ThenInclude(c => c.Likes)
+            .Include(u => u.Posts)
+                .ThenInclude(p => p.Likes) 
+            .Include(u => u.Posts)
+                .ThenInclude(p => p.PostHumors)
+            .Include(u => u.CommentLikes)
+            .FirstOrDefaultAsync(u => u.UserId == id);
         if (user != null)
         {
+            _context.CommentLikes.RemoveRange(user.CommentLikes);
+            foreach (var comment in user.Comments)
+            {
+                _context.CommentLikes.RemoveRange(comment.Likes);
+                _context.Comments.RemoveRange(comment.Replies);
+            }
+            _context.Comments.RemoveRange(user.Comments);
+            foreach (var post in user.Posts)
+            {
+                foreach (var comment in post.Comments)
+                {
+                    _context.CommentLikes.RemoveRange(comment.Likes);
+                    _context.Comments.RemoveRange(comment.Replies);
+                }
+                _context.Comments.RemoveRange(post.Comments);
+                _context.PostLikes.RemoveRange(post.Likes);
+                _context.PostHumors.RemoveRange(post.PostHumors);
+            }
+            _context.Posts.RemoveRange(user.Posts);
+            _context.PostLikes.RemoveRange(user.PostLikes);
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
         }
     }
+
+
     public async Task<bool> MakeUserModeratorAsync(int userId, int requestedById)
 {
     if (!await IsUserModeratorAsync(requestedById)) return false;

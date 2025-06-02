@@ -75,8 +75,16 @@ public async Task<IActionResult> AddComment([FromBody] AddCommentDto dto)
         [HttpGet("getCommentCount")]
         public async Task<IActionResult> GetCommentCount(int postId)
         {
-            var count = await _context.Comments.CountAsync(c => c.PostId == postId);
-            return Ok(count);
+            var totalCount = await _context.Comments.CountAsync(c => c.PostId == postId);
+            var topLevelCount = await _context.Comments.CountAsync(c => c.PostId == postId && c.ParentCommentId == null);
+            var replyCount = await _context.Comments.CountAsync(c => c.PostId == postId && c.ParentCommentId != null);
+
+            return Ok(new
+            {
+                totalCount = totalCount,
+                topLevelComments = topLevelCount,
+                replies = replyCount
+            });
         }
         [HttpPost("toggleLikeComments")]
         public async Task<IActionResult> ToggleCommentLike(LikeCommentDto dto)
