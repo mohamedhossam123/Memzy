@@ -24,6 +24,7 @@ namespace MyApiProject.Controllers
             _environment = environment;
         }
 
+
         [HttpPost("UpdateUsername")]
         [Authorize]
         public async Task<IActionResult> UpdateUsername([FromBody] string newName)

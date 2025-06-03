@@ -81,7 +81,6 @@ export function SearchProvider({ children }: { children: ReactNode }) {
       setResults(normalizedResults)
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
-        setError('Failed to fetch results. Please try again.')
         console.error('Search error:', error)
       }
     } finally {

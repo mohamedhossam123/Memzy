@@ -56,10 +56,8 @@ namespace Memzy_finalist.Services
                     CreatedAt = DateTime.UtcNow,
                     ParentCommentId = dto.ParentCommentId
                 };
-
                 _context.Comments.Add(comment);
                 await _context.SaveChangesAsync();
-
                 return new CommentResponseDto
                 {
                     CommentId = comment.CommentId,

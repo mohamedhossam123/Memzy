@@ -7,7 +7,6 @@ using MailKit.Net.Smtp;
 using MimeKit;
 using MimeKit.Text;
 using System.Text;
-using Microsoft.Extensions.Configuration;
 
 public class AuthenticationService : IAuthenticationService
 {

@@ -61,7 +61,7 @@ namespace MyApiProject.Controllers
                 });
             }
         }
-
+        
         [HttpPost("SendMessage")]
         [Authorize]
         public async Task<IActionResult> SendMessage([FromBody] MessageDto request)

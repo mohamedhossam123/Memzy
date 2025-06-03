@@ -2,9 +2,8 @@
 'use client'
 
 import { useAuth } from '@/Context/AuthContext'
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-
+import { useEffect, useState, useCallback } from 'react'
+import { fetchFriendsApi, Friend } from '@/lib/api/friends/friendsApi' 
 
 interface Props {
   onSelectFriend: (
@@ -16,73 +15,49 @@ interface Props {
   selectedFriendId?: number
 }
 
-
 const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
-  const { token } = useAuth()
+  const { token } = useAuth() 
   const [friends, setFriends] = useState<Friend[]>([])
-  const [filteredFriends, setFilteredFriends] = useState<Friend[]>([])
-  const [loading, setLoading] = useState(true)
+  const [filteredFriends, setFilteredFriends] = useState<Friend[]>([]) 
+  const [loading, setLoading] = useState(true) 
   const [error, setError] = useState('')
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState('') 
 
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL ?? 'http://localhost:5001'
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL
 
-  interface Friend {
-  userId: number
-  name: string
-  username: string
-  profilePicture?: string
-  isOnline?: boolean
-  bio?: string
-}
-
-const fetchFriends = async () => {
-  try {
-    setLoading(true)
-    setError('')
-    const response = await axios.get(`${backendUrl}/api/Friends/GetFriends`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    const friendsData: Friend[] = response.data.map((friend: any) => ({
-      userId: friend.userId,
-      name: friend.name,
-      username: friend.userName,             
-      profilePicture: friend.profilePictureUrl, 
-      bio: friend.bio,                    
-      isOnline: friend.isOnline,          
-    }))
-
-    setFriends(friendsData || [])
-    setFilteredFriends(friendsData || [])
-  } catch (err) {
-    console.error('Error fetching friends:', err)
-    setError('Failed to load friends. Please try again.')
-  } finally {
-    setLoading(false)
-  }
-}
-
-  useEffect(() => {
-    if (token) {
-      fetchFriends()
+  const loadFriends = useCallback(async () => {
+    if (!token || !backendUrl) {
+      setLoading(false);
+      return;
     }
-  }, [token])
-
+    try {
+      setLoading(true); 
+      setError(''); 
+      const data = await fetchFriendsApi(token, backendUrl);
+      setFriends(data || []);
+      setFilteredFriends(data || []); 
+    } catch (err: any) {
+      console.error('Error in FriendsList component:', err);
+      setError(err.message || 'Failed to load friends. Please try again.');
+    } finally {
+      setLoading(false); 
+    }
+  }, [token, backendUrl]); 
+  useEffect(() => {
+    loadFriends();
+  }, [loadFriends]);
   useEffect(() => {
     if (searchTerm) {
-      const term = searchTerm.toLowerCase()
-      const filtered = friends.filter(friend => 
-        friend.name.toLowerCase().includes(term) || 
+      const term = searchTerm.toLowerCase();
+      const filtered = friends.filter(friend =>
+        friend.name.toLowerCase().includes(term) ||
         friend.username.toLowerCase().includes(term)
-      )
-      setFilteredFriends(filtered)
+      );
+      setFilteredFriends(filtered); 
     } else {
-      setFilteredFriends(friends)
+      setFilteredFriends(friends); 
     }
-  }, [searchTerm, friends])
-
-
+  }, [searchTerm, friends]); 
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-dark to-darker p-8">
@@ -98,7 +73,7 @@ const fetchFriends = async () => {
             </div>
             <div className="h-10 bg-glass/20 rounded-lg animate-pulse"></div>
           </div>
-          
+
           {/* Loading Content */}
           <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 shadow-glow">
             <div className="space-y-4">
@@ -123,7 +98,7 @@ const fetchFriends = async () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark to-darker p-8">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header*/}
+        {/* Header Section */}
         <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 text-light shadow-glow">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-glow">
@@ -132,9 +107,9 @@ const fetchFriends = async () => {
               )}
             </h1>
             <div className="flex space-x-2">
-              <button 
-                onClick={fetchFriends}
-                disabled={loading}
+              <button
+                onClick={loadFriends} // Call loadFriends to refresh the list
+                disabled={loading} // Disable button while loading
                 className="p-2 rounded-full hover:bg-glass/20 transition-colors text-light hover:text-accent disabled:opacity-50"
                 aria-label="Refresh friends list"
                 title="Refresh friends list"
@@ -143,30 +118,32 @@ const fetchFriends = async () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </button>
-              
+
             </div>
           </div>
-          
+
           <p className="text-light/70 mb-4">chat with your friends</p>
-          
-          
+
+
         </div>
-        
-        {/* Content Area */}
+
+        {/* Content Area for Friends List or Messages */}
         <div className="bg-glass/10 backdrop-blur-lg rounded-2xl shadow-glow overflow-hidden">
           {error ? (
+            // Error display
             <div className="p-6 border border-red-400/30 text-red-400 text-center">
               <div className="text-4xl mb-4">⚠️</div>
               <h3 className="text-lg font-medium mb-2">Couldn't load friends</h3>
               <p className="text-red-400/70 mb-4">{error}</p>
               <button
-                onClick={fetchFriends}
+                onClick={loadFriends} // Button to retry loading friends
                 className="bg-red-500/90 hover:bg-red-400 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-md"
               >
                 Try Again
               </button>
             </div>
           ) : filteredFriends.length === 0 ? (
+            // No friends or no search results message
             <div className="p-6 text-light text-center py-16">
               {searchTerm ? (
                 <>
@@ -174,7 +151,7 @@ const fetchFriends = async () => {
                   <h3 className="text-xl font-medium mb-2">No matches found</h3>
                   <p className="text-light/70">We couldn't find any friends matching "<span className="text-accent">{searchTerm}</span>"</p>
                   <button
-                    onClick={() => setSearchTerm('')}
+                    onClick={() => setSearchTerm('')} // Clear search term button
                     className="mt-4 bg-glass/20 hover:bg-glass/30 text-light px-4 py-2 rounded-lg border border-glass/30 transition-colors"
                   >
                     Clear Search
@@ -190,6 +167,7 @@ const fetchFriends = async () => {
               )}
             </div>
           ) : (
+            // Display the list of filtered friends
             <div className="p-6">
               <div className="space-y-3">
                 {filteredFriends.map((friend) => (
@@ -197,7 +175,7 @@ const fetchFriends = async () => {
                     key={friend.userId}
                     onClick={() => onSelectFriend(friend.userId, friend.name, friend.username, friend.profilePicture)}
                     className={`bg-glass/10 backdrop-blur-lg rounded-xl p-4 cursor-pointer transition-all duration-300 border hover:shadow-md ${
-                      selectedFriendId === friend.userId 
+                      selectedFriendId === friend.userId
                         ? 'border-accent/50 shadow-glow bg-glass/20 shadow-accent/20'
                         : 'border-glass/30 hover:bg-glass/20 hover:border-glass/50'
                     }`}
@@ -219,7 +197,7 @@ const fetchFriends = async () => {
                         )}
 
                       </div>
-                      
+
                       {/* Friend Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">

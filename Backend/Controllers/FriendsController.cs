@@ -7,6 +7,7 @@ namespace MyApiProject.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class FriendsController : ControllerBase
     {
         private readonly IFriendsService _friendsService;
@@ -19,7 +20,6 @@ namespace MyApiProject.Controllers
         }
 
         [HttpGet("all-received-requests")]
-        [Authorize]
         public async Task<IActionResult> GetAllReceivedRequests()
         {
             var userId = await _authService.GetAuthenticatedUserId();
@@ -28,7 +28,6 @@ namespace MyApiProject.Controllers
         }
 
         [HttpGet("all-sent-requests")]
-        [Authorize]
         public async Task<IActionResult> GetAllSentRequests()
         {
             var userId = await _authService.GetAuthenticatedUserId();
@@ -37,7 +36,6 @@ namespace MyApiProject.Controllers
         }
 
         [HttpPost("SendRequest/{receiverId}")]
-        [Authorize]
         public async Task<IActionResult> SendFriendRequest(int receiverId)
         {
             try
@@ -61,7 +59,7 @@ namespace MyApiProject.Controllers
         }
 
         [HttpPost("acceptRequest/{requestId}")]
-        [Authorize]
+
         public async Task<IActionResult> AcceptFriendRequest(int requestId)
         {
             try
@@ -81,7 +79,7 @@ namespace MyApiProject.Controllers
         }
 
         [HttpGet("GetFriendshipStatus/{userId}")]
-        [Authorize]
+
         public async Task<IActionResult> GetFriendshipStatus(int userId)
         {
             var currentUserId = await _authService.GetAuthenticatedUserId();
@@ -90,7 +88,7 @@ namespace MyApiProject.Controllers
         }
 
         [HttpPost("rejectrequest/{requestId}")]
-        [Authorize]
+
         public async Task<IActionResult> RejectFriendRequest(int requestId)
         {
             try
@@ -109,7 +107,7 @@ namespace MyApiProject.Controllers
             }
         }
         [HttpPost("cancelrequest/{requestId}")]
-        [Authorize]
+
         public async Task<IActionResult> CancelFriendRequest(int requestId)
         {
             try
@@ -138,7 +136,7 @@ namespace MyApiProject.Controllers
 
 
         [HttpPost("cancelrequest-by-receiver/{receiverId}")]
-        [Authorize]
+
         public async Task<IActionResult> CancelFriendRequestByReceiver(int receiverId)
         {
             try
@@ -171,7 +169,6 @@ namespace MyApiProject.Controllers
             };
         }
         [HttpGet("GetFriendsAnotherUser")]
-        [Authorize]
         public async Task<IActionResult> GetFriendsAnotherUser(int userId)
         {
 
@@ -191,7 +188,6 @@ namespace MyApiProject.Controllers
         }
 
         [HttpGet("GetFriendRequests")]
-        [Authorize]
         public async Task<IActionResult> GetFriendRequests()
         {
             try
@@ -213,7 +209,6 @@ namespace MyApiProject.Controllers
 
 
         [HttpGet("GetFriends")]
-        [Authorize]
         public async Task<IActionResult> GetFriends()
         {
             try
@@ -240,13 +235,12 @@ namespace MyApiProject.Controllers
             }
         }
         [HttpDelete("RemoveFriend")]
-        [Authorize]
         public async Task<IActionResult> RemoveFriend(int friendId)
         {
             var userId = await _authService.GetAuthenticatedUserId();
             var result = await _friendsService.RemoveFriend(userId, friendId);
             return Ok(result);
         }
-        
+
     }
 }

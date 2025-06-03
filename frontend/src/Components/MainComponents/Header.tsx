@@ -6,6 +6,7 @@ import { useAuth } from '../../Context/AuthContext'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import debounce from 'lodash.debounce'
+import { uploadProfilePicture } from '../../lib/api/header/header' 
 
 interface SearchResult {
   id: string | number
@@ -65,18 +66,9 @@ export function Header() {
     if (!file) return
 
     setIsUploading(true)
-    const formData = new FormData()
-    formData.append('ProfilePicture', file)
 
     try {
-      const response = await fetch('/api/UpdateProfilePicture', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      })
-
-      if (!response.ok) throw new Error('Upload failed')
-      const data = await response.json()
+      const data = await uploadProfilePicture(file)
       
       if (data.Url && user) {
         setProfileImageError(false)
@@ -136,8 +128,7 @@ export function Header() {
     return url.startsWith('http') ? url : `https://${url}`
   }
 
-  const profileImageUrl = getProfileImageUrl(  )
-
+  const profileImageUrl = getProfileImageUrl( )
 
 
   return (
