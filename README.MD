@@ -1,7 +1,7 @@
 # 😂 Memzy: Your Personalized Humor Hub
 
 <p align="center">
-  <a href="#"> <img src="images/memzyiconcopyyy.jpg" alt="Memzy Personalized Humor Hub Logo" width="250">
+  <a href="#"> <img src="images/memzyiconcopyyy.jpg" alt="Memzy Personalized Humor Hub Logo" width="450">
   </a>
 </p>
 
