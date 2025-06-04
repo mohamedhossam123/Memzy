@@ -1,4 +1,5 @@
 # 😂 Memzy: Your Personalized Humor Hub
+![Alt text for the image](images/memzyiconcopyyy.jpg)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -49,9 +50,9 @@ Memzy offers a rich set of features designed to enhance your meme-sharing journe
 Check out Memzy in action: [Link to your live demo (if available)]
 
 *(Add screenshots here to showcase your application's UI. This is highly recommended!)*
-![Screenshot 1 Description](path/to/screenshot1.png)
+![Screenshot 1 Description](images/Screeny1.png)
 *A captivating screenshot of the Memzy home feed.*
-![Screenshot 2 Description](path/to/screenshot2.png)
+![Screenshot 2 Description](images/2e2deqwdqad.png)
 *Another screenshot showing profile customization.*
 
 ---

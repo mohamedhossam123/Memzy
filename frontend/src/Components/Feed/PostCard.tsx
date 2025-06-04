@@ -348,7 +348,7 @@ export default function PostCard({
           if (entry.isIntersecting) {
             if (videoElement.paused && videoElement.readyState >= HTMLMediaElement.HAVE_METADATA) {
               videoElement.play().catch(error => {
-                // console.error("Error playing video:", error); 
+                console.error("Error playing video:", error); 
               });
             }
           } else {
@@ -550,7 +550,7 @@ export default function PostCard({
               {areRepliesCollapsed ? (
                 <>
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="m9 18 6-6-6-6"/> {/* Right arrow for expand */}
+                    <path d="m9 18 6-6-6-6"/>
                   </svg>
                   <span className="ml-1">
                     {comment.replies!.length} {comment.replies!.length === 1 ? 'reply' : 'replies'}
@@ -558,11 +558,7 @@ export default function PostCard({
                 </>
               ) : (
                 <>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    {/* <path d="m6 9 6 6 6-6"/> Down arrow for collapse (inverted logic from path usually) - or use chevron-up */}
-                    {/* Corrected to chevron-down for "Hide replies" implies current state is expanded */}
-                    {/* <path d="m18 15-6-6-6 6"/>  Chevron up would be more intuitive for "Hide" */}
-                    <path d="m18 15-6-6-6 6"/> {/* This is chevron-up. If expanded, clicking this hides. */}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">                     <path d="m18 15-6-6-6 6"/> 
                   </svg>
                   <span className="ml-1">Hide replies</span>
                 </>
@@ -602,12 +598,12 @@ export default function PostCard({
       </div>
 
       {mediaType && mediaUrl && (
-        <div className="w-full bg-black"> {/* Added bg-black for letterboxing if media aspect ratio differs */}
+        <div className="w-full bg-black"> 
           {mediaType === 'image' ? (
             <img
               src={getOptimizedMediaUrl(mediaUrl, 'image')}
               alt="Post Media"
-              className="w-full h-auto object-contain max-h-[80vh]" // Added h-auto, object-contain, max-h
+              className="w-full h-auto object-contain max-h-[80vh]"
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
             />
@@ -616,13 +612,12 @@ export default function PostCard({
               <video
                 src={getOptimizedMediaUrl(mediaUrl, 'video')}
                 controls
-                // loop // Loop is handled by onEnded for continuous play if desired
                 ref={videoRef}
-                className="w-full h-auto max-h-[80vh]" // Consistent max height
+                className="w-full h-auto max-h-[80vh]"
                 onError={() => setVideoError(true)}
-                onEnded={handleVideoEnd} // Re-added for custom loop/replay logic
+                onEnded={handleVideoEnd} 
                 playsInline
-                preload="metadata" // Good default
+                preload="metadata" 
               />
               {videoError && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
