@@ -50,8 +50,7 @@ Memzy offers a rich set of features designed to enhance your meme-sharing journe
 
 ## 🚀 Live Demo & Screenshots
 
-*(If you have a live demo, link it here!)*
-Check out Memzy in action: `[Link to your live demo (if available)]` *(Add screenshots here to showcase your application's UI. This is highly recommended!)*
+
 
 ![Memzy Home Feed showing various memes](./images/Screeny1.png)
 *A captivating screenshot of the Memzy home feed.*
