@@ -1,7 +1,7 @@
 # 😂 Memzy: Your Personalized Humor Hub
 
 <p align="center">
-  <a href="#"> <img src="images/memzyiconcopyyy.jpg" alt="Memzy Personalized Humor Hub Logo" width="150">
+  <a href="#"> <img src="images/memzyiconcopyyy.jpg" alt="Memzy Personalized Humor Hub Logo" width="250">
   </a>
 </p>
 
@@ -84,89 +84,64 @@ Memzy is built with a modern and powerful tech stack to ensure performance, scal
 
 Follow these instructions to set up and run Memzy on your local machine.
 
-### 📦 Backend Setup
+### 📦 ### Backend Setup
 
-1.  **Clone the repository:**
-    *(Ensure this link points to your actual repository URL)*
-    ```bash
-    git clone [https://github.com/yourusername/memzy_finalist.git](https://github.com/yourusername/memzy_finalist.git) # <-- UPDATE THIS URL
-    cd memzy_finalist/backend
-    ```
+1. **Clone the repository:**
+   ```sh
+   git clone https://github.com/yourusername/memzy_finalist.git
+   cd memzy_finalist/backend
+   ```
 
-2.  **Restore NuGet packages:**
-    ```bash
-    dotnet restore
-    ```
+2. **Configure your database:**
+   - Update `appsettings.json` with your SQL Server connection string.
 
-3.  **Configure your database connection string:**
-    Open `appsettings.json` (or `appsettings.Development.json`) and update the `ConnectionStrings:DefaultConnection` with your SQL Server details.
-    ```json
-    {
-      "ConnectionStrings": {
-        "DefaultConnection": "Server=your_server;Database=MemzyDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
-      },
-      // ... other settings
-    }
-    ```
-    *Note: For production, consider using environment variables for sensitive information.*
+3. **Run migrations:**
+   ```sh
+   dotnet ef database update
+   ```
 
-4.  **Apply database migrations:**
-    ```bash
-    dotnet ef database update
-    ```
-
-5.  **Run the backend application:**
-    ```bash
-    dotnet run
-    ```
-    The backend API will typically run on `https://localhost:7000` (or a similar port). Check the console output for the exact URL.
-
-### 💻 Frontend Setup
-
-1.  **Navigate to the frontend directory:**
-    ```bash
-    cd ../frontend # Assuming you are in the 'backend' directory
-    ```
-    Or, if starting from the root:
-    ```bash
-    cd memzy_finalist/frontend
-    ```
-
-2.  **Install dependencies:**
-    ```bash
-    npm install # or yarn install
-    ```
-
-3.  **Configure environment variables:**
-    Create a `.env.local` file in the `frontend` directory and add your backend API URL.
-    ```dotenv
-    NEXT_PUBLIC_API_BASE_URL=http://localhost:7000/api # Adjust if your backend runs on a different port/protocol
-    ```
-
-4.  **Run the frontend application:**
-    ```bash
-    npm run dev # or yarn dev
-    ```
-    The frontend will typically run on `http://localhost:3000`.
-
-You should now be able to access Memzy in your browser!
+4. **Start the backend server:**
+   ```sh
+   dotnet run
+   ```
+   The API will be available at `https://localhost:5001` (or as configured).
 
 ---
 
-## 🔐 Environment Variables
+### 💻 ### Frontend Setup
 
-To ensure proper functionality, set up the following environment variables:
+1. **Navigate to the frontend directory:**
+   ```sh
+   cd ../frontend
+   ```
 
-### Backend (`backend/appsettings.json` or environment variables)
+2. **Install dependencies:**
+   ```sh
+   npm install
+   ```
 
-- `ConnectionStrings:DefaultConnection`: Your database connection string.
-- `Jwt:Key`: A strong, secret key for JWT token generation.
-- `Jwt:Issuer`: The issuer of the JWT tokens.
-- `Jwt:Audience`: The audience for the JWT tokens.
+3. **Set up environment variables:**  
+   Create a `.env.local` file and add:
+   ```
+   NEXT_PUBLIC_BACKEND_API_URL=https://localhost:5001
+   ```
 
-### Frontend (`frontend/.env.local`)
+4. **Run the development server:**
+   ```sh
+   npm run dev
+   ```
+   The app will be available at `http://localhost:3000`.
 
-- `NEXT_PUBLIC_API_BASE_URL`: The base URL of your .NET Core API (e.g., `http://localhost:7000/api`).
+---
+
+## Environment Variables
+
+**Frontend:**
+- `NEXT_PUBLIC_BACKEND_API_URL` – URL of your backend API
+
+**Backend:**
+- `ConnectionStrings:DefaultConnection` – SQL Server connection string
+- JWT secret keys, etc. (see `appsettings.json`)
 
 ---
 
@@ -196,39 +171,38 @@ memzy_finalist/
 
 ---
 
-## 📡 API Endpoints
+## 📡 ---
 
-*(This section is a placeholder. You'll want to list your key API endpoints here with brief descriptions, e.g., for user management, meme uploads, etc.)*
+## API Endpoints
 
-**User Authentication**
-- `POST /api/auth/register`: Register a new user.
-- `POST /api/auth/login`: Log in a user and receive a JWT token.
+**Auth**
+- `POST /api/Auth/login` – User login
+- `POST /api/Auth/register` – User registration
+- `GET /api/Auth/getCurrentUser` – Get current user info
 
-**User Profiles**
-- `GET /api/users/{id}`: Retrieve a user's profile.
-- `PUT /api/users/{id}`: Update a user's profile.
+**User**
+- `POST /api/User/UpdateUsername`
+- `POST /api/User/UpdateUserBio`
+- `POST /api/User/UpdateProfilePicture`
+- `POST /api/User/change-password`
 
-**Meme Management**
-- `GET /api/memes`: Get a list of memes.
-- `POST /api/memes`: Upload a new meme.
+**Humor**
+- `PUT /api/Humor/ChangeHumor`
+
+*(See backend controllers for full details.)*
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-We welcome contributions to Memzy! If you have suggestions for improvements, new features, or bug fixes, please follow these steps:
-
-1.  **Fork** the repository.
-2.  **Create a new branch** for your feature or bug fix: `git checkout -b feature/your-feature-name` or `git checkout -b bugfix/issue-description`.
-3.  **Make your changes**.
-4.  **Commit your changes** with a descriptive message.
-5.  **Push your branch** to your forked repository.
-6.  **Open a pull request** to the `main` branch of the original repository.
-
-Please ensure your code adheres to the existing coding style and includes relevant tests where applicable.
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
 ---
 
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Made with ❤️ by Memzy Team**
