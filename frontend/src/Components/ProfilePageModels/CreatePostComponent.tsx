@@ -1,10 +1,9 @@
-// Components/PostsFormComponent.tsx
 'use client'
 
 import { useState } from 'react'
 import axios from 'axios'
 import { useAuth } from '@/Context/AuthContext'
-import toast, { Toaster } from 'react-hot-toast'
+import toast from 'react-hot-toast' // Removed Toaster import
 
 export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
   const [text, setText] = useState('')
@@ -26,7 +25,7 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
     formData.append('File', media)
     formData.append('Description', text)
     formData.append('MediaType', media.type.startsWith('video') ? '1' : '0')
-    formData.append('HumorTypeIds', humorType === 'Dark' ? '1' : '2')
+    formData.append('HumorTypeIds', humorType === 'Dark' ? '1' : '2') 
 
     try {
       setLoading(true)
@@ -37,17 +36,14 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         }
       })
-
+      
       setText('')
       setMedia(null)
 
-      toast.success('Post created successfully! Closing...', {
-        duration: 1500
-      })
-
-      onSuccess?.()
-
-      setTimeout(() => window.close(), 1500)
+      if (onSuccess) {
+        onSuccess()
+      }
+    
     } catch (err) {
       console.error('Post creation failed:', err)
       if (axios.isAxiosError(err)) {
@@ -66,7 +62,6 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
 
   return (
     <>
-      <Toaster position="top-center" reverseOrder={false} />
       <form
         onSubmit={handleSubmit}
         className="space-y-6 bg-[rgba(20,20,20,0.85)] backdrop-blur-lg rounded-2xl p-6 shadow-2xl border border-glass/50"
@@ -83,7 +78,7 @@ export default function PostForm({ onSuccess }: { onSuccess?: () => void }) {
         <select
           value={humorType}
           onChange={(e) => setHumorType(e.target.value)}
-          className="w-full p-3 border border-glass/20 rounded-xl text-color bg-black/90 focus:border-[#c56cf0] focus:ring-2 focus:ring-[#c56cf0]/30 outline-none transition"
+          className="w-full p-3 border border-glass/20 rounded-xl text-light bg-black/90 focus:border-[#c56cf0] focus:ring-2 focus:ring-[#c56cf0]/30 outline-none transition"
         >
           <option value="Dark">Dark Humor</option>
           <option value="Friendly">Friendly Humor</option>

@@ -1,9 +1,14 @@
-// UserPostComponent.tsx
+// src/Components/ProfilePageModels/ProfilePostsComponent.tsx
 'use client'
 
 import { useEffect,useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/Context/AuthContext'
+
+// Define the props interface for PostFeed
+interface PostFeedProps {
+  triggerRefresh: boolean; // Add this prop
+}
 
 export interface Post {
   postId: number
@@ -22,7 +27,8 @@ export interface Post {
   userId: string
 }
 
-export default function PostFeed() {
+// Update the component's functional signature to accept PostFeedProps
+export default function PostFeed({ triggerRefresh }: PostFeedProps) {
   const [posts, setPosts] = useState<Post[]>([])
   const [imageErrors, setImageErrors] = useState<Set<number>>(new Set())
   const [videoErrors, setVideoErrors] = useState<Set<number>>(new Set())
@@ -61,9 +67,6 @@ const handleDeletePost = async (postId: number) => {
     alert('Failed to delete post.')
   }
 }
-
-
-
 
 
   const getOptimizedMediaUrl = (url: string | null, type: 'image' | 'video') => {
@@ -115,7 +118,7 @@ const handleDeletePost = async (postId: number) => {
           return
         }
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/user`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/user`, { 
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -128,7 +131,7 @@ const handleDeletePost = async (postId: number) => {
         }
 
         const data = await response.json()
-        console.log('Raw API response:', data)
+        console.log('Raw API response for user posts:', data)
         setPosts(data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
@@ -138,7 +141,7 @@ const handleDeletePost = async (postId: number) => {
     }
 
     fetchPosts()
-  }, [user, token, router])
+  }, [user, token, router, triggerRefresh])
 
   const getHumorLabelById = (id?: number, fallback?: string) => {
     if (!id && fallback) return fallback

@@ -149,7 +149,7 @@ namespace Memzy_finalist.Services
             return new LikeResponseDto
             {
                 CommentId = dto.CommentId,
-                NewLikeCount = likeCount,
+                LikeCount = likeCount,
                 IsLiked = isLiked
             };
         }

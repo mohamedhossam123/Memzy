@@ -2,6 +2,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/Context/AuthContext'
 import { AuthLayout } from '@/Components/Auth/Authlayout'
 import { SearchProvider } from '@/Context/SearchContext'
@@ -28,6 +29,8 @@ export default function RootLayout({
       <body
         className={`${inter.className} bg-gradient-to-br from-darker to-primary-dark text-light min-h-screen leading-relaxed overflow-x-hidden`}
       >
+        <Toaster position="top-center" reverseOrder={false} />
+        
         <AuthProvider>
           <SearchProvider>
             <SidebarProvider>

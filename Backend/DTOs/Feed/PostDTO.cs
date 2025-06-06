@@ -16,6 +16,7 @@ public class PostDto
     public bool IsLiked { get; set; } = false;
     public string ProfileImageUrl { get; set; }
     public string Name { get; set; }
+    public string UserId { get; set; }
 }
 
 

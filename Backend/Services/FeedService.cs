@@ -29,15 +29,17 @@ namespace Memzy_finalist.Services
                 LikeCounter = p.Likes.Count,
                 IsApproved = p.IsApproved,
                 HumorTypeIds = p.PostHumors.Select(ph => ph.HumorTypeId).ToList(),
-                HumorTypes = p.PostHumors.Select(ph => new HumorTypeDto 
-                { 
-                    HumorTypeId = ph.HumorTypeId, 
-                    HumorTypeName = ph.HumorType.HumorTypeName 
+                HumorTypes = p.PostHumors.Select(ph => new HumorTypeDto
+                {
+                    HumorTypeId = ph.HumorTypeId,
+                    HumorTypeName = ph.HumorType.HumorTypeName
                 }).ToList(),
                 UserName = p.User?.UserName ?? p.User?.Name ?? "Anonymous",
                 IsLiked = currentUserId.HasValue && p.Likes.Any(l => l.UserId == currentUserId.Value),
                 ProfileImageUrl = p.User?.ProfilePictureUrl,
-                Name = p.User?.Name
+                Name = p.User?.Name,
+                UserId = p.UserId.ToString()
+
             }).ToList();
         }
 

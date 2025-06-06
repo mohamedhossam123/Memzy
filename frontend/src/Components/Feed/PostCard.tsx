@@ -1,5 +1,4 @@
-// components/PostCard
-
+// components/PostCard.tsx
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
@@ -28,7 +27,7 @@ export interface PostProps {
   likes: number
   profileImageUrl?: string | null
   isLiked?: boolean
-  onLikeUpdate?: (postId: number, isLiked: boolean, likes: number) => void
+  onLikeUpdate?: (postId: number, isLiked: boolean, likes: number) => void 
 }
 
 export default function PostCard({
@@ -44,6 +43,7 @@ export default function PostCard({
   authorId = '',
   authorName,
   profileImageUrl,
+  onLikeUpdate, 
 }: PostProps) {
   const [, setImageLoaded] = useState(false)
   const [, setImageError] = useState(false)
@@ -70,22 +70,30 @@ export default function PostCard({
     targetCommentId: number,
     updateFn: (comment: CommentResponseDto) => CommentResponseDto | null
   ): CommentResponseDto[] => {
-    return commentsArray.flatMap(comment => {
+    let updatedAny = false; 
+    const newCommentsArray = commentsArray.flatMap(comment => {
       if (comment.commentId === targetCommentId) {
-        const updatedComment = updateFn(comment)
-        return updatedComment ? [updatedComment] : []
+        const updatedComment = updateFn(comment);
+        if (updatedComment) {
+          updatedAny = true;
+          return [updatedComment];
+        } else {
+          updatedAny = true;
+          return []; 
+        }
       }
 
       if (comment.replies && comment.replies.length > 0) {
-        const updatedReplies = UpdateSubComments(comment.replies, targetCommentId, updateFn)
-        if (updatedReplies.length !== comment.replies.length ||
-            !updatedReplies.every((val, index) => val === comment.replies![index])) {
-          return [{ ...comment, replies: updatedReplies }]
+        const updatedReplies = UpdateSubComments(comment.replies, targetCommentId, updateFn);
+        if (updatedReplies !== comment.replies) { 
+          updatedAny = true;
+          return [{ ...comment, replies: updatedReplies }];
         }
       }
-      return [comment]
-    })
-  }, [])
+      return [comment]; 
+    });
+    return updatedAny ? newCommentsArray : commentsArray;
+  }, []);
 
   const fetchComments = useCallback(async () => {
     if (!user) return
@@ -137,7 +145,7 @@ export default function PostCard({
       parentCommentId: parentCommentId,
       replies: [],
     }
-  
+
     setComments(prev => {
       if (parentCommentId) {
         return UpdateSubComments(prev, parentCommentId, (parent) => ({
@@ -164,14 +172,14 @@ export default function PostCard({
       } else {
         console.error('Failed to post comment:', response.error)
         setComments(prev =>
-          UpdateSubComments(prev, optimisticCommentId, () => null)
+          UpdateSubComments(prev, optimisticCommentId, () => null) 
         )
         setLocalCommentCount(prev => prev - 1)
       }
     } catch (err) {
       console.error('Error posting comment:', err)
       setComments(prev =>
-        UpdateSubComments(prev, optimisticCommentId, () => null)
+        UpdateSubComments(prev, optimisticCommentId, () => null) 
       )
       setLocalCommentCount(prev => prev - 1)
     } finally {
@@ -195,7 +203,7 @@ export default function PostCard({
     }
     originalComment = findComment(comments, commentId)
     if (!originalComment) return
-    console.log('Original comment before toggle:', originalComment)
+
     setComments(prevComments =>
       UpdateSubComments(prevComments, commentId, (comment) => {
         const updated = {
@@ -203,16 +211,13 @@ export default function PostCard({
           isLikedByCurrentUser: !comment.isLikedByCurrentUser,
           likeCount: comment.isLikedByCurrentUser ? comment.likeCount - 1 : comment.likeCount + 1,
         }
-        console.log('Optimistic update:', { original: comment, updated })
         return updated
       })
     )
 
     try {
       const response = await toggleCommentLikeApi(api, commentId)
-      console.log('API Response:', response)
       if (response.data) {
-        console.log('Server data:', JSON.stringify(response.data, null, 2))
         setComments(prev =>
           UpdateSubComments(prev, commentId, (comment) => {
             const synced = {
@@ -227,7 +232,6 @@ export default function PostCard({
         console.error('Failed to toggle comment like:', response.error)
         setComments(prevComments =>
           UpdateSubComments(prevComments, commentId, () => {
-            console.log('Reverting to original:', originalComment)
             return originalComment!
           })
         )
@@ -236,8 +240,7 @@ export default function PostCard({
       console.error('Error toggling comment like:', err)
       setComments(prevComments =>
         UpdateSubComments(prevComments, commentId, () => {
-          console.log('Reverting to original (catch):', originalComment)
-          return originalComment!
+          return originalComment! 
         })
       )
     }
@@ -246,8 +249,24 @@ export default function PostCard({
   const deleteComment = async (commentId: number) => {
     if (!user) return
     if (!window.confirm('Are you sure you want to delete this comment?')) return
-    setComments(prev => UpdateSubComments(prev, commentId, () => null))
+
+    setComments(prev => {
+      const filterComments = (commentsArray: CommentResponseDto[]): CommentResponseDto[] => {
+        return commentsArray.flatMap(comment => {
+          if (comment.commentId === commentId) return []
+          if (comment.replies) {
+            const updatedReplies = filterComments(comment.replies);
+            if (updatedReplies.length !== comment.replies.length || !updatedReplies.every((val, idx) => val === comment.replies![idx])) {
+                 return [{ ...comment, replies: updatedReplies }];
+            }
+          }
+          return [comment]
+        })
+      }
+      return filterComments(prev)
+    })
     setLocalCommentCount(prev => prev - 1)
+
     try {
       const response = await deleteCommentApi(api, {
         commentId,
@@ -259,7 +278,7 @@ export default function PostCard({
       }
     } catch (err) {
       console.error('Error deleting comment:', err)
-      fetchComments()
+      fetchComments() 
     }
   }
 
@@ -321,8 +340,11 @@ export default function PostCard({
     try {
       const response = await togglePostLike(api, id, originalIsLiked)
       if (response.data) {
-        setLikes(response.data.likeCount)
+        setLikes(response.data.likeCount) 
         setIsLiked(response.data.isLiked)
+        if (onLikeUpdate) {
+          onLikeUpdate(id, response.data.isLiked, response.data.likeCount)
+        }
       } else {
         setIsLiked(originalIsLiked)
         setLikes(originalLikes)
@@ -348,7 +370,7 @@ export default function PostCard({
           if (entry.isIntersecting) {
             if (videoElement.paused && videoElement.readyState >= HTMLMediaElement.HAVE_METADATA) {
               videoElement.play().catch(error => {
-                console.error("Error playing video:", error); 
+                console.error("Error playing video:", error);
               });
             }
           } else {
@@ -444,7 +466,7 @@ export default function PostCard({
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill={comment.isLikedByCurrentUser ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
                   <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
                 </svg>
-                <span className="text-sm">{comment.likeCount}</span>
+                <span className="text-sm">{comment.likeCount}</span> {/* This span displays the `likeCount` */}
               </button>
 
               {user && !isDeepNested && (
@@ -472,6 +494,7 @@ export default function PostCard({
                   <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
                   <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
                 </svg>
+                <span>Delete</span>
               </button>
             )}
           </div>
@@ -545,7 +568,7 @@ export default function PostCard({
           <div className="mt-3">
             <button
               onClick={() => toggleRepliesCollapse(comment.commentId)}
-              className="flex items-center text-xs text-gray-400 hover:text-accent transition-colors mb-2 ml-2" // Added ml-2 for slight indent
+              className="flex items-center text-xs text-gray-400 hover:text-accent transition-colors mb-2 ml-2"
             >
               {areRepliesCollapsed ? (
                 <>
@@ -558,7 +581,7 @@ export default function PostCard({
                 </>
               ) : (
                 <>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">                     <path d="m18 15-6-6-6 6"/> 
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">                     <path d="m18 15-6-6-6 6"/>
                   </svg>
                   <span className="ml-1">Hide replies</span>
                 </>
@@ -598,7 +621,7 @@ export default function PostCard({
       </div>
 
       {mediaType && mediaUrl && (
-        <div className="w-full bg-black"> 
+        <div className="w-full bg-black">
           {mediaType === 'image' ? (
             <img
               src={getOptimizedMediaUrl(mediaUrl, 'image')}
@@ -615,9 +638,9 @@ export default function PostCard({
                 ref={videoRef}
                 className="w-full h-auto max-h-[80vh]"
                 onError={() => setVideoError(true)}
-                onEnded={handleVideoEnd} 
+                onEnded={handleVideoEnd}
                 playsInline
-                preload="metadata" 
+                preload="metadata"
               />
               {videoError && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
@@ -640,7 +663,7 @@ export default function PostCard({
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
               <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
             </svg>
-            <span className="text-sm">{likes}</span>
+            <span className="text-sm">{likes}</span> {/* This span displays the `likes` state */}
           </button>
 
           <button
@@ -717,6 +740,7 @@ export default function PostCard({
                 comments.map(comment => renderComment(comment, false, 0))
               ) : (
                 <div className="text-center py-6 text-gray-400">
+                  No comments yet. Be the first to share your thoughts!
                 </div>
               )}
             </div>

@@ -1,3 +1,4 @@
+//lib/api/utils.ts
 export const detectMediaType = (url: string | null): 'image' | 'video' | null => {
   if (!url) return null;
   

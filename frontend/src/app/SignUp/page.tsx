@@ -20,6 +20,9 @@ export default function SignupPage() {
   const [success, setSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+
+
+
   const router = useRouter()
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || ''
 
@@ -211,7 +214,7 @@ export default function SignupPage() {
                   </button>
                 </div>
               </div>
-
+          
               {/* Confirm */}
               <div>
                 <label className="text-xs font-medium text-primary-light mb-1.5 block">Confirm</label>

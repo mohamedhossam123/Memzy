@@ -5,7 +5,7 @@ export * from './utils';
 
 import { UserAPI } from './user';
 import { HumorAPI } from './humor';
-import { FriendsAPI } from './friend';
+import { FriendsAPI } from './friends/friendApi2';
 
 export type { 
   FullUser, 
@@ -21,7 +21,7 @@ export type {
 export type { 
   FriendRequestDTO, 
   Friend 
-} from './friend';
+} from './friends/friendApi2';
 
 export class APIClient {
   public user: UserAPI;

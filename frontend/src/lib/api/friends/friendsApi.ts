@@ -18,6 +18,7 @@ export const fetchFriendsApi = async (token: string, backendUrl: string): Promis
       headers: { Authorization: `Bearer ${token}` }
     });
 
+
     const friendsData: Friend[] = response.data.map((friend: any) => ({
       userId: friend.userId,
       name: friend.name,

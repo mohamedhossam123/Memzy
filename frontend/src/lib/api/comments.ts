@@ -11,7 +11,6 @@ export const fetchComments = async (
     console.log('Request URL:', url)
 
     const res = await api.get(url)
-
     if (!res) {
       console.error('No response received')
       return {

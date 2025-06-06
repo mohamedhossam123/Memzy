@@ -2,19 +2,18 @@
 
 import { useAuth } from '@/Context/AuthContext'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
-import { Fragment } from 'react'
+import { useEffect, useState, Fragment } from 'react'
+import { Dialog, Transition } from '@headlessui/react' // Ensure Dialog and Transition are imported
+import toast, { Toaster } from 'react-hot-toast'
 import { HumorModal } from '@/Components/ProfilePageModels/HumorModal'
 import { ProfilePictureModal } from '@/Components/ProfilePageModels/ProfilePictureModal'
 import { NameModal } from '@/Components/ProfilePageModels/NameModal'
 import { BioModal } from '@/Components/ProfilePageModels/BioModal'
 import { PasswordModal } from '@/Components/ProfilePageModels/PasswordModal'
 import PostForm from '@/Components/ProfilePageModels/CreatePostComponent'
-import PostFeed, { Post } from '@/Components/ProfilePageModels/ProfilePostsComponent'
+import PostFeed, { Post } from '@/Components/ProfilePageModels/ProfilePostsComponent' // Import Post type
 import PostsModal from '@/Components/ProfilePageModels/ProfileInsiderPostsModal'
 import { APIClient, FullUser, FriendRequestDTO, Friend } from '@/lib/api'
-
 
 export default function UserProfile() {
   const { user, token } = useAuth()
@@ -35,8 +34,7 @@ export default function UserProfile() {
   const [friendsList, setFriendsList] = useState<Friend[]>([])
   const [availableHumorTypes, setAvailableHumorTypes] = useState<string[]>([])
   const [apiClient, setApiClient] = useState<APIClient | null>(null)
-
-
+  const [refreshPostsFlag, setRefreshPostsFlag] = useState(false); // New state to trigger PostFeed refresh
 
   useEffect(() => {
     if (token) {
@@ -47,6 +45,7 @@ export default function UserProfile() {
   useEffect(() => {
     setProfileImageError(false)
   }, [userData?.profilePic])
+  
   useEffect(() => {
     if (!user) {
       router.push('/login')
@@ -286,28 +285,46 @@ export default function UserProfile() {
   }
 
   const getImageUrl = (url?: string | null) => {
-  if (!url) {
-    return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg';
-  }
-  if (url.startsWith('http')) {
-    return url; 
-  }
-  else {
-    return `${url}`;
-  }
-};
-useEffect(() => {
+    if (!url) {
+      return 'https://i.ibb.co/0pJ97CcF/default-profile.jpg';
+    }
+    if (url.startsWith('http')) {
+      return url; 
+    }
+    else {
+      return `${url}`; 
+    }
+  };
+
+  const handlePostSuccess = () => {
+    toast.success('Post created and submitted for review!', {
+      duration: 3000,
+      position: 'top-center',
+      style: {
+        zIndex: 9999,
+        background: 'rgba(20, 20, 20, 0.9)',
+        color: '#fff',
+        border: '1px solid rgba(196, 108, 240, 0.3)',
+      },
+    });
+    setTimeout(() => {
+      setActiveModal(null);
+      fetchUserDetails();
+      setRefreshPostsFlag(prev => !prev);
+    }, 1000);
+  };
+
+  useEffect(() => {
     if (!user) {
-        router.push('/login');
-        return;
+      router.push('/login');
+      return;
     }
     
     if (apiClient) {
-        setProfileImageError(false); 
-        fetchUserDetails();
+      setProfileImageError(false); 
+      fetchUserDetails();
     }
-}, [user, router, apiClient]);
-
+  }, [user, router, apiClient]);
 
   if (!isInitialLoadComplete && isLoading) {
     return (
@@ -339,17 +356,29 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-darker to-primary-dark text-light">
+      <Toaster 
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: 'rgba(20, 20, 20, 0.9)',
+            color: '#fff',
+            border: '1px solid rgba(196, 108, 240, 0.3)',
+            zIndex: 9999,
+          },
+        }}
+      />
+
       <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 md:p-8">
-        {/* Profile Header */}
         <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
-          {/* Profile Picture Section */}
           <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-accent overflow-hidden shadow-glow group">
             <img
-  src={getImageUrl(userData?.profilePic)} // Call the function without the error flag
-  alt={userData?.name || user.name || 'User'}
-  onError={() => setProfileImageError(true)} // Set error to true if image fails to load
-  className="w-full h-full object-cover"
-/>
+              src={getImageUrl(userData?.profilePic)} 
+              alt={userData?.name || user.name || 'User'}
+              onError={() => setProfileImageError(true)} 
+              className="w-full h-full object-cover"
+            />
             <button
               onClick={() => setActiveModal('profilePic')}
               className="absolute bottom-0 right-0 transform -translate-x-2 -translate-y-2 bg-glass/90 backdrop-blur-lg rounded-full p-2 shadow-lg hover:bg-accent/80 transition-all duration-300 hover:scale-110"
@@ -377,7 +406,6 @@ useEffect(() => {
             </button>
           </div>
 
-          {/* Profile Info Section */}
           <div className="flex-1 space-y-4 text-center md:text-left">
             <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
               <h1 className="text-3xl font-bold text-glow">
@@ -425,7 +453,6 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Stats & Security Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
           <div className="bg-glass/10 backdrop-blur-lg rounded-2xl p-6 shadow-glow hover:shadow-glow/50 transition-all">
             <h3 className="text-xl font-semibold mb-4 text-accent border-b border-glass pb-2">
@@ -469,9 +496,7 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Posts Section */}
         <div className="border-t border-glass/30 pt-16">
-          {/* Floating Create Button */}
           <button
             onClick={() => setActiveModal('createPost')}
             className="fixed bottom-8 right-8 z-50 bg-glass rounded-xl p-5 shadow-2xl transition hover:scale-105 hover:shadow-glow group"
@@ -486,11 +511,9 @@ useEffect(() => {
             <h2 className="text-3xl font-bold text-glow">My Posts</h2>
           </div>
 
-          {/* Posts Grid */}
-          <PostFeed />
+          <PostFeed triggerRefresh={refreshPostsFlag} />
         </div>
 
-        {/* Modals */}
         {activeModal === 'humor' && (
           <HumorModal
             isOpen
@@ -550,12 +573,16 @@ useEffect(() => {
                 as={Fragment}
                 enter="ease-out duration-300"
                 enterFrom="opacity-0"
-                enterTo="opacity-50"
+                enterTo="opacity-100"
                 leave="ease-in duration-200"
-                leaveFrom="opacity-50"
+                leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
-                <div className="fixed inset-0 bg-black" aria-hidden="true" />
+                {/* Changed Dialog.Overlay to a div with the overlay styling */}
+                <div
+                  className="fixed inset-0 bg-black bg-opacity-50"
+                  onClick={() => setActiveModal(null)}
+                />
               </Transition.Child>
 
               <span className="inline-block h-screen align-middle" aria-hidden="true">
@@ -578,18 +605,19 @@ useEffect(() => {
                     </Dialog.Title>
                     <button
                       onClick={() => setActiveModal(null)}
-                      className="text-light/50 hover:text-light/80 transition-colors"
+                      className="text-light/50 hover:text-light/80 transition-colors text-2xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10"
+                      type="button"
                     >
                       ✕
                     </button>
                   </div>
-                  <PostForm onSuccess={() => setActiveModal(null)} />
+                  <PostForm onSuccess={handlePostSuccess} />
                 </div>
               </Transition.Child>
             </div>
           </Dialog>
         </Transition>
-
+    
         {/* Friends Modal */}
         <Transition appear show={activeModal === 'friends'} as={Fragment}>
           <Dialog as="div" className="relative z-10" onClose={() => setActiveModal(null)}>
@@ -644,7 +672,7 @@ useEffect(() => {
                           friendsList.map(friend => (
                             <li key={friend.id} className="flex justify-between items-center">
                               <div className="flex items-center space-x-3">
-                                <img src={getImageUrl(friend.profilePictureUrl)} className="w-8 h-8 rounded-full" /> {/* Using the consolidated function */}
+                                <img src={getImageUrl(friend.profilePictureUrl)} className="w-8 h-8 rounded-full" />
                                 <span>{friend.name}</span>
                               </div>
                               <button

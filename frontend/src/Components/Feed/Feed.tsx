@@ -97,7 +97,6 @@ export default function Feed() {
   const [error, setError] = useState<string | null>(null)
   const [initialLoad, setInitialLoad] = useState(true)
   const { user, api } = useAuth()
-  
   const { sentinelRef } = useInfiniteScroll({
     loading,
     hasMore,
