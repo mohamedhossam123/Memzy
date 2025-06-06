@@ -12,6 +12,5 @@ export async function signup(userData: any) {
   if (!res.ok) {
     throw new Error(data.message || 'Signup failed');
   }
-
   return data;
 }

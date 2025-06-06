@@ -15,6 +15,7 @@ import PostFeed, { Post } from '@/Components/ProfilePageModels/ProfilePostsCompo
 import PostsModal from '@/Components/ProfilePageModels/ProfileInsiderPostsModal'
 import { APIClient, FullUser, FriendRequestDTO, Friend } from '@/lib/api'
 
+
 export default function UserProfile() {
   const { user, token } = useAuth()
   const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
@@ -34,6 +35,8 @@ export default function UserProfile() {
   const [friendsList, setFriendsList] = useState<Friend[]>([])
   const [availableHumorTypes, setAvailableHumorTypes] = useState<string[]>([])
   const [apiClient, setApiClient] = useState<APIClient | null>(null)
+
+
 
   useEffect(() => {
     if (token) {

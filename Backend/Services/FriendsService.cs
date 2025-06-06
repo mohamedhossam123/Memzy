@@ -22,14 +22,12 @@ namespace Memzy_finalist.Models
                     .AnyAsync(f =>
                         (f.User1Id == senderId && f.User2Id == receiverId) ||
                         (f.User1Id == receiverId && f.User2Id == senderId));
-
                 if (existingFriendship)
                     throw new InvalidOperationException("Users are already friends");
                 var existingRequest = await _context.FriendRequests
                     .AnyAsync(fr =>
                         (fr.SenderId == senderId && fr.ReceiverId == receiverId) ||
                         (fr.SenderId == receiverId && fr.ReceiverId == senderId));
-
                 if (existingRequest)
                     throw new InvalidOperationException("Pending request already exists between these users");
 
