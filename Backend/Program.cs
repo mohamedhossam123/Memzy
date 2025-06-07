@@ -27,6 +27,7 @@ builder.Services.AddDataProtection()
 
 /*** Service Registrations ***/
 builder.WebHost.UseWebRoot("wwwroot");
+builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();

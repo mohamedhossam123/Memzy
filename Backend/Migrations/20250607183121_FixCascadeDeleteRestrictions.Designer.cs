@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Memzy_finalist.Migrations
 {
     [DbContext(typeof(MemzyContext))]
-    [Migration("20250602152018_UpdateUserDeletionCascade2123123")]
-    partial class UpdateUserDeletionCascade2123123
+    [Migration("20250607183121_FixCascadeDeleteRestrictions")]
+    partial class FixCascadeDeleteRestrictions
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,6 +27,32 @@ namespace Memzy_finalist.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("GroupMember", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("GroupMembers");
+                });
 
             modelBuilder.Entity("HumorType", b =>
                 {
@@ -185,6 +211,53 @@ namespace Memzy_finalist.Migrations
                         .IsUnique();
 
                     b.ToTable("Friendships");
+                });
+
+            modelBuilder.Entity("Memzy_finalist.Models.GroupMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SenderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("GroupMessages");
+                });
+
+            modelBuilder.Entity("Memzy_finalist.Models.Groups", b =>
+                {
+                    b.Property<int>("GroupId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GroupId"));
+
+                    b.Property<string>("GroupName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("GroupId");
+
+                    b.ToTable("Groups");
                 });
 
             modelBuilder.Entity("Memzy_finalist.Models.Message", b =>
@@ -368,6 +441,25 @@ namespace Memzy_finalist.Migrations
                     b.ToTable("UserHumorTypes");
                 });
 
+            modelBuilder.Entity("GroupMember", b =>
+                {
+                    b.HasOne("Memzy_finalist.Models.Groups", "Group")
+                        .WithMany("Members")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Memzy_finalist.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Memzy_finalist.Models.Comment", b =>
                 {
                     b.HasOne("Memzy_finalist.Models.Comment", "ParentComment")
@@ -384,7 +476,7 @@ namespace Memzy_finalist.Migrations
                     b.HasOne("Memzy_finalist.Models.User", "User")
                         .WithMany("Comments")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("ParentComment");
@@ -399,13 +491,13 @@ namespace Memzy_finalist.Migrations
                     b.HasOne("Memzy_finalist.Models.Comment", "Comment")
                         .WithMany("Likes")
                         .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Memzy_finalist.Models.User", "User")
                         .WithMany("CommentLikes")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Comment");
@@ -418,7 +510,7 @@ namespace Memzy_finalist.Migrations
                     b.HasOne("Memzy_finalist.Models.Post", "Post")
                         .WithMany("Likes")
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Memzy_finalist.Models.User", "User")
@@ -437,13 +529,13 @@ namespace Memzy_finalist.Migrations
                     b.HasOne("Memzy_finalist.Models.User", "Receiver")
                         .WithMany("FriendRequestsReceived")
                         .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Memzy_finalist.Models.User", "Sender")
                         .WithMany("FriendRequestsSent")
                         .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Receiver");
@@ -456,13 +548,13 @@ namespace Memzy_finalist.Migrations
                     b.HasOne("Memzy_finalist.Models.User", "User1")
                         .WithMany("FriendsAsUser1")
                         .HasForeignKey("User1Id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Memzy_finalist.Models.User", "User2")
                         .WithMany("FriendsAsUser2")
                         .HasForeignKey("User2Id")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User1");
@@ -470,18 +562,37 @@ namespace Memzy_finalist.Migrations
                     b.Navigation("User2");
                 });
 
+            modelBuilder.Entity("Memzy_finalist.Models.GroupMessage", b =>
+                {
+                    b.HasOne("Memzy_finalist.Models.Groups", "Group")
+                        .WithMany("Messages")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Memzy_finalist.Models.User", "Sender")
+                        .WithMany("GroupMessagesSent")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Sender");
+                });
+
             modelBuilder.Entity("Memzy_finalist.Models.Message", b =>
                 {
                     b.HasOne("Memzy_finalist.Models.User", "Receiver")
                         .WithMany("MessagesReceived")
                         .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Memzy_finalist.Models.User", "Sender")
                         .WithMany("MessagesSent")
                         .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Receiver");
@@ -552,6 +663,13 @@ namespace Memzy_finalist.Migrations
                     b.Navigation("Replies");
                 });
 
+            modelBuilder.Entity("Memzy_finalist.Models.Groups", b =>
+                {
+                    b.Navigation("Members");
+
+                    b.Navigation("Messages");
+                });
+
             modelBuilder.Entity("Memzy_finalist.Models.Post", b =>
                 {
                     b.Navigation("Comments");
@@ -574,6 +692,8 @@ namespace Memzy_finalist.Migrations
                     b.Navigation("FriendsAsUser1");
 
                     b.Navigation("FriendsAsUser2");
+
+                    b.Navigation("GroupMessagesSent");
 
                     b.Navigation("MessagesReceived");
 

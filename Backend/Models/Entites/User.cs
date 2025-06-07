@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 using Memzy_finalist.Models.Entities;
 
 namespace Memzy_finalist.Models
@@ -12,6 +9,7 @@ namespace Memzy_finalist.Models
     {
         public User()
         {
+            
             FriendRequestsSent = new HashSet<FriendRequest>();
             FriendRequestsReceived = new HashSet<FriendRequest>();
             FriendsAsUser1 = new HashSet<Friendship>();
@@ -61,7 +59,7 @@ namespace Memzy_finalist.Models
         public virtual ICollection<Message> MessagesSent { get; set; }
         public virtual ICollection<Message> MessagesReceived { get; set; }
         public virtual ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();
-
+        public virtual ICollection<GroupMessage> GroupMessagesSent { get; set; } = new List<GroupMessage>();
         public virtual ICollection<Post> Posts { get; set; }
 public virtual ICollection<CommentLike> CommentLikes { get; set; }
         public virtual ICollection<Comment> Comments { get; set; }
