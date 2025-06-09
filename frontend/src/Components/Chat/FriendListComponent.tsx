@@ -7,45 +7,46 @@ import { fetchFriendsApi, Friend } from '@/lib/api/friends/friendsApi'
 
 interface Props {
   onSelectFriend: (
-    friendId: number,
-    friendName: string,
+    chatType: 'individual',
+    chatId: number,
+    chatName: string,
     username: string,
     profilePictureUrl?: string
-  ) => void
-  selectedFriendId?: number
+  ) => void;
+  selectedFriendId?: number;
 }
 
 const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
-  const { token } = useAuth() 
+  const { token } = useAuth()
   const [friends, setFriends] = useState<Friend[]>([])
-  const [filteredFriends, setFilteredFriends] = useState<Friend[]>([]) 
-  const [loading, setLoading] = useState(true) 
+  const [filteredFriends, setFilteredFriends] = useState<Friend[]>([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [searchTerm, setSearchTerm] = useState('') 
-
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL
+  const [searchTerm, setSearchTerm] = useState('')
 
   const loadFriends = useCallback(async () => {
-    if (!token || !backendUrl) {
+    if (!token) { 
       setLoading(false);
       return;
     }
     try {
-      setLoading(true); 
-      setError(''); 
-      const data = await fetchFriendsApi(token, backendUrl);
+      setLoading(true);
+      setError('');
+      const data = await fetchFriendsApi(token);
       setFriends(data || []);
-      setFilteredFriends(data || []); 
+      setFilteredFriends(data || []);
     } catch (err: any) {
       console.error('Error in FriendsList component:', err);
       setError(err.message || 'Failed to load friends. Please try again.');
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
-  }, [token, backendUrl]); 
+  }, [token]); 
+
   useEffect(() => {
     loadFriends();
   }, [loadFriends]);
+
   useEffect(() => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -53,11 +54,12 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
         friend.name.toLowerCase().includes(term) ||
         friend.username.toLowerCase().includes(term)
       );
-      setFilteredFriends(filtered); 
+      setFilteredFriends(filtered);
     } else {
-      setFilteredFriends(friends); 
+      setFilteredFriends(friends);
     }
-  }, [searchTerm, friends]); 
+  }, [searchTerm, friends]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-dark to-darker p-8">
@@ -108,8 +110,8 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
             </h1>
             <div className="flex space-x-2">
               <button
-                onClick={loadFriends} // Call loadFriends to refresh the list
-                disabled={loading} // Disable button while loading
+                onClick={loadFriends} 
+                disabled={loading} 
                 className="p-2 rounded-full hover:bg-glass/20 transition-colors text-light hover:text-accent disabled:opacity-50"
                 aria-label="Refresh friends list"
                 title="Refresh friends list"
@@ -136,14 +138,13 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
               <h3 className="text-lg font-medium mb-2">Couldn't load friends</h3>
               <p className="text-red-400/70 mb-4">{error}</p>
               <button
-                onClick={loadFriends} // Button to retry loading friends
+                onClick={loadFriends} 
                 className="bg-red-500/90 hover:bg-red-400 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-md"
               >
                 Try Again
               </button>
             </div>
           ) : filteredFriends.length === 0 ? (
-            // No friends or no search results message
             <div className="p-6 text-light text-center py-16">
               {searchTerm ? (
                 <>
@@ -151,7 +152,7 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
                   <h3 className="text-xl font-medium mb-2">No matches found</h3>
                   <p className="text-light/70">We couldn't find any friends matching "<span className="text-accent">{searchTerm}</span>"</p>
                   <button
-                    onClick={() => setSearchTerm('')} // Clear search term button
+                    onClick={() => setSearchTerm('')} 
                     className="mt-4 bg-glass/20 hover:bg-glass/30 text-light px-4 py-2 rounded-lg border border-glass/30 transition-colors"
                   >
                     Clear Search
@@ -167,13 +168,18 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
               )}
             </div>
           ) : (
-            // Display the list of filtered friends
             <div className="p-6">
               <div className="space-y-3">
                 {filteredFriends.map((friend) => (
                   <div
                     key={friend.userId}
-                    onClick={() => onSelectFriend(friend.userId, friend.name, friend.username, friend.profilePicture)}
+                    onClick={() => onSelectFriend(
+                      'individual', 
+                      friend.userId,
+                      friend.name,
+                      friend.username,
+                      friend.profilePictureUrl 
+                    )}
                     className={`bg-glass/10 backdrop-blur-lg rounded-xl p-4 cursor-pointer transition-all duration-300 border hover:shadow-md ${
                       selectedFriendId === friend.userId
                         ? 'border-accent/50 shadow-glow bg-glass/20 shadow-accent/20'
@@ -182,9 +188,9 @@ const FriendsList = ({ onSelectFriend, selectedFriendId }: Props) => {
                   >
                     <div className="flex items-center gap-4">
                       <div className="relative">
-                        {friend.profilePicture ? (
+                        {friend.profilePictureUrl ? (
                           <img
-                            src={friend.profilePicture}
+                            src={friend.profilePictureUrl} 
                             alt={friend.name}
                             className="w-12 h-12 rounded-full object-cover border-2 border-glass/30 shadow-md"
                           />

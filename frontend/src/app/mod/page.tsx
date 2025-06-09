@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/Context/AuthContext'
 import { useSearch } from '@/Context/SearchContext'
-import { ModeratorAPI, PendingPost, User } from '@/lib/api/moderator'
+import { ModeratorAPI } from '@/lib/api/moderator'
+import { PendingPost, User } from '@/lib/api/types' 
 import { detectMediaType, getOptimizedMediaUrl } from '@/lib/api/utils'
 
 export default function ModeratorDashboard() {
@@ -47,9 +48,9 @@ export default function ModeratorDashboard() {
               status: post.status || 'pending',
               userId: post.userId,
               user: {
-                id: post.user?.id || post.userId,
+                userId: post.user?.userId || post.user?.id || post.userId,
                 name: post.user?.name || post.author || 'Unknown user',
-                userName: post.user?.userName || post.userName || 'unknown',
+                username: post.user?.username || post.user?.userName || post.username || 'unknown',
                 email: post.user?.email || '',
                 status: post.user?.status || 'user',
                 profilePictureUrl: post.user?.profilePictureUrl
@@ -60,7 +61,15 @@ export default function ModeratorDashboard() {
           setPendingPosts(transformedPosts)
         } else {
           const users = await moderatorApi.fetchAllUsers()
-          setAllUsers(users.filter((u: User) => u.id !== currentUser?.userId))
+          const transformedUsers = users.map((user: any) => ({
+            userId: user.id || user.userId,
+            name: user.name,
+            email: user.email,
+            username: user.userName || user.username,
+            status: user.status,
+            profilePictureUrl: user.profilePictureUrl
+          }))
+          setAllUsers(transformedUsers.filter((u: User) => u.userId !== currentUser?.userId))
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load data')
@@ -98,7 +107,7 @@ export default function ModeratorDashboard() {
       const modId = currentUser.userId
       await moderatorApi.deleteUser({ id: userId, modId })
       
-      setAllUsers(users => users.filter(user => user.id !== userId))
+      setAllUsers(users => users.filter(user => user.userId !== userId))
       showMessage('success', 'User deleted successfully')
     } catch (err) {
       showMessage('error', err instanceof Error ? err.message : 'Action failed')
@@ -115,7 +124,7 @@ export default function ModeratorDashboard() {
       showMessage('success', 'User promoted to moderator successfully')
       setAllUsers(users =>
         users.map(user =>
-          user.id === userId ? { ...user, status: 'moderator' } : user
+          user.userId === userId ? { ...user, status: 'moderator' } : user
         )
       )
     } catch (err) {
@@ -129,7 +138,7 @@ export default function ModeratorDashboard() {
   }
 
   const filteredUsers = allUsers.filter(user => 
-    [user.name, user.userName, user.email].some(field => 
+    [user.name, user.username, user.email].some(field => 
       field?.toLowerCase().includes(searchTerm.toLowerCase())
     )
   )
@@ -344,7 +353,7 @@ export default function ModeratorDashboard() {
                     )}
                     <div>
                       <h3 className="font-semibold">{post.user.name}</h3>
-                      <p className="text-xs text-light/50">@{post.user.userName}</p>
+                      <p className="text-xs text-light/50">@{post.user.username}</p>
                       <p className="text-xs text-light/50">{new Date(post.timestamp).toLocaleString()}</p>
                     </div>
                   </div>
@@ -403,7 +412,7 @@ export default function ModeratorDashboard() {
           {/* Users Grid with Make Moderator and Delete Buttons */}
           <div className="grid gap-4">
             {filteredUsers.map(user => (
-              <div key={user.id} className="flex items-center justify-between p-4 bg-glass/10 rounded-xl shadow-glow">
+              <div key={user.userId} className="flex items-center justify-between p-4 bg-glass/10 rounded-xl shadow-glow">
                 <div className="flex items-center gap-3">
                   {user.profilePictureUrl ? (
                     <img src={user.profilePictureUrl} alt={user.name} className="w-12 h-12 rounded-full object-cover" />
@@ -414,13 +423,13 @@ export default function ModeratorDashboard() {
                   )}
                   <div>
                     <p className="font-semibold">{user.name}</p>
-                    <p className="text-sm text-light/70">{user.userName}</p>
+                    <p className="text-sm text-light/70">{user.username}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <button
                   disabled={user.status === 'moderator'}
-                  onClick={() => handleMakeModerator(user.id)}
+                  onClick={() => handleMakeModerator(user.userId)}
                   className={`px-3 py-1 rounded text-white text-sm ${
                     user.status === 'moderator' ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
                   }`}
@@ -429,7 +438,7 @@ export default function ModeratorDashboard() {
                 </button>
 
                   <button
-                    onClick={() => handleDeleteUser(user.id)}
+                    onClick={() => handleDeleteUser(user.userId)}
                     className="px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-sm"
                   >
                     Delete

@@ -1,39 +1,70 @@
-export interface Message {
-  messageId: number;
-  content: string;
-  timestamp: string;
-  senderId: number;
-  receiverId: number;
-  formattedTime?: string;
-}
+// lib/api/messaging/type.ts
+import { ExtendedMessage } from '@/lib/api/types';
 
-export interface PendingMessage extends Message {
-  isPending: true;
-  tempId: string;
-}
+export type { Message, PendingMessage, ExtendedMessage } from '@/lib/api/types';
 
-export type ExtendedMessage = Message | PendingMessage;
-
-export type MessageAction = 
-  | { type: 'add'; payload: Message[] }
-  | { type: 'prepend'; payload: Message[] }
-  | { type: 'set'; payload: Message[] }
+export type MessageAction =
+  | { type: 'set'; payload: ExtendedMessage[] }
+  | { type: 'add'; payload: ExtendedMessage[] }
+  | { type: 'prepend'; payload: ExtendedMessage[] }
   | { type: 'remove'; payload: number };
 
-export const messageReducer = (state: Message[], action: MessageAction): Message[] => {
+export const messageReducer = (
+  state: ExtendedMessage[],
+  action: MessageAction
+): ExtendedMessage[] => {
   switch (action.type) {
-    case 'remove':
-      return state.filter(msg => msg.messageId !== action.payload);
+    case 'set':
+      return action.payload.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
     case 'add':
-      return [...state, ...action.payload];
+      let newState = [...state];
+      action.payload.forEach((newMessage) => {
+        if (newMessage.messageId !== -1 && typeof newMessage.messageId === 'number') {
+          const existingIndex = newState.findIndex(
+            (existingMsg) => existingMsg.messageId === newMessage.messageId
+          );
+          if (existingIndex !== -1) {
+            return; // Skip duplicate message
+          }
+        }
+        newState.push(newMessage);
+      });
+      return newState.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
     case 'prepend':
-      return [...action.payload, ...state];
-    case 'set':  
-      return action.payload;
+      const uniquePrependedMessages = action.payload.filter(
+        (prependingMessage) => !state.some((existing) => existing.messageId === prependingMessage.messageId)
+      );
+      return [...uniquePrependedMessages, ...state].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    case 'remove':
+      return state.filter((msg) => msg.messageId !== action.payload);
+
     default:
       return state;
   }
 };
 
-export const formatTime = (timestamp: string) =>
-  new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+export const formatTime = (isoString: string): string => {
+  const date = new Date(isoString);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const minutes = Math.floor(diff / (1000 * 60));
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes} min ago`;
+  if (hours < 24) return `${hours} hr ago`;
+  if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
+
+  return date.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }) + ' ' + date.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};

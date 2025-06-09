@@ -12,7 +12,7 @@ import {
   toggleCommentLike as toggleCommentLikeApi,
   deleteComment as deleteCommentApi,
   fetchCommentCount as fetchCommentCountApi,
-} from '@/lib/api'
+} from '@/lib/api' 
 
 export interface PostProps {
   id: number
@@ -20,14 +20,15 @@ export interface PostProps {
   content: string
   mediaType?: 'image' | 'video' | null
   authorName?: string
-  authorId?: string
+  authorId?: string 
   mediaUrl?: string | null
   timestamp: string
   humorType: 'Dark Humor' | 'Friendly Humor'
   likes: number
   profileImageUrl?: string | null
   isLiked?: boolean
-  onLikeUpdate?: (postId: number, isLiked: boolean, likes: number) => void 
+  onLikeUpdate?: (postId: number, isLiked: boolean, likes: number) => void
+  onPostDelete?: (postId: number) => void 
 }
 
 export default function PostCard({
@@ -43,7 +44,8 @@ export default function PostCard({
   authorId = '',
   authorName,
   profileImageUrl,
-  onLikeUpdate, 
+  onLikeUpdate,
+  onPostDelete,
 }: PostProps) {
   const [, setImageLoaded] = useState(false)
   const [, setImageError] = useState(false)
@@ -61,16 +63,20 @@ export default function PostCard({
   const [replyingToCommentId, setReplyingToCommentId] = useState<number | null>(null)
   const [replyContent, setReplyContent] = useState('')
   const [collapsedReplies, setCollapsedReplies] = useState<Set<number>>(new Set())
-  const { api, user } = useAuth()
+  const { api, user } = useAuth() 
   const videoRef = useRef<HTMLVideoElement>(null)
   const commentFormRef = useRef<HTMLDivElement>(null)
+
+  const isModerator = user?.status?.toLowerCase() === 'moderator'
+  const isAuthor = user?.userId === Number(authorId);
+  const canDeletePost = isAuthor || isModerator
 
   const UpdateSubComments = useCallback((
     commentsArray: CommentResponseDto[],
     targetCommentId: number,
     updateFn: (comment: CommentResponseDto) => CommentResponseDto | null
   ): CommentResponseDto[] => {
-    let updatedAny = false; 
+    let updatedAny = false;
     const newCommentsArray = commentsArray.flatMap(comment => {
       if (comment.commentId === targetCommentId) {
         const updatedComment = updateFn(comment);
@@ -79,18 +85,18 @@ export default function PostCard({
           return [updatedComment];
         } else {
           updatedAny = true;
-          return []; 
+          return [];
         }
       }
 
       if (comment.replies && comment.replies.length > 0) {
         const updatedReplies = UpdateSubComments(comment.replies, targetCommentId, updateFn);
-        if (updatedReplies !== comment.replies) { 
+        if (updatedReplies !== comment.replies) {
           updatedAny = true;
           return [{ ...comment, replies: updatedReplies }];
         }
       }
-      return [comment]; 
+      return [comment];
     });
     return updatedAny ? newCommentsArray : commentsArray;
   }, []);
@@ -172,14 +178,14 @@ export default function PostCard({
       } else {
         console.error('Failed to post comment:', response.error)
         setComments(prev =>
-          UpdateSubComments(prev, optimisticCommentId, () => null) 
+          UpdateSubComments(prev, optimisticCommentId, () => null)
         )
         setLocalCommentCount(prev => prev - 1)
       }
     } catch (err) {
       console.error('Error posting comment:', err)
       setComments(prev =>
-        UpdateSubComments(prev, optimisticCommentId, () => null) 
+        UpdateSubComments(prev, optimisticCommentId, () => null)
       )
       setLocalCommentCount(prev => prev - 1)
     } finally {
@@ -240,7 +246,7 @@ export default function PostCard({
       console.error('Error toggling comment like:', err)
       setComments(prevComments =>
         UpdateSubComments(prevComments, commentId, () => {
-          return originalComment! 
+          return originalComment!
         })
       )
     }
@@ -248,6 +254,13 @@ export default function PostCard({
 
   const deleteComment = async (commentId: number) => {
     if (!user) return
+    const targetComment = comments.find(c => c.commentId === commentId) || comments.flatMap(c => c.replies || []).find(r => r.commentId === commentId);
+
+    if (!targetComment || (user.userId !== targetComment.userId && !isModerator)) {
+      alert("You don't have permission to delete this comment.");
+      return;
+    }
+
     if (!window.confirm('Are you sure you want to delete this comment?')) return
 
     setComments(prev => {
@@ -257,7 +270,7 @@ export default function PostCard({
           if (comment.replies) {
             const updatedReplies = filterComments(comment.replies);
             if (updatedReplies.length !== comment.replies.length || !updatedReplies.every((val, idx) => val === comment.replies![idx])) {
-                 return [{ ...comment, replies: updatedReplies }];
+                  return [{ ...comment, replies: updatedReplies }];
             }
           }
           return [comment]
@@ -270,7 +283,7 @@ export default function PostCard({
     try {
       const response = await deleteCommentApi(api, {
         commentId,
-        userId: user.userId,
+        userId: user.userId, 
       })
       if (!response.data) {
         console.error('Failed to delete comment:', response.error)
@@ -278,9 +291,46 @@ export default function PostCard({
       }
     } catch (err) {
       console.error('Error deleting comment:', err)
-      fetchComments() 
+      fetchComments()
     }
   }
+
+  const handleDeletePost = async () => {
+  if (!user) {
+    console.warn("User not logged in. Cannot delete post.");
+    return;
+  }
+
+  if (!canDeletePost) {
+    alert("You don't have permission to delete this post.");
+    return;
+  }
+
+  if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+    return;
+  }
+
+  try {
+    const response = await api.delete(`${process.env.NEXT_PUBLIC_BACKEND_API_URL!}/api/Moderator/deletePost`, {
+      body: JSON.stringify({ postId: id }), 
+      authenticated: true,
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response || !response.ok) {
+      const errorData = response ? await response.json() : null;
+      throw new Error(errorData?.message || errorData?.Message || `Failed to delete post: ${response?.statusText || 'Unknown error'}`);
+    }
+
+    console.log('Post deleted successfully!');
+    if (onPostDelete) {
+      onPostDelete(id);
+    }
+  } catch (error: any) {
+    console.error('Error deleting post:', error);
+    alert(`Error deleting post: ${error.message || 'An unexpected error occurred'}`);
+  }
+};
 
   useEffect(() => {
     const fetchCommentCount = async () => {
@@ -340,7 +390,7 @@ export default function PostCard({
     try {
       const response = await togglePostLike(api, id, originalIsLiked)
       if (response.data) {
-        setLikes(response.data.likeCount) 
+        setLikes(response.data.likeCount)
         setIsLiked(response.data.isLiked)
         if (onLikeUpdate) {
           onLikeUpdate(id, response.data.isLiked, response.data.likeCount)
@@ -407,6 +457,10 @@ export default function PostCard({
     const maxDepth = 5
     const isDeepNested = depth >= maxDepth
 
+    // Determine if the current user can delete this specific comment
+    const canDeleteThisComment = user && (user.userId === comment.userId || isModerator);
+
+
     return (
       <div
         key={comment.commentId}
@@ -431,7 +485,6 @@ export default function PostCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <p className="font-semibold text-gray-100 truncate">{comment.userName}</p>
-                {/* Ensure authorId is a string for comparison if comment.userId could be number */}
                 {String(comment.userId) === authorId && (
                   <span className="text-xs px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded-full">Author</span>
                 )}
@@ -483,7 +536,8 @@ export default function PostCard({
               )}
             </div>
 
-            {user && user.userId === comment.userId && (
+            {/* Conditionally render delete button for comments */}
+            {canDeleteThisComment && (
               <button
                 onClick={() => deleteComment(comment.commentId)}
                 className="text-red-400/80 hover:text-red-400 text-sm transition-colors flex items-center gap-1"
@@ -581,7 +635,7 @@ export default function PostCard({
                 </>
               ) : (
                 <>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">                     <path d="m18 15-6-6-6 6"/>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">       <path d="m18 15-6-6-6 6"/>
                   </svg>
                   <span className="ml-1">Hide replies</span>
                 </>
@@ -615,6 +669,21 @@ export default function PostCard({
             <span className="text-xs text-gray-400">{new Date(timestamp).toLocaleString()}</span>
           </div>
           <div className="ml-auto text-xs px-2 py-1 bg-glass/10 border border-gray-600 rounded-full text-gray-300">{humorType}</div>
+
+          {/* New: Delete Post Button */}
+          {canDeletePost && (
+            <button
+              onClick={handleDeletePost}
+              className="text-red-500 hover:text-red-400 transition-colors ml-4 p-1 rounded-full hover:bg-gray-700"
+              title="Delete post"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 6h18"/>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+              </svg>
+            </button>
+          )}
         </div>
 
         <p className="text-gray-100 whitespace-pre-line mt-3">{content}</p>
@@ -663,7 +732,7 @@ export default function PostCard({
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
               <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
             </svg>
-            <span className="text-sm">{likes}</span> {/* This span displays the `likes` state */}
+            <span className="text-sm">{likes}</span>
           </button>
 
           <button
@@ -703,7 +772,7 @@ export default function PostCard({
                     className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 text-gray-100 placeholder-gray-500 resize-none"
                     rows={3}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey && e.ctrlKey) { // Ctrl+Enter to submit
+                      if (e.key === 'Enter' && !e.shiftKey && e.ctrlKey) { 
                         e.preventDefault()
                         submitComment()
                       }

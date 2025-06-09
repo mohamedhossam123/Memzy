@@ -37,6 +37,7 @@ namespace Memzy_finalist.Models
 
         [MaxLength(500)]
         public string ProfilePictureUrl { get; set; }
+        
 
         [MaxLength(500)]
         public string Bio { get; set; }

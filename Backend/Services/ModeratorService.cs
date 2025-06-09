@@ -57,12 +57,43 @@ public class ModeratorService : IModeratorService
     public async Task<bool> DeletePostAsync(int postId, int modId)
     {
         if (!await IsUserModeratorAsync(modId)) return false;
-        var post = await _context.Posts.FindAsync(postId);
-        if (post == null) return false;
+        var post = await _context.Posts
+            .Include(p => p.Likes) 
+            .Include(p => p.Comments) 
+                .ThenInclude(c => c.Likes) 
+            .Include(p => p.Comments)
+            .Include(p => p.PostHumors) 
+            .FirstOrDefaultAsync(p => p.PostId == postId);
+
+        if (post == null) return false; 
+
+        if (post.Likes != null && post.Likes.Any()) 
+        {
+            _context.PostLikes.RemoveRange(post.Likes);
+        }
+        if (post.Comments != null && post.Comments.Any()) 
+        {
+            foreach (var comment in post.Comments)
+            {
+                if (comment.Likes != null && comment.Likes.Any())
+                {
+                    _context.CommentLikes.RemoveRange(comment.Likes);
+                }
+                if (comment.Replies != null && comment.Replies.Any()) { _context.Comments.RemoveRange(comment.Replies); }
+            }
+            _context.Comments.RemoveRange(post.Comments);
+        }
+        
+        if (post.PostHumors != null && post.PostHumors.Any())
+        {
+            _context.PostHumors.RemoveRange(post.PostHumors);
+        }
         _context.Posts.Remove(post);
         await _context.SaveChangesAsync();
+        
         return true;
     }
+
 
     public async Task DeleteUserAsync(int id)
     {

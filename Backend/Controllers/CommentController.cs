@@ -29,7 +29,7 @@ namespace MyApiProject.Controllers
         }
 
         [HttpPost("addComment")]
-public async Task<IActionResult> AddComment([FromBody] AddCommentDto dto)
+        public async Task<IActionResult> AddComment([FromBody] AddCommentDto dto)
 {
     try
     {
@@ -86,6 +86,7 @@ public async Task<IActionResult> AddComment([FromBody] AddCommentDto dto)
                 replies = replyCount
             });
         }
+
         [HttpPost("toggleLikeComments")]
         public async Task<IActionResult> ToggleCommentLike(LikeCommentDto dto)
         {

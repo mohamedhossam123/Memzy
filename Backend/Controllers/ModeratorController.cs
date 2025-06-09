@@ -8,10 +8,12 @@ namespace MyApiProject.Controllers
     public class ModeratorController : ControllerBase
     {
         private readonly IModeratorService _moderatorService;
+        private readonly IAuthenticationService _auth;
 
-        public ModeratorController(IModeratorService moderatorService)
+        public ModeratorController(IModeratorService moderatorService, IAuthenticationService auth)
         {
             _moderatorService = moderatorService;
+            _auth = auth;
         }
         [HttpDelete("deleteUser")]
         [Authorize]
@@ -87,7 +89,9 @@ namespace MyApiProject.Controllers
         {
             try
             {
-                var result = await _moderatorService.DeletePostAsync(request.PostId, request.ModId);
+                var modid = await _auth.GetAuthenticatedUserId();
+
+                var result = await _moderatorService.DeletePostAsync(request.PostId, modid);
                 if (result)
                 {
                     return Ok(new { Message = "Post deleted successfully" });

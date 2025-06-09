@@ -15,6 +15,7 @@ using System.Text.Json;
 using MyApiProject.Services;
 using Microsoft.AspNetCore.SignalR;
 using Memzy_finalist.Hubs;
+using Memzy_finalist.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,7 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddSignalR();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
 
 

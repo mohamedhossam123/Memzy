@@ -55,34 +55,48 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
     } else if (userData && !userData.isFriend) {
       setUserPosts([])
     }
-  }, [userData?.isFriend, userData?.id, apiClient])
+  }, [userData?.isFriend, userData?.userId, apiClient])
 
   const fetchUserProfile = async () => {
-    if (!apiClient) return
-    
-    try {
-      const data = await apiClient.user.getUserById(userId)
-      const friendshipStatus = await apiClient.friends.getFriendshipStatus(data.id)
-      
-      const combinedData: UserProfileData = {
-        ...data,
-        ...friendshipStatus
-      }
-      
-      setUserData(combinedData)
-      if (combinedData.isFriend) {
-        fetchUserPosts()
-      }
-    } catch (err: any) {
-      if (err.message.includes('404')) {
-        setError('User not found')
-      } else {
-        setError('Failed to load user profile')
-      }
-    } finally {
-      setIsLoading(false)
+  if (!apiClient) return;
+
+  try {
+    const data = await apiClient.user.getUserById(userId); 
+    console.log("Raw data from getUserById:", data); 
+    const userIdentifier = data.UserId || data.userId || data.id; 
+
+    if (userIdentifier === undefined || userIdentifier === null) {
+        console.error("User ID is undefined from getUserById response:", data);
+        setError("Failed to load user profile: User ID missing from API response.");
+        setIsLoading(false);
+        return;
     }
+    const targetFriendId = typeof userIdentifier === 'string' ? parseInt(userIdentifier, 10) : userIdentifier;
+
+    console.log("Calling getFriendshipStatus with friendId:", targetFriendId);
+    const friendshipStatus = await apiClient.friends.getFriendshipStatus(targetFriendId);
+    console.log("Friendship status:", friendshipStatus);
+
+    const combinedData: UserProfileData = {
+      ...data,
+      userId: targetFriendId,
+      ...friendshipStatus
+    };
+    setUserData(combinedData);
+    if (combinedData.isFriend) {
+      fetchUserPosts();
+    }
+  } catch (err: any) {
+    console.error('Error fetching user profile:', err);
+    if (err.message.includes('404')) {
+      setError('User not found');
+    } else {
+      setError('Failed to load user profile');
+    }
+  } finally {
+    setIsLoading(false);
   }
+};
 
   const fetchUserPosts = async () => {
     if (!apiClient) return
@@ -114,7 +128,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
     
     setFriendshipLoading(true)
     try {
-      const result = await apiClient.friends.sendRequest(userData.id)
+      const result = await apiClient.friends.sendRequest(userData.userId)
       setUserData({ 
         ...userData, 
         hasPendingRequest: true,
@@ -195,7 +209,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
     
     setFriendshipLoading(true)
     try {
-      await apiClient.friends.removeFriend(userData.id)
+      await apiClient.friends.removeFriend(userData.userId)
       setUserData({ 
         ...userData, 
         isFriend: false,
@@ -360,7 +374,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
             </div>
             
             <div className="text-light/70 text-lg">
-              @{userData?.userName || 'username'}
+              @{userData?.username || 'username'}
             </div>
             
             <div className="space-y-2">

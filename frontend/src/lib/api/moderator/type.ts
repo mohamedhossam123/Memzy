@@ -1,3 +1,4 @@
+// lib/api/moderator/type
 export interface CommentResponseDto {
   commentId: number;
   postId: number;

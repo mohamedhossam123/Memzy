@@ -28,7 +28,8 @@ export class HumorAPI {
     const response = await fetch(`${this.baseURL}/api/UserHumor/GetAllHumorTypes`, {
       headers: { Authorization: `Bearer ${this.token}` }
     })
-    
+
+
     if (!response.ok) {
       throw new Error('Failed to fetch humor types')
     }
@@ -36,6 +37,8 @@ export class HumorAPI {
     const data: HumorTypesResponse = await response.json()
     return data.humorTypes || []
   }
+
+
 
   async getUserHumor(): Promise<string[]> {
     const response = await fetch(`${this.baseURL}/api/UserHumor/GetUserHumor`, {

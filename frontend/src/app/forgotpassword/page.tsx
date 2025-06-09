@@ -24,13 +24,11 @@ export default function ForgotPasswordPage() {
         },
         body: JSON.stringify(email),
       })
-
       const data = await response.json()
       
       if (!response.ok) {
         throw new Error(data.message || 'Failed to send reset email')
       }
-
       setSuccess(data.message)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send reset email')

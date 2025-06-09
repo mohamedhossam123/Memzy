@@ -2,23 +2,22 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 using Memzy_finalist.Models; // Assuming your DTOs are here
-using System; // For DateTime.UtcNow
+using System;
+using Memzy_finalist.Interfaces; // For DateTime.UtcNow
 
 namespace Memzy_finalist.Hubs
 {
     [Authorize]
     public class ChatHub : Hub
     {
-        private readonly IMessagingService _messagingService; // For one-on-one messages
-        private readonly IGroupService _groupService;         // For group messages
+        private readonly IMessagingService _messagingService; 
+        private readonly IGroupService _groupService;         
 
         public ChatHub(IMessagingService messagingService, IGroupService groupService)
         {
             _messagingService = messagingService;
-            _groupService = groupService; // Inject IGroupService
+            _groupService = groupService; 
         }
-
-        // Existing method for one-on-one messages (remains unchanged)
         public async Task SendMessage(int receiverId, string message, string tempId = null)
         {
             var senderId = int.Parse(Context.UserIdentifier);
