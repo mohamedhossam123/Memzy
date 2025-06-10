@@ -1,7 +1,6 @@
 using Memzy_finalist.Models;
 using Memzy_finalist.Models.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging; // Make sure this is included for ILogger
 
 namespace Memzy_finalist.Services
 {

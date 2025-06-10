@@ -42,7 +42,16 @@ namespace MyApiProject.Controllers
             {
                 var userId = await _authService.GetAuthenticatedUserId();
                 var result = await _friendsService.SendFriendRequest(userId, receiverId);
-                return Ok(result);
+                var dto = new FriendRequestResponseDto
+        {
+            RequestId = result.RequestId,
+            SenderId = result.SenderId,
+            ReceiverId = result.ReceiverId,
+            Status = result.Status.ToString(),
+            CreatedAt = result.CreatedAt
+        };
+
+        return Ok(dto);
             }
             catch (ArgumentException ex)
             {

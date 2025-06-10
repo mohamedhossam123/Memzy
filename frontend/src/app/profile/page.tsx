@@ -3,7 +3,7 @@
 import { useAuth } from '@/Context/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState, Fragment } from 'react'
-import { Dialog, Transition } from '@headlessui/react' // Ensure Dialog and Transition are imported
+import { Dialog, Transition } from '@headlessui/react'
 import toast, { Toaster } from 'react-hot-toast'
 import { HumorModal } from '@/Components/ProfilePageModels/HumorModal'
 import { ProfilePictureModal } from '@/Components/ProfilePageModels/ProfilePictureModal'
@@ -11,7 +11,7 @@ import { NameModal } from '@/Components/ProfilePageModels/NameModal'
 import { BioModal } from '@/Components/ProfilePageModels/BioModal'
 import { PasswordModal } from '@/Components/ProfilePageModels/PasswordModal'
 import PostForm from '@/Components/ProfilePageModels/CreatePostComponent'
-import PostFeed, { Post } from '@/Components/ProfilePageModels/ProfilePostsComponent' // Import Post type
+import PostFeed, { Post } from '@/Components/ProfilePageModels/ProfilePostsComponent' 
 import PostsModal from '@/Components/ProfilePageModels/ProfileInsiderPostsModal'
 import { APIClient, FullUser, FriendRequestDTO, Friend } from '@/lib/api'
 
@@ -620,103 +620,136 @@ export default function UserProfile() {
     
         {/* Friends Modal */}
         <Transition appear show={activeModal === 'friends'} as={Fragment}>
-          <Dialog as="div" className="relative z-10" onClose={() => setActiveModal(null)}>
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <div className="fixed inset-0 bg-black bg-opacity-25" />
-            </Transition.Child>
+  <Dialog as="div" className="relative z-50" onClose={() => setActiveModal(null)}>
+    <Transition.Child
+      as={Fragment}
+      enter="ease-out duration-300"
+      enterFrom="opacity-0"
+      enterTo="opacity-100"
+      leave="ease-in duration-200"
+      leaveFrom="opacity-100"
+      leaveTo="opacity-0"
+    >
+      <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm" />
+    </Transition.Child>
 
-            <div className="fixed inset-0 overflow-y-auto">
-              <div className="flex min-h-full items-center justify-center p-4 text-center">
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0 scale-95"
-                  enterTo="opacity-100 scale-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100 scale-100"
-                  leaveTo="opacity-0 scale-95"
-                >
-                  <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-dark p-6 text-left align-middle shadow-xl transition-all">
-                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-light mb-4">
-                      {activeFriendsTab === 'friends' ? 'Your Friends' : 'Friend Requests'}
-                    </Dialog.Title>
+    <div className="fixed inset-0 overflow-y-auto">
+      <div className="flex min-h-full items-center justify-center p-4 text-center">
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0 scale-95"
+          enterTo="opacity-100 scale-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100 scale-100"
+          leaveTo="opacity-0 scale-95"
+        >
+          <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-dark glass-morphism p-6 text-left align-middle shadow-xl transition-all">
+            <Dialog.Title as="h3" className="text-xl font-semibold text-light mb-6 text-glow">
+              {activeFriendsTab === 'friends' ? 'Your Friends' : 'Friend Requests'}
+            </Dialog.Title>
 
-                    <div className="flex space-x-4 mb-4">
-                      <button
-                        onClick={() => setActiveFriendsTab('friends')}
-                        className={`px-4 py-2 rounded ${activeFriendsTab === 'friends' ? 'bg-primary' : 'bg-gray-700'}`}
-                      >
-                        Friends
-                      </button>
-                      <button
-                        onClick={() => setActiveFriendsTab('requests')}
-                        className={`px-4 py-2 rounded ${activeFriendsTab === 'requests' ? 'bg-primary' : 'bg-gray-700'}`}
-                      >
-                        Requests
-                      </button>
-                    </div>
-
-                    {activeFriendsTab === 'friends' ? (
-                      <ul className="space-y-2">
-                        {friendsList.length === 0 ? (
-                          <p className="text-sm text-gray-400">You have no friends yet.</p>
-                        ) : (
-                          friendsList.map(friend => (
-                            <li key={friend.id} className="flex justify-between items-center">
-                              <div className="flex items-center space-x-3">
-                                <img src={getImageUrl(friend.profilePictureUrl)} className="w-8 h-8 rounded-full" />
-                                <span>{friend.name}</span>
-                              </div>
-                              <button
-                                onClick={() => handleRemoveFriend(friend.id)}
-                                className="text-red-400 hover:text-red-600 text-sm"
-                              >
-                                Remove
-                              </button>
-                            </li>
-                          ))
-                        )}
-                      </ul>
-                    ) : (
-                      <ul className="space-y-2">
-                        {friendRequests.map((req) => (
-                          <div key={req.requestId} className="flex items-center justify-between p-2 border-b">
-                            <div className="flex items-center space-x-2">
-                              <img
-                                src={getImageUrl(req.senderProfileImageUrl)} 
-                                alt={req.senderUserName}
-                                className="w-10 h-10 rounded-full"
-                              />
-                              <div>
-                                <div className="font-semibold">{req.senderName}</div>
-                                <div className="text-sm text-gray-500">@{req.senderUserName}</div>
-                                <div className="text-xs text-gray-400">{new Date(req.createdAt).toLocaleString()}</div>
-                                {req.message && <div className="text-sm italic mt-1">"{req.message}"</div>}
-                              </div>
-                            </div>
-                            <div className="flex space-x-2">
-                              <button onClick={() => handleAcceptRequest(req.requestId)} className="bg-green-500 text-white px-2 py-1 rounded">Accept</button>
-                              <button onClick={() => handleRejectRequest(req.requestId)} className="bg-red-500 text-white px-2 py-1 rounded">Reject</button>
-                            </div>
-                          </div>
-                        ))}
-                      </ul>
-                    )}
-                  </Dialog.Panel>
-                </Transition.Child>
-              </div>
+            <div className="flex space-x-3 mb-6">
+              <button
+                onClick={() => setActiveFriendsTab('friends')}
+                className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                  activeFriendsTab === 'friends'
+                    ? 'bg-primary text-light shadow-glow'
+                    : 'bg-glass-dark text-gray-300 hover:bg-primary-light hover:text-white'
+                }`}
+              >
+                Friends
+              </button>
+              <button
+                onClick={() => setActiveFriendsTab('requests')}
+                className={`flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                  activeFriendsTab === 'requests'
+                    ? 'bg-primary text-light shadow-glow'
+                    : 'bg-glass-dark text-gray-300 hover:bg-primary-light hover:text-white'
+                }`}
+              >
+                Requests
+              </button>
             </div>
-          </Dialog>
-        </Transition>
 
+            {activeFriendsTab === 'friends' ? (
+              <ul className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                {friendsList.length === 0 ? (
+                  <p className="text-sm text-gray-400 text-center">You have no friends yet.</p>
+                ) : (
+                  friendsList.map(friend => (
+                    <li
+                      key={friend.id}
+                      className="flex justify-between items-center p-3 rounded-md bg-glass-dark hover:bg-dark transition-all duration-200"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={getImageUrl(friend.profilePictureUrl)}
+                          className="w-10 h-10 rounded-full border border-primary shadow-glow"
+                          alt={friend.name}
+                        />
+                        <span className="text-light">{friend.name}</span>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveFriend(friend.id)}
+                        className="text-red-400 hover:text-red-600 text-sm transition"
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))
+                )}
+              </ul>
+            ) : (
+              <ul className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                {friendRequests.length === 0 ? (
+                  <p className="text-sm text-gray-400 text-center">No incoming friend requests.</p>
+                ) : (
+                  friendRequests.map(req => (
+                    <li
+                      key={req.requestId}
+                      className="flex justify-between items-start p-4 rounded-md bg-glass-dark hover:bg-dark transition-all duration-200"
+                    >
+                      <div className="flex space-x-3">
+                        <img
+                          src={getImageUrl(req.senderProfileImageUrl)}
+                          alt={req.senderUserName}
+                          className="w-12 h-12 rounded-full border border-accent shadow-glow"
+                        />
+                        <div className="text-light">
+                          <div className="font-semibold">{req.senderName}</div>
+                          <div className="text-sm text-gray-400">@{req.senderUserName}</div>
+                          <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()}</div>
+                          {req.message && (
+                            <div className="text-sm italic mt-1 text-accent">"{req.message}"</div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end space-y-2">
+                        <button
+                          onClick={() => handleAcceptRequest(req.requestId)}
+                          className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition text-sm"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => handleRejectRequest(req.requestId)}
+                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition text-sm"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </li>
+                  ))
+                )}
+              </ul>
+            )}
+          </Dialog.Panel>
+        </Transition.Child>
+      </div>
+    </div>
+  </Dialog>
+</Transition>
       </div>
     </div>
   )

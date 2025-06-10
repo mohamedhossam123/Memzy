@@ -90,16 +90,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (userData?.userId) {
           setUser({
-            userId: userData.userId,
-            name: userData.name || '',
-            email: userData.email || '',
-            profilePictureUrl: userData.profilePictureUrl,
-            bio: userData.bio || '',
-            userName: userData.userName || userData.UserName || '',
-            humorTypeId: userData.humorTypeId,
-            createdAt: userData.createdAt,
-            status: userData.status,
-          });
+  userId: userData.userId,
+  name: userData.name || '',
+  email: userData.email || '',
+  profilePictureUrl: userData.profilePictureUrl,
+  bio: userData.bio || '',
+  userName: userData.userName || userData.UserName || userData.username || '', // <--- add .username
+  humorTypeId: userData.humorTypeId,
+  createdAt: userData.createdAt,
+  status: userData.status,
+});
           return true;
         }
       }
@@ -150,16 +150,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(newToken);
     setStoredToken(newToken);
     setUser({
-      userId: userData.userId,
-      name: userData.name || '',
-      email: userData.email || '',
-      profilePictureUrl: userData.profilePictureUrl,
-      bio: userData.bio || '',
-      userName: userData.userName || userData.UserName || '',
-      humorTypeId: userData.humorTypeId,
-      createdAt: userData.createdAt,
-      status: userData.status,
-    });
+  userId: userData.userId,
+  name: userData.name || '',
+  email: userData.email || '',
+  profilePictureUrl: userData.profilePictureUrl,
+  bio: userData.bio || '',
+  userName: userData.userName || userData.UserName || userData.username || '', // <--- add .username
+  humorTypeId: userData.humorTypeId,
+  createdAt: userData.createdAt,
+  status: userData.status,
+});
 
     router.push('/');
   }, [BACKEND_URL, router]);

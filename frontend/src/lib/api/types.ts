@@ -6,6 +6,13 @@ export interface ApiResponse<T> {
   status: number;
 }
 
+export type Api = {
+  get: (url: string, options?: any) => Promise<Response | null>;
+  post: (url: string, data: any, options?: any) => Promise<Response | null>;
+  put: (url: string, data: any, options?: any) => Promise<Response | null>;
+  delete: (url: string, options?: any) => Promise<Response | null>;
+};
+
 export interface Post {
   postId: number;
   description: string;

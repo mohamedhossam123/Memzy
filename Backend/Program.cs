@@ -80,8 +80,6 @@ builder.Services.AddAuthentication(options =>
         OnMessageReceived = context =>
         {
             var accessToken = context.Request.Query["access_token"];
-
-            // Only read the token if the request is for our SignalR hub
             var path = context.HttpContext.Request.Path;
             if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hub/chat"))
             {
@@ -133,7 +131,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT"
     });
-    
+
     c.AddSecurityRequirement(new OpenApiSecurityRequirement()
     {
         {
@@ -149,6 +147,8 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+
 
 /*** CORS Configuration ***/
 builder.Services.AddCors(options =>

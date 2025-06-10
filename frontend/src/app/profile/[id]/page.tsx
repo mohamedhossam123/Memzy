@@ -78,10 +78,11 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
     console.log("Friendship status:", friendshipStatus);
 
     const combinedData: UserProfileData = {
-      ...data,
-      userId: targetFriendId,
-      ...friendshipStatus
-    };
+  ...data,
+  userId: targetFriendId,
+  username: data.username || data.userName || data.UserName || '', 
+  ...friendshipStatus
+};
     setUserData(combinedData);
     if (combinedData.isFriend) {
       fetchUserPosts();
@@ -136,7 +137,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
         requestId: result.requestId,
         isFriend: false 
       })
-      
+      await fetchUserProfile()
     } catch (err) {
       console.error('Error sending friend request:', err)
     } finally {

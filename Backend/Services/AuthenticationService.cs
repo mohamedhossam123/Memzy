@@ -3,9 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
-using MailKit.Net.Smtp;
-using MimeKit;
-using MimeKit.Text;
 using System.Text;
 
 public class AuthenticationService : IAuthenticationService
@@ -165,7 +162,7 @@ public class AuthenticationService : IAuthenticationService
             PasswordHash = HashPassword(dto.Password),
             CreatedAt = DateTime.UtcNow,
             UserName = dto.UserName,
-            Status = dto.Status
+            Status = "Normal"
         };
 
         var createdUser = await CreateUserAsync(user);
@@ -343,14 +340,11 @@ public async Task<(bool Success, string Message)> ResetPasswordAsync(string toke
     var userId = ValidateTokenAndGetUserId(token);
     if (userId == null)
         return (false, "Invalid or expired token.");
-
     var user = await _context.Users.FindAsync(userId);
     if (user == null)
         return (false, "User not found.");
-
     user.PasswordHash = HashPassword(newPassword);
     await _context.SaveChangesAsync();
-
     return (true, "Password reset successful.");
 }
 
@@ -373,7 +367,6 @@ public int? ValidateTokenAndGetUserId(string token)
                 ValidAudience = _configuration["Jwt:Audience"],
                 IssuerSigningKey = new SymmetricSecurityKey(key)
             };
-
             var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
             var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
 

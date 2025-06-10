@@ -1,10 +1,6 @@
-// Services/CloudinaryService.cs
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Memzy_finalist.Interfaces;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using System.Threading.Tasks;
 
 namespace Memzy_finalist.Services
 {

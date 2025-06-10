@@ -150,24 +150,7 @@ const GroupsList = ({ onSelectGroup, selectedChat }: Props) => {
     (friend) => !selectedNewGroupMembers.some((member) => member.userId === friend.userId)
   );
 
-  const handleGroupProfilePictureChanged = useCallback((groupId: number, newUrl: string) => {
-    setGroups(prevGroups =>
-      prevGroups.map(group =>
-        group.groupId === groupId ? { ...group, profilePictureUrl: newUrl } : group
-      )
-    );
-    setFilteredGroups(prevFilteredGroups =>
-      prevFilteredGroups.map(group =>
-        group.groupId === groupId ? { ...group, profilePictureUrl: newUrl } : group
-      )
-    );
-    if (selectedChat?.type === 'group' && selectedChat.id === groupId) {
-      const updatedGroup = groups.find(g => g.groupId === groupId);
-      if (updatedGroup) {
-        onSelectGroup('group', groupId, updatedGroup.groupName, updatedGroup.memberCount, newUrl);
-      }
-    }
-  }, [groups, selectedChat, onSelectGroup]);
+
 
 
   return (
@@ -269,9 +252,7 @@ const GroupsList = ({ onSelectGroup, selectedChat }: Props) => {
                         src={group.profilePictureUrl}
                         alt={`${group.groupName} profile`}
                         className="w-10 h-10 rounded-full object-cover border-2 border-glass/30 shadow-lg"
-                        onError={(e) => {
-                          const imgElement = e.target as HTMLImageElement;
-                        }}
+          
                       />
                     ) : (
                       <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center border-2 border-glass/30 shadow-lg">

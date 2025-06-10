@@ -6,7 +6,6 @@ import { useAuth } from '../../Context/AuthContext'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import debounce from 'lodash.debounce'
-import { uploadProfilePicture } from '../../lib/api/header/header' 
 
 interface SearchResult {
   id: string | number
@@ -17,13 +16,13 @@ interface SearchResult {
 
 export function Header() {
   const router = useRouter()
-  const { user, updateUser} = useAuth()
+  const { user} = useAuth()
   const { results, search, loading, error } = useSearch()
   const [query, setQuery] = useState('')
   const [showResults, setShowResults] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   const [profileImageError, setProfileImageError] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
+  const [isUploading] = useState(false)
   const [, setMousePos] = useState({ x: 0, y: 0 })
   const [isLogoHovered, setIsLogoHovered] = useState(false)
 
@@ -61,26 +60,6 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setIsUploading(true)
-
-    try {
-      const data = await uploadProfilePicture(file)
-      
-      if (data.Url && user) {
-        setProfileImageError(false)
-        updateUser(prevUser => prevUser ? { ...prevUser, profilePictureUrl: data.Url } : null)
-      }
-    } catch (error) {
-      console.error('Upload failed:', error)
-      setProfileImageError(true)
-    } finally {
-      setIsUploading(false)
-    }
-  }
 
   const handleSearchChange = (value: string) => {
     setQuery(value)
@@ -137,39 +116,41 @@ export function Header() {
         {/* Left Section - User Profile */}
         <div className="flex items-center gap-6">
           {user ? (
-            <label className="cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-                disabled={isUploading}
-              />
-              <div className="flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-full bg-[#a569bd] grid place-items-center overflow-hidden border-2 border-[#f5f5f5] relative transition-all duration-300 group-hover:scale-105 group-hover:border-[#c56cf0]">
-                  {isUploading && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    </div>
-                  )}
-                  <img
-                    src={profileImageUrl}
-                    alt={user.name || 'User'}
-                    onError={() => setProfileImageError(true)}
-                    className="w-10 h-10 rounded-full object-cover transition-transform duration-300 group-hover:scale-110"
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[#f5f5f5] font-semibold transition-colors duration-300 group-hover:text-[#c56cf0]">{user.name}</span>
-                  <span className="text-[#f5f5f5]/70 text-xs transition-colors duration-300 group-hover:text-[#f5f5f5]/90">
-                    @{user.userName || 'username'}
-                  </span>
-                </div>
-              </div>
-            </label>
-          ) : (
-            <div className="text-[#f5f5f5]">Please log in</div>
-          )}
+  <div
+    className="cursor-pointer"
+    onClick={() => router.push('/profile')}
+    tabIndex={0}
+    onKeyDown={e => {
+      if (e.key === 'Enter' || e.key === ' ') router.push('/profile')
+    }}
+    role="button"
+    aria-label="Go to profile"
+  >
+    <div className="flex items-center gap-3 group">
+      <div className="w-10 h-10 rounded-full bg-[#a569bd] grid place-items-center overflow-hidden border-2 border-[#f5f5f5] relative transition-all duration-300 group-hover:scale-105 group-hover:border-[#c56cf0]">
+        {isUploading && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+          </div>
+        )}
+        <img
+          src={profileImageUrl}
+          alt={user.name || 'User'}
+          onError={() => setProfileImageError(true)}
+          className="w-10 h-10 rounded-full object-cover transition-transform duration-300 group-hover:scale-110"
+        />
+      </div>
+      <div className="flex flex-col">
+        <span className="text-[#f5f5f5] font-semibold transition-colors duration-300 group-hover:text-[#c56cf0]">{user.name}</span>
+        <span className="text-[#f5f5f5]/70 text-xs transition-colors duration-300 group-hover:text-[#f5f5f5]/90">
+          @{user.userName || 'username'}
+        </span>
+      </div>
+    </div>
+  </div>
+) : (
+  <div className="text-[#f5f5f5]">Please log in</div>
+)}
         </div>
 
         {/* Center Section - Enhanced Search Bar */}

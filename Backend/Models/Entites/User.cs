@@ -45,7 +45,7 @@ namespace Memzy_finalist.Models
         [Required]
         public string PasswordHash { get; set; } = null!;
 
-        [MaxLength(20)]
+        [MaxLength(20),Required]
         public string Status { get; set; } = "normal";
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
