@@ -95,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   email: userData.email || '',
   profilePictureUrl: userData.profilePictureUrl,
   bio: userData.bio || '',
-  userName: userData.userName || userData.UserName || userData.username || '', // <--- add .username
+  userName: userData.userName || userData.UserName || userData.username || '', 
   humorTypeId: userData.humorTypeId,
   createdAt: userData.createdAt,
   status: userData.status,
@@ -155,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   email: userData.email || '',
   profilePictureUrl: userData.profilePictureUrl,
   bio: userData.bio || '',
-  userName: userData.userName || userData.UserName || userData.username || '', // <--- add .username
+  userName: userData.userName || userData.UserName || userData.username || '', 
   humorTypeId: userData.humorTypeId,
   createdAt: userData.createdAt,
   status: userData.status,

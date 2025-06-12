@@ -1,7 +1,4 @@
-
 using CloudinaryDotNet.Actions;
-using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
 
 namespace Memzy_finalist.Interfaces
 {

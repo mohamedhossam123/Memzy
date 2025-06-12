@@ -171,7 +171,6 @@ app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Memzy API v
 
 
 app.UseWebSockets();
-
 app.Use(async (context, next) =>
 {
     if (context.Request.Path == "/ws")
@@ -179,8 +178,6 @@ app.Use(async (context, next) =>
         if (context.WebSockets.IsWebSocketRequest)
         {
             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-
-            // Example echo logic - replace with your handler
             var buffer = new byte[1024 * 4];
             var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             while (!result.CloseStatus.HasValue)

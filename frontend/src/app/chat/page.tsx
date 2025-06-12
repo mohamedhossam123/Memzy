@@ -99,7 +99,6 @@ const ChatPage = () => {
       setShowLeaveGroupConfirmModal(false);
     }
   }, [selectedChat]);
-
   const renderOverlayModal = (component: React.ReactNode, showModal: boolean, onClose: () => void) => {
     if (!showModal) return null;
     return (

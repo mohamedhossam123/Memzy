@@ -274,7 +274,7 @@ export default function Feed() {
           {/* Render the posts */}
           {posts.map((post) => (
             <PostCard
-              key={`${post.id}-${post.isLiked}`} // Using isLiked in key for re-render on like state change
+              key={`${post.id}-${post.isLiked}`} 
               {...post}
               onLikeUpdate={updatePostLike}
             />
@@ -296,16 +296,17 @@ export default function Feed() {
               <div className="text-2xl mb-2">🎉</div>
               <p className="text-light/60">You've reached the end of the feed</p>
               <button
-                onClick={() => {
-                  setPage(1)
-                  setPosts([])
-                  setHasMore(true)
-                  setInitialLoad(true)
-                }}
-                className="mt-3 px-4 py-2 bg-accent/20 text-accent rounded-lg hover:bg-accent/30 transition-colors text-sm"
-              >
-                Refresh Feed
-              </button>
+              onClick={() => {
+                setPage(1)
+                setPosts([])
+                setHasMore(true)
+                setInitialLoad(true)
+                window.scrollTo({ top: 0, behavior: 'smooth' }) 
+              }}
+              className="mt-3 px-4 py-2 bg-accent/20 text-accent rounded-lg hover:bg-accent/30 transition-colors text-sm"
+            >
+              Refresh Feed
+            </button>
             </div>
           )}
 
