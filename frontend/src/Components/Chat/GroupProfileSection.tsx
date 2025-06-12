@@ -23,47 +23,24 @@ const GroupProfileSection: React.FC<GroupProfileSectionProps> = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
 
-  // We still need the ref for the input, but we won't manually click it anymore.
-  // It's still good practice to have it, though not strictly required for this label-based approach.
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // --- DEBUGGING: Log initial state and state changes ---
   useEffect(() => {
-    console.log('GroupProfileSection mounted/re-rendered.');
-    console.log('Initial/Current State:');
-    console.log('  selectedImageFile:', selectedImageFile ? selectedImageFile.name : 'null');
-    console.log('  uploadingPicture:', uploadingPicture);
-    console.log('  uploadError:', uploadError);
-    console.log('  uploadSuccess:', uploadSuccess);
   }, [selectedImageFile, uploadingPicture, uploadError, uploadSuccess]);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    console.log('DEBUG: handleFileChange called.'); // <<< THIS SHOULD NOW LOG!
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
-      console.log('DEBUG: File selected:', file.name, file.type, file.size);
       setSelectedImageFile(file);
       setUploadError(null);
       setUploadSuccess(false);
-      console.log('DEBUG: selectedImageFile state updated to:', file.name);
     } else {
-      console.log('DEBUG: No file selected or selection cancelled.');
       setSelectedImageFile(null);
     }
   };
 
-  // handleImageClick is no longer needed for triggering the input,
-  // as the <label> will do that automatically.
-  // We'll remove it from the JSX but keep the function if you wanted to repurpose it.
-  // const handleImageClick = () => {
-  //   console.log('DEBUG: Profile image clicked, attempting to open file input.');
-  //   fileInputRef.current?.click();
-  // };
 
   const handleUploadProfilePicture = async () => {
-    console.log('DEBUG: Upload button clicked. Initiating upload process...');
-    console.log('DEBUG: Current token:', token ? 'present' : 'missing');
-    console.log('DEBUG: Current selectedImageFile:', selectedImageFile ? selectedImageFile.name : 'null');
 
     if (!token) {
       setUploadError('Authentication token missing. Cannot upload picture.');
@@ -79,25 +56,22 @@ const GroupProfileSection: React.FC<GroupProfileSectionProps> = ({
     setUploadingPicture(true);
     setUploadError(null);
     setUploadSuccess(false);
-    console.log('DEBUG: Setting uploadingPicture to true.');
+    ('DEBUG: Setting uploadingPicture to true.');
 
     try {
-      console.log('DEBUG: Calling uploadGroupProfilePictureApi...');
+      ('DEBUG: Calling uploadGroupProfilePictureApi...');
       const newUrl = await uploadGroupProfilePictureApi(token, groupId, selectedImageFile);
-      console.log('DEBUG: API call successful. New URL:', newUrl);
 
       if (onGroupProfilePictureChanged) {
-        console.log('DEBUG: Notifying parent via onGroupProfilePictureChanged.');
         onGroupProfilePictureChanged(groupId, newUrl);
       }
 
-      // After successful upload, clear the selected file and show success
       setSelectedImageFile(null);
       setUploadSuccess(true);
-      console.log('DEBUG: Setting selectedImageFile to null and uploadSuccess to true.');
+      ('DEBUG: Setting selectedImageFile to null and uploadSuccess to true.');
       setTimeout(() => {
         setUploadSuccess(false);
-        console.log('DEBUG: Hiding upload success message after 3 seconds.');
+        ('DEBUG: Hiding upload success message after 3 seconds.');
       }, 3000);
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to upload picture. Please try again.';
@@ -105,16 +79,15 @@ const GroupProfileSection: React.FC<GroupProfileSectionProps> = ({
       console.error('DEBUG: Upload API call failed:', errorMessage, err);
     } finally {
       setUploadingPicture(false);
-      console.log('DEBUG: Setting uploadingPicture to false (finally block).');
+      ('DEBUG: Setting uploadingPicture to false (finally block).');
     }
   };
 
-  // --- DEBUGGING: Log button's disabled state before render ---
   const isButtonDisabled = uploadingPicture || !selectedImageFile;
-  console.log(`DEBUG: Button 'disabled' state calculation:`);
-  console.log(`  uploadingPicture: ${uploadingPicture}`);
-  console.log(`  !selectedImageFile: ${!selectedImageFile} (selectedImageFile is ${selectedImageFile ? 'present' : 'null'})`);
-  console.log(`  Result (isButtonDisabled): ${isButtonDisabled}`);
+  (`DEBUG: Button 'disabled' state calculation:`);
+  (`  uploadingPicture: ${uploadingPicture}`);
+  (`  !selectedImageFile: ${!selectedImageFile} (selectedImageFile is ${selectedImageFile ? 'present' : 'null'})`);
+  (`  Result (isButtonDisabled): ${isButtonDisabled}`);
 
   return (
     <div className="mb-6 p-4 rounded-xl bg-glass/5 border border-glass/20 text-center shadow-inner">

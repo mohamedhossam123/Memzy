@@ -6,9 +6,8 @@ export const fetchComments = async (
   postId: number
 ): Promise<ApiResponse<CommentResponseDto[]>> => {
   try {
-    console.log(`Fetching comments for post ${postId}`)
+    (`Fetching comments for post ${postId}`)
     const url = `/api/user/comments/getComments?postId=${postId}`
-    console.log('Request URL:', url)
 
     const res = await api.get(url)
     if (!res) {
@@ -19,7 +18,6 @@ export const fetchComments = async (
       }
     }
 
-    console.log('Response status:', res.status)
 
     if (!res.ok) {
       const errorText = await res.text()
@@ -31,7 +29,6 @@ export const fetchComments = async (
     }
 
     const data = await res.json()
-    console.log('Comments data:', data)
     return { data, status: res.status }
   } catch (err) {
     console.error('Error fetching comments:', err)

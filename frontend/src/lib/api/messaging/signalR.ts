@@ -15,7 +15,7 @@ export const createConnection = (token: string) => {
 export const startConnection = async (connection: signalR.HubConnection) => {
   try {
     await connection.start();
-    console.log('SignalR connection started.');
+    ('SignalR connection started.');
     return true;
   } catch (err) {
     console.error('SignalR connection error:', err);
@@ -45,7 +45,7 @@ export const sendMessageViaSignalR = async (
 ) => {
   try {
     await connection.invoke('SendMessage', receiverId, message, tempId);
-    console.log('Individual message sent successfully via SignalR');
+    ('Individual message sent successfully via SignalR');
   } catch (error) {
     console.error('Error sending individual message via SignalR:', error);
     throw error;
@@ -60,7 +60,7 @@ export const sendGroupMessageViaSignalR = async (
 ) => {
   try {
     await connection.invoke('SendGroupMessage', groupId, message, tempId);
-    console.log('Group message sent successfully via SignalR');
+    ('Group message sent successfully via SignalR');
   } catch (error) {
     console.error('Error sending group message via SignalR:', error);
     throw error;

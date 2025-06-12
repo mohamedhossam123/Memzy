@@ -88,7 +88,6 @@ const handleDeletePost = async (postId: number) => {
         videos.forEach(video => {
           if (!video.paused) {
             video.pause()
-            console.log('Video paused due to fullscreen exit')
           }
         })
       }
@@ -131,7 +130,6 @@ const handleDeletePost = async (postId: number) => {
         }
 
         const data = await response.json()
-        console.log('Raw API response for user posts:', data)
         setPosts(data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
@@ -266,11 +264,9 @@ const handleDeletePost = async (postId: number) => {
                         onClick={() => handleVideoPlay(post.postId)}
                         onLoadedData={() => {
                           setVideoLoaded(prev => new Set(prev).add(post.postId))
-                          console.log('Video metadata loaded:', mediaUrl)
                         }}
                         onCanPlay={() => {
                           setVideoLoaded(prev => new Set(prev).add(post.postId))
-                          console.log('Video can play:', mediaUrl)
                         }}
                         onError={(e) => {
                           console.error('Video error:', e, mediaUrl)
@@ -316,7 +312,6 @@ const handleDeletePost = async (postId: number) => {
                         }`}
                         onLoad={() => {
                           setImageLoaded(prev => new Set(prev).add(post.postId))
-                          console.log('Image loaded:', mediaUrl)
                         }}
                         onError={(e) => {
                           console.error('Image error:', e, mediaUrl)

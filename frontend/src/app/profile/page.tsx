@@ -129,8 +129,6 @@ export default function UserProfile() {
         apiClient.user.getFriendPostCount()
       ])
       
-      console.log('User Response:', userResponse);
-      console.log('userResponse.profilePictureUrl from API:', userResponse.profilePictureUrl);
       const mappedUserData: FullUser = {
         profilePic: userResponse.user?.profilePictureUrl, 
         name: userResponse.name,

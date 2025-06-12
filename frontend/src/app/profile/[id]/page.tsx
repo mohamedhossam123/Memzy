@@ -61,8 +61,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
   if (!apiClient) return;
 
   try {
-    const data = await apiClient.user.getUserById(userId); 
-    console.log("Raw data from getUserById:", data); 
+    const data = await apiClient.user.getUserById(userId);
     const userIdentifier = data.UserId || data.userId || data.id; 
 
     if (userIdentifier === undefined || userIdentifier === null) {
@@ -72,10 +71,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
         return;
     }
     const targetFriendId = typeof userIdentifier === 'string' ? parseInt(userIdentifier, 10) : userIdentifier;
-
-    console.log("Calling getFriendshipStatus with friendId:", targetFriendId);
     const friendshipStatus = await apiClient.friends.getFriendshipStatus(targetFriendId);
-    console.log("Friendship status:", friendshipStatus);
 
     const combinedData: UserProfileData = {
   ...data,

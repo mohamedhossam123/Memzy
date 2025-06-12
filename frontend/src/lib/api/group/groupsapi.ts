@@ -148,7 +148,6 @@ export const uploadGroupProfilePictureApi = async (
                 const errorData = await response.json();
                 errorMessage = errorData.Error || errorData.message || errorMessage;
             } catch (jsonParseError) {
-                // No console.error for jsonParseError as per instructions
             }
             throw new Error(errorMessage);
         }

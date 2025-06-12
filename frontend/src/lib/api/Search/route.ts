@@ -24,7 +24,6 @@ export async function GET(req: NextRequest) {
     )
 
     const payload = await resp.json().catch(() => ({}))
-    console.log('Search proxy payload:', payload)
 
     if (!resp.ok) {
       return NextResponse.json(

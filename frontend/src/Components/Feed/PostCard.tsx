@@ -322,7 +322,7 @@ export default function PostCard({
       throw new Error(errorData?.message || errorData?.Message || `Failed to delete post: ${response?.statusText || 'Unknown error'}`);
     }
 
-    console.log('Post deleted successfully!');
+    ('Post deleted successfully!');
     if (onPostDelete) {
       onPostDelete(id);
     }

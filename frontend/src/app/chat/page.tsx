@@ -14,6 +14,7 @@ type SelectedChat =
   | { type: 'individual'; id: number; name: string; username: string; profilePictureUrl?: string }
   | { type: 'group'; id: number; name: string; memberCount: number; profilePictureUrl?: string };
 
+
 const ChatPage = () => {
   const [selectedChat, setSelectedChat] = useState<SelectedChat | null>(null);
   const isMobile = useMediaQuery({ maxWidth: 768 });
