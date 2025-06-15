@@ -57,7 +57,6 @@ public class AuthenticationService : IAuthenticationService
         var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             throw new UnauthorizedAccessException("User not authenticated or invalid user ID");
-
         return userId;
     }
 

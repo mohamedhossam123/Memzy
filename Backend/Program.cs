@@ -203,8 +203,12 @@ app.Use(async (context, next) =>
 
 app.MapHub<ChatHub>("/hub/chat");
 
-app.Urls.Add("http://localhost:5001"); 
+app.Urls.Add("http://localhost:5001");
 app.UseExceptionHandler("/error");
+app.Map("/error", (HttpContext httpContext) =>
+{
+    return Results.Problem("An unexpected error occurred.");
+});
 app.UseRouting();
 app.UseCors("NextJsFrontend");
 app.UseAuthentication();

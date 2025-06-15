@@ -23,6 +23,7 @@ Get ready to dive into a world of laughter tailored just for you!
 - 🚀 [Live Demo & Screenshots](#-live-demo--screenshots)
 - 🧰 [Tech Stack](#-tech-stack)
 - 🎬 [Getting Started](#-getting-started)
+
   - 📦 [Backend Setup](#-backend-setup)
   - 💻 [Frontend Setup](#-frontend-setup)
 - 🔐 [Environment Variables](#-environment-variables)
@@ -83,7 +84,7 @@ Memzy is built with a modern and powerful tech stack to ensure performance, scal
 
 Follow these instructions to set up and run Memzy on your local machine.
 
-### 📦 ### Backend Setup
+### 📦  Backend Setup
 
 1. **Clone the repository:**
    ```sh
@@ -107,7 +108,7 @@ Follow these instructions to set up and run Memzy on your local machine.
 
 ---
 
-### 💻 ### Frontend Setup
+### 💻  Frontend Setup
 
 1. **Navigate to the frontend directory:**
    ```sh
